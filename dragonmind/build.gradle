@@ -1,0 +1,109 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+
+group 'com.chromosundrift'
+version '1.0-SNAPSHOT'
+
+mainClassName = "com.heroicrobot.processing.examples.ArrayScanner2"
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+
+//    flatDir { dirs "${rootDir}/../../processing/libraries/video/library" }
+//    flatDir { dirs "${rootDir}/../../processing/libraries/PixelPusher/library" }
+    flatDir { dirs "${projectDir}/lib" }
+}
+// TODO dep processing library PixelPusher.jar pixelpusher-java https://github.com/robot-head/PixelPusher-java locally and/or do a maven install of it from processing libraries
+
+dependencies {
+    // these need to point to where processing libraries are stored
+    // default on mac is ~/Documents/Processing
+    compile files('lib/PixelPusher.jar')
+    //compile ':video:'
+//    runtime files('lib/jna.jar')
+//    runtime files('lib/glvideo.jar')
+    runtime ':gstreamer-java:'
+    runtime ':jna:'
+    runtime files('../../processing/libraries/video/library/macosx64/libgstreamer-0.10.dylib')
+
+    compile(group: 'org.processing', name: 'core', version: '3.3.7')
+    compile('org.processing:video:3.2.3') {
+        exclude group: 'net.java.dev.jna'
+        exclude group: 'com.googlecode.gstreamer-java'
+    }
+
+    //runtime group: 'org.freedesktop.gstreamer', name: 'gst1-java-core', version: '0.9.1'
+
+    runtime group: 'org.jogamp.jogl', name: 'jogl-all', version: '2.3.2'
+
+
+    compile group: 'commons-io', name: 'commons-io', version: '2.6'
+
+    //runtime fileTree(dir: 'lib', include: '*.jar')
+
+
+    runtime ":gluegen-rt:2.3.2"
+    runtime ":gluegen-rt:natives-android-aarch64"
+    runtime ":gluegen-rt:natives-android-armv6"
+    runtime ":gluegen-rt:natives-linux-amd64"
+    runtime ":gluegen-rt:natives-linux-armv6"
+    runtime ":gluegen-rt:natives-linux-armv6hf"
+    runtime ":gluegen-rt:natives-linux-i586"
+    runtime ":gluegen-rt:natives-macosx-universal"
+    runtime ":gluegen-rt:natives-solaris-amd64"
+    runtime ":gluegen-rt:natives-solaris-i586"
+    runtime ":gluegen-rt:natives-windows-amd64"
+    runtime ":gluegen-rt:natives-windows-i586"
+
+    runtime ":jogl-all:2.3.2"
+    runtime ":jogl-all:natives-android-aarch64"
+    runtime ":jogl-all:natives-android-armv6"
+    runtime ":jogl-all:natives-linux-amd64"
+    runtime ":jogl-all:natives-linux-armv6"
+    runtime ":jogl-all:natives-linux-armv6hf"
+    runtime ":jogl-all:natives-linux-i586"
+    runtime ":jogl-all:natives-macosx-universal"
+    runtime ":jogl-all:natives-solaris-amd64"
+    runtime ":jogl-all:natives-solaris-i586"
+    runtime ":jogl-all:natives-windows-amd64"
+    runtime ":jogl-all:natives-windows-i586"
+
+    // TODO seriously write some unit tests, dog
+    //testCompile group: 'junit', name: 'junit', version: '4.12'
+
+    // TODO add this:
+    //compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.6'
+}
+
+task getDeps(type: Copy) {
+    from sourceSets.main.runtimeClasspath
+    into 'lib/'
+}
+
+task printDeps(description: "yo know") {
+    doLast {
+        configurations.runtime.resolve().each { println " RT " + it.getName() }
+    }
+}
+
+task createProperties(dependsOn: processResources) {
+    doLast {
+        new File("$buildDir/resources/main/build.properties").withWriter { w ->
+            Properties p = new Properties()
+            p['version'] = project.version.toString()
+            p['name'] = project.name.toString()
+            p.store w, null
+        }
+        println "** created build.properties"
+    }
+}
+
+build {
+    createProperties
+}

@@ -1,0 +1,71 @@
+package com.chromosundrift.bhima.dragonmind.model;
+
+import java.util.Collection;
+import java.util.Objects;
+
+// TODO calculate largest centre of multimodal distribution
+
+public final class Point {
+    private final int x;
+    private final int y;
+
+    public static Point centroid(Iterable<Point> points) {
+        int avgX = 0;
+        int avgY = 0;
+        int n = 0;
+
+        for (Point p : points) {
+            n++;
+            avgX += p.x;
+            avgY += p.y;
+        }
+
+        avgX /= n;
+        avgY /= n;
+        return new Point(avgX, avgY);
+    }
+
+    public static double variance(Collection<Point> points) {
+        Point centroid = centroid(points);
+        double sumD2 = 0;
+        for (Point point : points) {
+
+            long d2 = Math.abs(point.x - centroid.x) ^ 2
+                    + Math.abs(point.y - centroid.y) ^ 2;
+            sumD2 += d2;
+        }
+        return sumD2 / points.size();
+    }
+
+    public Point(int ix, int iy) {
+        this.x = ix;
+        this.y = iy;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Point point = (Point) o;
+        return x == point.x &&
+                y == point.y;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(x, y);
+    }
+
+    public int getX() {
+        return x;
+    }
+
+    public int getY() {
+        return y;
+    }
+
+    @Override
+    public String toString() {
+        return x + "," + y;
+    }
+}
