@@ -24,12 +24,11 @@ rainbow=(
 )
 
 common="""
-pixels=200
+pixels=300
 group=1
 controller={0}
 stripsattached={1}
-# blank_strips_on_idle=1
-blank_strips_on_idle=0
+blank_strips_on_idle=1
 # dhcp_timeout=24
 """[1:-1]
 
