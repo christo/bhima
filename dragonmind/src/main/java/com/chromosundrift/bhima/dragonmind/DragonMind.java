@@ -13,12 +13,21 @@ import java.util.Properties;
 public class DragonMind extends ProcessingBase {
 
     public static final String PROP_FILE = "build.properties";
+    private static final boolean DEBUG_NOISY = false;
 
-    BallsProgram balls = new BallsProgram();
+    private BallsProgram balls = new BallsProgram();
+    private PusherMan pusherMan;
+
+    public void settings() {
+        size(1920, 1080);
+        pixelDensity(1);
+    }
 
     @Override
     public void setup() {
         balls.setup(this);
+        pusherMan = new PusherMan(DEBUG_NOISY);
+        pusherMan.init();
     }
 
     protected void drawPattern(PImage img) {
@@ -56,5 +65,9 @@ public class DragonMind extends ProcessingBase {
         textFont(versionFont, 18);
         textAlign(RIGHT);
         text("version: " + version, width - 350, height - 100, 280, 80);
+    }
+
+    public PusherMan getPusherMan() {
+        return pusherMan;
     }
 }

@@ -127,4 +127,11 @@ public class PusherMan implements Observer {
         return registry.getStrips().size();
     }
 
+    public int numTotalLights() {
+        int count = 0;
+        for (Strip strip : getStrips()) {
+            count += strip.getLength();
+        }
+        return count;
+    }
 }

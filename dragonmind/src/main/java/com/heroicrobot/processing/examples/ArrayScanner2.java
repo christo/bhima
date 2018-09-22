@@ -8,7 +8,6 @@ import com.chromosundrift.bhima.dragonmind.DragonMind;
 import com.chromosundrift.bhima.dragonmind.Mapper;
 import com.chromosundrift.bhima.dragonmind.Palette;
 import com.chromosundrift.bhima.dragonmind.ProcessingBase;
-import com.chromosundrift.bhima.dragonmind.PusherMan;
 import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
 import com.chromosundrift.bhima.dragonmind.model.Point;
 import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
@@ -28,7 +27,6 @@ import static java.lang.Thread.currentThread;
 
 public class ArrayScanner2 extends DragonMind {
 
-    private static final boolean DEBUG_NOISY = false;
     private boolean drawAllImages = true;
     private Strip previousPixelStrip = null;
     private int previousPixel = 0;
@@ -52,8 +50,6 @@ public class ArrayScanner2 extends DragonMind {
     private boolean camReady;
     private String camera = null;
     private Mapper.Mode mode = Mapper.Mode.WAIT;
-
-    private PusherMan pusherMan;
 
     private int nStrip;
     private int nPixel;
@@ -81,15 +77,9 @@ public class ArrayScanner2 extends DragonMind {
         return hits;
     }
 
-    public void settings() {
-        size(1920, 1080);
-        pixelDensity(1);
-    }
-
     public void setup() {
         super.setup();
-        pusherMan = new PusherMan(DEBUG_NOISY);
-        pusherMan.init();
+
         background(0);
         colorMode(RGB, 255, 255, 255, 255);
         palette = new Palette(color(255, 255, 255), color(0, 0, 0));
@@ -141,7 +131,7 @@ public class ArrayScanner2 extends DragonMind {
 
         clear();
         textAlign(LEFT);
-        pusherMan.ensureReady();
+        getPusherMan().ensureReady();
 
         if (camera == null) {
             camList();
@@ -191,7 +181,7 @@ public class ArrayScanner2 extends DragonMind {
         if (drawAllImages && currentFrame != null && mode != Mapper.Mode.PATTERN) {
             renderAllImges();
         }
-        if (pusherMan.isReady() && pusherMan.getStrips().size() > nStrip && mode == Mapper.Mode.CAM_SCAN) {
+        if (getPusherMan().isReady() && getPusherMan().getStrips().size() > nStrip && mode == Mapper.Mode.CAM_SCAN) {
             drawProgressBar();
         }
         if (drawStatusMap) {
@@ -201,8 +191,8 @@ public class ArrayScanner2 extends DragonMind {
 
 
     private void mapSurfaceToPixels(PImage pImage) {
-        if (pusherMan.isReady()) {
-            List<Strip> strips = pusherMan.getStrips();
+        if (getPusherMan().isReady()) {
+            List<Strip> strips = getPusherMan().getStrips();
             for (PixelPoint pp : displayMap) {
                 Strip strip = strips.get(pp.getStrip());
                 int targetColour = pImage.get(pp.getX(), pp.getY());
@@ -253,7 +243,7 @@ public class ArrayScanner2 extends DragonMind {
 
     private void testPixels(int stripToTurnOn) {
         log("testing strip " + stripToTurnOn);
-        List<Strip> strips = pusherMan.getStrips();
+        List<Strip> strips = getPusherMan().getStrips();
         // pixelpusher strips are numbered on the PCB starting from 1
         int sNum = 1;
         for (Strip strip : strips) {
@@ -291,7 +281,7 @@ public class ArrayScanner2 extends DragonMind {
         String extendedStatus = mode + " | " + (camReady ? "CAM READY | " : "CAM NOT READY | ")
                 + palette.getColourName() + " | lights found: " + displayMap.size() + "\n" + statusText2;
 
-        String ppStatus = pusherMan.report();
+        String ppStatus = getPusherMan().report();
         outlinedText(statusText + " | " + extendedStatus + " | " + ppStatus, 20, height - 37);
         // right hand detail panel
         drawStatusMap();
@@ -300,9 +290,9 @@ public class ArrayScanner2 extends DragonMind {
     private void doCamScan() {
 
         // scrape for the strips
-        if (pusherMan.isReady()) {
+        if (getPusherMan().isReady()) {
 
-            List<Strip> strips = pusherMan.getStrips();
+            List<Strip> strips = getPusherMan().getStrips();
             int number_of_strips = strips.size();
             if (nStrip >= number_of_strips) {
                 nStrip = 0;
@@ -317,7 +307,7 @@ public class ArrayScanner2 extends DragonMind {
 
             if (atBeginning()) {
                 log("clearing all pixels");
-                pusherMan.turnOffAllPixels();
+                getPusherMan().turnOffAllPixels();
                 scanId = System.currentTimeMillis();
                 doDarkFrame();
             }
@@ -473,7 +463,7 @@ public class ArrayScanner2 extends DragonMind {
 
         // create the map of stuff to show
         fill(255);
-        textBoxPair("Strips", Integer.toString(pusherMan.numStrips()), x, y + (lh * pos++), w, margin, lh);
+        textBoxPair("Strips", Integer.toString(getPusherMan().numStrips()), x, y + (lh * pos++), w, margin, lh);
         textBoxPair("Strip #", Integer.toString(nStrip), x, y + (lh * pos++), w, margin, lh);
         textBoxPair("Pixel #", Integer.toString(nPixel), x, y + (lh * pos++), w, margin, lh);
 
@@ -493,7 +483,7 @@ public class ArrayScanner2 extends DragonMind {
         strokeWeight(1);
         rect(x, y, w, h);
 
-        List<Strip> strips = pusherMan.getStrips();
+        List<Strip> strips = getPusherMan().getStrips();
 
         int pixelsPerStrip = strips.get(nStrip).getLength();
         float pixelsDone = (nStrip * pixelsPerStrip) + nPixel + 1;
@@ -589,7 +579,7 @@ public class ArrayScanner2 extends DragonMind {
         }
         if (key == ';') {
             log("clearing all pixels");
-            pusherMan.turnOffAllPixels();
+            getPusherMan().turnOffAllPixels();
         }
 
     }
