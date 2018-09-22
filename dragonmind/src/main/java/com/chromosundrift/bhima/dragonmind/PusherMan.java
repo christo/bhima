@@ -13,7 +13,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Class for encapsulating common configuration and operations for Bhima's PusherMan
- *
  */
 public class PusherMan implements Observer {
 
@@ -21,6 +20,7 @@ public class PusherMan implements Observer {
     private DeviceRegistry registry;
     private AtomicReference<DeviceRegistry> observedRegistry = new AtomicReference<>();
     private boolean initialised;
+    private boolean haveSetUpRegistry;
 
     public PusherMan(boolean debug) {
         this.debug = debug;
@@ -47,7 +47,7 @@ public class PusherMan implements Observer {
             }
         }
         if (observable instanceof DeviceRegistry) {
-            observedRegistry.set((DeviceRegistry) observable);;
+            observedRegistry.set((DeviceRegistry) observable);
             Map<String, PixelPusher> pusherMap = registry.getPusherMap();
             for (Map.Entry<String, PixelPusher> entry : pusherMap.entrySet()) {
                 PixelPusher pp = entry.getValue();
@@ -56,13 +56,40 @@ public class PusherMan implements Observer {
                 System.out.println("PP update period microsec: " + mac + " " + pp.getUpdatePeriod());
             }
         }
+    }
 
+    public String report() {
+        return "Observed: " + report(observedRegistry.get())
+                + " Direct: " + report(registry);
+    }
+
+    private String report(DeviceRegistry registry) {
+        return numPixelPushersFound(registry) + " Pixel Pushers with " + numStripsFound(registry) + " strips";
+    }
+
+    public int numPixelPushersFound() {
+        return numPixelPushersFound(registry);
+    }
+
+    public int numStripsFound() {
+        return numStripsFound(registry);
+    }
+
+    private int numPixelPushersFound(DeviceRegistry registry) {
+        if (registry != null)
+            return registry.getPushers().size();
+        else return -1;
+    }
+
+    private int numStripsFound(DeviceRegistry registry) {
+        if (registry != null)
+            return registry.getStrips().size();
+        else return -1;
     }
 
     public void ensureReady() {
         init();
         if (!isReady()) {
-            System.out.println("getting ready");
             registry.setAntiLog(true);
             registry.setAutoThrottle(false);
             registry.startPushing();
@@ -72,15 +99,16 @@ public class PusherMan implements Observer {
 
     public void turnOffAllPixels() {
         if (!isReady()) {
-            throw new IllegalStateException("Not initialised or not ready");
-        }
-        List<Strip> strips = registry.getStrips();
-        for (Strip strip : strips) {
-            int len = strip.getLength();
-            for (int i = 0; i < len; i++) {
-                strip.setPixelRed((byte)0, i);
-                strip.setPixelGreen((byte)0, i);
-                strip.setPixelBlue((byte)0, i);
+            System.out.println("Can't turn off pixels, PP not ready");
+        } else {
+            List<Strip> strips = registry.getStrips();
+            for (Strip strip : strips) {
+                int len = strip.getLength();
+                for (int i = 0; i < len; i++) {
+                    strip.setPixelRed((byte) 0, i);
+                    strip.setPixelGreen((byte) 0, i);
+                    strip.setPixelBlue((byte) 0, i);
+                }
             }
         }
     }

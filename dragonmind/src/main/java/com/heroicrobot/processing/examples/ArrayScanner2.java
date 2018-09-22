@@ -32,7 +32,7 @@ public class ArrayScanner2 extends DragonMind {
     private boolean drawAllImages = true;
     private Strip previousPixelStrip = null;
     private int previousPixel = 0;
-    private int brightnessThreshold = 100;
+    private int brightnessThreshold = 150;
     private boolean drawAllPoints = true;
     private boolean drawStatusMap = true;
     private long scanId;
@@ -87,6 +87,7 @@ public class ArrayScanner2 extends DragonMind {
     }
 
     public void setup() {
+        super.setup();
         pusherMan = new PusherMan(DEBUG_NOISY);
         pusherMan.init();
         background(0);
@@ -103,7 +104,6 @@ public class ArrayScanner2 extends DragonMind {
         fontSize = 20;
         statusFont = createFont("Helvetica", fontSize, true);
 
-        setupPattern();
         bgImage = createImage(width, height, RGB);
     }
 
@@ -290,7 +290,9 @@ public class ArrayScanner2 extends DragonMind {
         textAlign(LEFT);
         String extendedStatus = mode + " | " + (camReady ? "CAM READY | " : "CAM NOT READY | ")
                 + palette.getColourName() + " | lights found: " + displayMap.size() + "\n" + statusText2;
-        outlinedText(statusText + " | " + extendedStatus, 20, height - 37);
+
+        String ppStatus = pusherMan.report();
+        outlinedText(statusText + " | " + extendedStatus + " | " + ppStatus, 20, height - 37);
         // right hand detail panel
         drawStatusMap();
     }

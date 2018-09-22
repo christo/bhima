@@ -2,6 +2,8 @@ package com.chromosundrift.bhima.dragonmind;
 
 import com.heroicrobot.processing.examples.ArrayScanner2;
 import processing.core.PApplet;
+import processing.core.PConstants;
+import processing.core.PGraphics;
 import processing.core.PVector;
 
 import java.util.ArrayList;
@@ -18,32 +20,30 @@ public class TestPattern extends AbstractDragonProgram implements DragonProgram 
     @Override
     public void setup(DragonMind mind) {
 
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 10; i++) {
             balls.add(new Ball(r.nextInt(mind.width), r.nextInt(mind.height)));
         }
     }
 
-    public void draw(DragonMind mind) {
-
-        mind.ellipseMode(mind.CENTER);
+    public PGraphics draw(DragonMind mind, int width, int height) {
+        PGraphics pg = mind.createGraphics(width, height);
+        pg.beginDraw();
+        pg.ellipseMode(PConstants.CENTER);
         t += 1.9;
-        mind.noStroke();
-        mind.fill(0);
-        mind.rect(0, 0, mind.width, mind.height);
+        pg.noStroke();
+        pg.fill(0);
+        pg.rect(0, 0, pg.width, pg.height);
         for (Ball ball : balls) {
-            mind.fill(mind.color(255, t % 255, ball.y % 255));
-            mind.ellipse(ball.x, ball.y, 50, 50);
+            pg.fill(mind.color(255, t % 255, ball.y % 255));
+            pg.ellipse(ball.x, ball.y, 200, 200);
             float newX = ball.x + r.nextFloat() * 2 - 1;
             float newY = ball.y + r.nextFloat() * 2 - 1;
-            if (attract) {
-                newX += (float)(mind.mouseX - ball.x) / 100;
-                newY += (float)(mind.mouseY - ball.y) / 100;
-            }
-
             ball.x = (int) newX;
             ball.y = (int) newY;
-            ball.move(mind.width, mind.height);
+            ball.move(pg.width, pg.height);
         }
+        pg.endDraw();
+        return pg;
     }
 
 

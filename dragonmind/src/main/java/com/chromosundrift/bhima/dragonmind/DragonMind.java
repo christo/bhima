@@ -5,11 +5,7 @@ import processing.core.PGraphics;
 import processing.core.PImage;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
-import java.util.Random;
 
 /**
  * Processing-based app for running patterns.
@@ -17,37 +13,17 @@ import java.util.Random;
 public class DragonMind extends ProcessingBase {
 
     public static final String PROP_FILE = "build.properties";
-    private float t = 0;
-    private List<Ball> balls = new ArrayList<>();
-    private Random r = new Random();
 
-    protected void setupPattern() {
-        for (int i = 0; i < 10; i++) {
-            balls.add(new Ball(r.nextInt(width), r.nextInt(height)));
-        }
+    TestPattern balls = new TestPattern();
+
+    @Override
+    public void setup() {
+        balls.setup(this);
     }
 
     protected void drawPattern(PImage img) {
-        PGraphics pg = createGraphics(img.width, img.height);
-        pg.beginDraw();
-        pg.ellipseMode(CENTER);
-        t += 1.9;
-        pg.noStroke();
-        pg.fill(0);
-        pg.rect(0, 0, img.width, img.height);
-        for (Ball ball : balls) {
-            pg.fill(color(255, t % 255, ball.y % 255));
-            pg.ellipse(ball.x, ball.y, 100, 100);
-            float newX = ball.x + r.nextFloat() * 2 - 1;
-            float newY = ball.y + r.nextFloat() * 2 - 1;
-
-
-            ball.x = (int) newX;
-            ball.y = (int) newY;
-            ball.move(width, height);
-        }
-        pg.endDraw();
-        // draw the graphics to the bgImage
+        PGraphics pg = balls.draw(this, img.width, img.height);;
+        // absorb the graphics pixels into the image, Processing manual says do it like this:
         img.loadPixels();
         img.pixels = pg.pixels;
         img.updatePixels();
@@ -72,6 +48,7 @@ public class DragonMind extends ProcessingBase {
             p.load(getClass().getClassLoader().getResourceAsStream(PROP_FILE));
             version = p.getProperty("version").trim();
         } catch (IOException e) {
+            // NOTE This indicates a build problem, but we'd rather not explode
             System.out.println("Could not load " + PROP_FILE);
             e.printStackTrace();
         }
