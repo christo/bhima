@@ -14,7 +14,7 @@ public class DragonMind extends ProcessingBase {
 
     public static final String PROP_FILE = "build.properties";
 
-    TestPattern balls = new TestPattern();
+    BallsProgram balls = new BallsProgram();
 
     @Override
     public void setup() {

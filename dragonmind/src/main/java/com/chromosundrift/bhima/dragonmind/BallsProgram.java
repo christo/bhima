@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-public class TestPattern extends AbstractDragonProgram implements DragonProgram {
+public class BallsProgram extends AbstractDragonProgram implements DragonProgram {
 
     private float t = 0;
     private List<Ball> balls = new ArrayList<>();
