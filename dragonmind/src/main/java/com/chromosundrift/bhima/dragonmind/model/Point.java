@@ -6,8 +6,6 @@ import java.util.Objects;
 // TODO calculate largest centre of multimodal distribution
 
 public final class Point {
-    private final int x;
-    private final int y;
 
     public static Point centroid(Iterable<Point> points) {
         int avgX = 0;
@@ -37,6 +35,10 @@ public final class Point {
         return sumD2 / points.size();
     }
 
+    private final int x;
+
+    private final int y;
+
     public Point(int ix, int iy) {
         this.x = ix;
         this.y = iy;
@@ -56,16 +58,16 @@ public final class Point {
         return Objects.hash(x, y);
     }
 
+    @Override
+    public String toString() {
+        return x + "," + y;
+    }
+
     public int getX() {
         return x;
     }
 
     public int getY() {
         return y;
-    }
-
-    @Override
-    public String toString() {
-        return x + "," + y;
     }
 }

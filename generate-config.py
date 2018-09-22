@@ -30,6 +30,9 @@ controller={0}
 stripsattached={1}
 blank_strips_on_idle=1
 # dhcp_timeout=24
+ether=10.10.10.{0}
+netmask=255.255.255.0
+gateway=192.168.0.1
 """[1:-1]
 
 perstrip="""
