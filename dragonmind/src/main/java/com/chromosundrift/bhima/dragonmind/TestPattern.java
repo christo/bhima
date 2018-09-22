@@ -1,10 +1,7 @@
 package com.chromosundrift.bhima.dragonmind;
 
-import com.heroicrobot.processing.examples.ArrayScanner2;
-import processing.core.PApplet;
 import processing.core.PConstants;
 import processing.core.PGraphics;
-import processing.core.PVector;
 
 import java.util.ArrayList;
 import java.util.List;
