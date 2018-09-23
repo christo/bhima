@@ -1,13 +1,11 @@
 package com.chromosundrift.bhima.dragonmind.model;
 
+import java.util.Map;
+
+@SuppressWarnings("WeakerAccess")
 public class Transform {
     private String type;
-    private float[] parameters; // TODO doesn't match warp or rotate
-
-    public Transform(String type, float[] parameters) {
-        this.type = type;
-        this.parameters = parameters;
-    }
+    private Map<String, Float> parameters;
 
     public String getType() {
         return type;
@@ -17,11 +15,11 @@ public class Transform {
         this.type = type;
     }
 
-    public float[] getParameters() {
+    public Map<String, Float> getParameters() {
         return parameters;
     }
 
-    public void setParameters(float[] parameters) {
+    public void setParameters(Map<String, Float> parameters) {
         this.parameters = parameters;
     }
 }

@@ -2,6 +2,7 @@ package com.chromosundrift.bhima.dragonmind.model;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+@SuppressWarnings("WeakerAccess")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class PixelPusherInfo {
     /**

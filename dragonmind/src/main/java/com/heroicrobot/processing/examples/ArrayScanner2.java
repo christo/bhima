@@ -8,6 +8,7 @@ import com.chromosundrift.bhima.dragonmind.DragonMind;
 import com.chromosundrift.bhima.dragonmind.Mapper;
 import com.chromosundrift.bhima.dragonmind.Palette;
 import com.chromosundrift.bhima.dragonmind.ProcessingBase;
+import com.chromosundrift.bhima.dragonmind.model.Config;
 import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
 import com.chromosundrift.bhima.dragonmind.model.Point;
 import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
@@ -16,6 +17,7 @@ import processing.core.PFont;
 import processing.core.PImage;
 import processing.video.Capture;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -59,17 +61,15 @@ public class ArrayScanner2 extends DragonMind {
 
     private String statusText = "";
     private String statusText2 = "";
+    private Config config;
 
     private ArrayList<Point> scanForLights(PImage deltaImage, float brightnessThreshold) {
-
         ArrayList<Point> hits = new ArrayList<>();
         for (int y = 0; y < deltaImage.height; y++) {
             for (int x = 0; x < deltaImage.width; x++) {
 
                 float brightness = brightness(deltaImage.get(x, y));
-
                 if (brightness > brightnessThreshold) {
-
                     hits.add(new Point(x, y));
                 }
             }
@@ -95,6 +95,11 @@ public class ArrayScanner2 extends DragonMind {
         statusFont = createFont("Helvetica", fontSize, true);
 
         bgImage = createImage(width, height, RGB);
+        try {
+            config = Config.load();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void camList() {
@@ -149,10 +154,14 @@ public class ArrayScanner2 extends DragonMind {
                     return;
                 }
             } else {
+                if (mode == Mapper.Mode.WAIT) {
+                    // TODO load model backgrounds
+
+                    setMainImage(currentFrame, "model");
+                }
                 if (video.available()) {
                     video.read();
                     currentFrame = video.get();
-                    setMainImage(currentFrame, "current frame");
                 }
                 if (mode != Mapper.Mode.WAIT) {
                     drawTestMode();

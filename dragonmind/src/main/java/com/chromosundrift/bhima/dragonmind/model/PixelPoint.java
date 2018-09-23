@@ -2,6 +2,7 @@ package com.chromosundrift.bhima.dragonmind.model;
 
 import java.util.Objects;
 
+@SuppressWarnings("WeakerAccess")
 public final class PixelPoint {
     private final Point point;
     private final int strip;

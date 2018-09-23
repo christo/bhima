@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.Objects;
 
 // TODO calculate largest centre of multimodal distribution
-
+@SuppressWarnings("WeakerAccess")
 public final class Point {
 
     public static Point centroid(Iterable<Point> points) {

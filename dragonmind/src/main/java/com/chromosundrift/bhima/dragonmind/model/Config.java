@@ -2,14 +2,23 @@ package com.chromosundrift.bhima.dragonmind.model;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-@JsonInclude(JsonInclude.Include.NON_NULL)
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+
+@SuppressWarnings("WeakerAccess")
+@JsonInclude(NON_NULL)
+@JsonPropertyOrder({"project", "version", "brightnessThreshold", "cameraMask", "pixelPushers"})
 public class Config {
 
     private final static String DEFAULT_CONFIG_FILE = "dragonmind.config.json";
@@ -19,30 +28,47 @@ public class Config {
      * Closed polygon defined by array of [x,y] points.
      */
     private float[][] cameraMask;
-    private PixelMap pixelMap;
+    private List<Segment> pixelMap;
+
     private List<PixelPusherInfo> pixelPushers;
     private int brightnessThreshold;
 
-    public Config(String project, String version) {
+    public Config() {
+    }
+
+    public Config(@JsonProperty("project") String project, @JsonProperty("version") String version) {
         this.project = project;
         this.version = version;
     }
 
     public Config save() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectMapper objectMapper = getObjectMapper();
         objectMapper.writeValue(new File(DEFAULT_CONFIG_FILE), this);
         return this;
     }
 
     public static Config load() throws IOException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        return objectMapper.readValue(new File("target/json_car.json"), Config.class);
+        ObjectMapper objectMapper = getObjectMapper();
+        return objectMapper.readValue(new File(DEFAULT_CONFIG_FILE), Config.class);
     }
 
-    String unParse() throws ConfigException {
-        ObjectMapper objectMapper = new ObjectMapper();
+    private static ObjectMapper getObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        SimpleModule module =
+                new SimpleModule("PixelPointDeserializer", new Version(1, 0, 0, null, null, null));
+        module.addDeserializer(PixelPoint.class, new PixelPointDeserializer(PixelPoint.class));
+        mapper.registerModule(module);
+        return mapper;
+    }
+
+    String unParse(boolean pretty) throws ConfigException {
+        ObjectMapper mapper = getObjectMapper();
         try {
-            return objectMapper.writeValueAsString(this);
+            if (pretty) {
+                return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(this);
+            } else {
+                return mapper.writeValueAsString(this);
+            }
         } catch (JsonProcessingException e) {
             throw new ConfigException(e);
         }
@@ -72,12 +98,12 @@ public class Config {
         this.cameraMask = cameraMask;
     }
 
-    public PixelMap getPixelMap() {
+    public List<Segment> getSegments() {
         return pixelMap;
     }
 
-    public void setPixelMap(PixelMap pixelMap) {
-        this.pixelMap = pixelMap;
+    public void setPixelMap(List<Segment> segments) {
+        this.pixelMap = segments;
     }
 
     public List<PixelPusherInfo> getPixelPushers() {
