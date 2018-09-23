@@ -78,6 +78,7 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.6'
+    compile "com.fasterxml.jackson.core:jackson-databind:2.9.7"
 }
 
 task getDeps(type: Copy) {

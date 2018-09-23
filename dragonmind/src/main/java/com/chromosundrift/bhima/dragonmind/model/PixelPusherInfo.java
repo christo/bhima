@@ -1,5 +1,8 @@
 package com.chromosundrift.bhima.dragonmind.model;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class PixelPusherInfo {
     /**
      * Unique identifier as spewed from the device itself.

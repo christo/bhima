@@ -1,9 +1,18 @@
 package com.chromosundrift.bhima.dragonmind.model;
 
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Config {
+
+    private final static String DEFAULT_CONFIG_FILE = "dragonmind.config.json";
     private String project;
     private String version;
     /**
@@ -19,8 +28,24 @@ public class Config {
         this.version = version;
     }
 
-    public Config save() {
-        return null;
+    public Config save() throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        objectMapper.writeValue(new File(DEFAULT_CONFIG_FILE), this);
+        return this;
+    }
+
+    public static Config load() throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        return objectMapper.readValue(new File("target/json_car.json"), Config.class);
+    }
+
+    String unParse() throws ConfigException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            return objectMapper.writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            throw new ConfigException(e);
+        }
     }
 
     public String getProject() {
