@@ -11,6 +11,7 @@ import com.chromosundrift.bhima.dragonmind.ProcessingBase;
 import com.chromosundrift.bhima.dragonmind.model.Config;
 import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
 import com.chromosundrift.bhima.dragonmind.model.Point;
+import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
 import processing.core.PApplet;
 import processing.core.PFont;
@@ -29,10 +30,14 @@ import static java.lang.Thread.currentThread;
 
 public class ArrayScanner2 extends DragonMind {
 
+    private static final int START_STRIP = 9;
+    private static final int START_PIXEL = 0;
+    private static final int STOP_STRIP = 9;
+
     private boolean drawAllImages = true;
     private Strip previousPixelStrip = null;
-    private int previousPixel = 0;
-    private int brightnessThreshold = 150;
+    private int previousPixel = 0;;
+    private int brightnessThreshold = 170;
     private boolean drawAllPoints = true;
     private boolean drawStatusMap = true;
     private long scanId;
@@ -52,9 +57,10 @@ public class ArrayScanner2 extends DragonMind {
     private boolean camReady;
     private String camera = null;
     private Mapper.Mode mode = Mapper.Mode.WAIT;
+    private int testStripNum = 0;
 
-    private int nStrip;
-    private int nPixel;
+    private int nStrip = START_STRIP;
+    private int nPixel = START_PIXEL;
     private Palette palette;
 
     private ArrayList<PixelPoint> displayMap;
@@ -82,14 +88,14 @@ public class ArrayScanner2 extends DragonMind {
 
         background(0);
         colorMode(RGB, 255, 255, 255, 255);
-        palette = new Palette(color(255, 255, 255), color(0, 0, 0));
+        palette = new Palette(color(127, 127, 127), color(0, 0, 0));
         rectMode(CORNER);
         camReady = false;
 
         doSplashScreen();
         statusText = "ready to initialise camera";
-        nPixel = 0;
-        nStrip = 0;
+        nPixel = START_PIXEL;
+        nStrip = START_STRIP;
         displayMap = new ArrayList<>();
         fontSize = 20;
         statusFont = createFont("Helvetica", fontSize, true);
@@ -211,26 +217,7 @@ public class ArrayScanner2 extends DragonMind {
     }
 
     private void drawTestMode() {
-        switch (mode) {
-            case TEST1:
-                testPixels(1);
-                break;
-            case TEST2:
-                testPixels(2);
-                break;
-            case TEST3:
-                testPixels(3);
-                break;
-            case TEST4:
-                testPixels(4);
-                break;
-            case TEST5:
-                testPixels(5);
-                break;
-            case TEST6:
-                testPixels(6);
-                break;
-        }
+        testPixels(testStripNum);
     }
 
     private void renderAllImges() {
@@ -288,7 +275,8 @@ public class ArrayScanner2 extends DragonMind {
         textSize(fontSize);
         textAlign(LEFT);
         String extendedStatus = mode + " | " + (camReady ? "CAM READY | " : "CAM NOT READY | ")
-                + palette.getColourName() + " | lights found: " + displayMap.size() + "\n" + statusText2;
+                + palette.getColourName() + " S:P:" + nStrip + ":" + nPixel
+                + " | lights found: " + displayMap.size() + "\n" + statusText2;
 
         String ppStatus = getPusherMan().report();
         outlinedText(statusText + " | " + extendedStatus + " | " + ppStatus, 20, height - 37);
@@ -302,16 +290,17 @@ public class ArrayScanner2 extends DragonMind {
         if (getPusherMan().isReady()) {
 
             List<Strip> strips = getPusherMan().getStrips();
-            int number_of_strips = strips.size();
-            if (nStrip >= number_of_strips) {
-                nStrip = 0;
+            // TODO allow to use strips.size() again
+            int finishStrip = STOP_STRIP;
+            if (nStrip >= finishStrip) {
+                nStrip = START_STRIP;
                 log("Done last strip.");
             }
             Strip strip = strips.get(nStrip);
             int length_of_strip = strip.getLength();
             if (nPixel >= length_of_strip) {
                 log("finished strip " + nStrip + " at pixel " + nPixel);
-                nPixel = 0;
+                nPixel = START_PIXEL;
             }
 
             if (atBeginning()) {
@@ -344,7 +333,7 @@ public class ArrayScanner2 extends DragonMind {
                 nPixel = 0;
                 nStrip++;
 
-                if (nStrip >= number_of_strips) {
+                if (nStrip >= finishStrip) {
                     writeMapping();
                 }
             }
@@ -357,7 +346,7 @@ public class ArrayScanner2 extends DragonMind {
     private void waitForPixelUpdate() {
         // NASTY HACK TODO FIX
         long bedTime = System.currentTimeMillis();
-        while ((System.currentTimeMillis() - bedTime) < 10) {
+        while ((System.currentTimeMillis() - bedTime) < 15) {
             Thread.yield();
         }
     }
@@ -368,7 +357,7 @@ public class ArrayScanner2 extends DragonMind {
     }
 
     private boolean atBeginning() {
-        return nStrip == 0 && nPixel == 0;
+        return nStrip == START_STRIP && nPixel == START_PIXEL;
     }
 
     private void doDarkFrame() {
@@ -399,8 +388,18 @@ public class ArrayScanner2 extends DragonMind {
         if (displayMap.size() == 0) {
             log("did not capture any points :(");
         } else {
-
+            // writing a fresh config too
+            Segment segment = new Segment();
             String filename = "mappings/Mapping" + scanId + ".csv";
+            segment.setName("mapping "+ scanId);
+            segment.setDescription("mapping file is " + filename);
+            segment.setPixels(displayMap);
+            config.addSegment(segment);
+            try {
+                config.save();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             log("saving Mapping file " + filename);
             OutputStream saveout = createOutput(filename);
             PrintStream ps = new PrintStream(saveout, true);
@@ -496,7 +495,7 @@ public class ArrayScanner2 extends DragonMind {
 
         int pixelsPerStrip = strips.get(nStrip).getLength();
         float pixelsDone = (nStrip * pixelsPerStrip) + nPixel + 1;
-        int totalPixels = strips.size() * pixelsPerStrip;
+        int totalPixels = 1 + START_STRIP - STOP_STRIP * pixelsPerStrip;
         float completion = pixelsDone / totalPixels;
         fill(c);
         noStroke();
@@ -542,29 +541,21 @@ public class ArrayScanner2 extends DragonMind {
             statusText = "cam scanning";
             mode = Mapper.Mode.CAM_SCAN;
         }
+
         if (key == '1') {
-            statusText = "testing strip 1";
-            mode = Mapper.Mode.TEST1;
+            statusText = "testing mode";
+            mode = Mapper.Mode.TEST;
+            testStripNum = 1;
         }
-        if (key == '2') {
-            statusText = "testing strip 2";
-            mode = Mapper.Mode.TEST2;
+        if (key == ']') {
+            testStripNum++;
+            testStripNum %= getPusherMan().numStrips();
         }
-        if (key == '3') {
-            statusText = "testing strip 3";
-            mode = Mapper.Mode.TEST3;
-        }
-        if (key == '4') {
-            statusText = "testing strip 4";
-            mode = Mapper.Mode.TEST4;
-        }
-        if (key == '5') {
-            statusText = "testing strip 5";
-            mode = Mapper.Mode.TEST5;
-        }
-        if (key == '6') {
-            statusText = "testing strip 6";
-            mode = Mapper.Mode.TEST6;
+        if (key == '[') {
+            testStripNum--;
+            if (testStripNum < 0) {
+                testStripNum = getPusherMan().numStrips() -1;
+            }
         }
         if (key == 'z') {
             drawAllImages = !drawAllImages;
@@ -598,8 +589,8 @@ public class ArrayScanner2 extends DragonMind {
         displayMap.clear();
         // reset the cumulative image
         cumulative = null; // TODO really?
-        nPixel = 0;
-        nStrip = 0;
+        nPixel = START_PIXEL;
+        nStrip = START_STRIP;
     }
 
     /**
@@ -610,6 +601,7 @@ public class ArrayScanner2 extends DragonMind {
         //System.setProperty("jogl.debug", "true");
         System.setProperty("gstreamer.library.path", "/Users/christo/src/christo/processing/libraries/video/library/macosx64");
         System.setProperty("gstreamer.plugin.path", "/Users/christo/src/christo/processing/libraries/video/library//macosx64/plugins/");
+
         PApplet.main(ArrayScanner2.class, args);
     }
 

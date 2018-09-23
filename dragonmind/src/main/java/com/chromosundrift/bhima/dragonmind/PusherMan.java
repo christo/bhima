@@ -64,15 +64,12 @@ public class PusherMan implements Observer {
     }
 
     private String report(DeviceRegistry registry) {
-        return numPixelPushersFound(registry) + " Pixel Pushers with " + numStripsFound(registry) + " strips";
-    }
-
-    public int numPixelPushersFound() {
-        return numPixelPushersFound(registry);
-    }
-
-    public int numStripsFound() {
-        return numStripsFound(registry);
+        StringBuffer sb = new StringBuffer();
+        for (PixelPusher pusher : registry.getPushers()) {
+            sb.append(" PP").append(pusher.getControllerOrdinal());
+        }
+        return numPixelPushersFound(registry) + " Pixel Pushers " + numStripsFound(registry) + " total strips"
+                + sb.toString();
     }
 
     private int numPixelPushersFound(DeviceRegistry registry) {

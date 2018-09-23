@@ -34,6 +34,6 @@ public class Mapper {
     }
 
     public enum Mode {
-        CAM_SCAN, WAIT, PATTERN, TEST1, TEST2, TEST3, TEST4, TEST5, TEST6
+        CAM_SCAN, WAIT, PATTERN, TEST, EDIT
     }
 }
