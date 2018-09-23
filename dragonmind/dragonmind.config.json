@@ -1,25 +1,26 @@
 {
   "project": "Bhima 2018",
   "version": "1.0",
+  "brightnessThreshold": 0,
   "cameraMask": [
     [
-      0,
-      0
+      0.0,
+      0.0
     ],
     [
-      1920,
-      0
+      1920.0,
+      0.0
     ],
     [
-      1920,
-      1080
+      1920.0,
+      1080.0
     ],
     [
-      0,
-      1080
+      0.0,
+      1080.0
     ]
   ],
-  "pixelMap": [
+  "segments": [
     {
       "segment": "left wing",
       "background": "bgimage.png",
@@ -27,8 +28,8 @@
         {
           "type": "translate",
           "parameters": {
-            "x": 400,
-            "y": 500
+            "x": 400.0,
+            "y": 500.0
           }
         },
         {
@@ -8366,8 +8367,8 @@
         {
           "type": "translate",
           "parameters": {
-            "x": 100,
-            "y": 100
+            "x": 100.0,
+            "y": 100.0
           }
         },
         {
