@@ -9,14 +9,15 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
 import java.io.IOException;
 
-public class PixelPointDeserializer extends StdDeserializer {
+@SuppressWarnings("WeakerAccess")
+public class PixelPointDeserializer extends StdDeserializer<PixelPoint> {
 
     public PixelPointDeserializer(Class vc) {
         super(vc);
     }
 
     @Override
-    public Object deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+    public PixelPoint deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 
         ObjectCodec codec = p.getCodec();
         JsonNode node = codec.readTree(p);

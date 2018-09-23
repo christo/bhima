@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import java.io.File;
@@ -54,9 +53,9 @@ public class Config {
 
     private static ObjectMapper getObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
-        SimpleModule module =
-                new SimpleModule("PixelPointDeserializer", new Version(1, 0, 0, null, null, null));
+        SimpleModule module = new SimpleModule("ConfigModule", new Version(1, 0, 0, null, null, null));
         module.addDeserializer(PixelPoint.class, new PixelPointDeserializer(PixelPoint.class));
+        module.addSerializer(PixelPoint.class, new PixelPointSerializer(PixelPoint.class));
         mapper.registerModule(module);
         return mapper;
     }
@@ -120,5 +119,9 @@ public class Config {
 
     public void setBrightnessThreshold(int brightnessThreshold) {
         this.brightnessThreshold = brightnessThreshold;
+    }
+
+    public void addSegment(Segment segment) {
+        pixelMap.add(segment);
     }
 }

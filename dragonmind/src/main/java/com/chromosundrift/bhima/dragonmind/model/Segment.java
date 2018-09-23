@@ -10,6 +10,7 @@ import java.util.List;
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 
 @SuppressWarnings("WeakerAccess")
+@JsonInclude(NON_NULL)
 @JsonPropertyOrder({ "name", "description", "background", "transforms", "pixels"})
 public class Segment {
 
