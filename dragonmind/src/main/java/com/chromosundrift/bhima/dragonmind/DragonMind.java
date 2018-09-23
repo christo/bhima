@@ -5,6 +5,7 @@ import processing.core.PGraphics;
 import processing.core.PImage;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 /**
@@ -54,12 +55,17 @@ public class DragonMind extends ProcessingBase {
         String version = "unknown";
         text(brandText, width / 2, height / 2 + logo.height / 2 + textMarginTop);
         try {
-            p.load(getClass().getClassLoader().getResourceAsStream(PROP_FILE));
-            version = p.getProperty("version").trim();
+            InputStream propFile = getClass().getClassLoader().getResourceAsStream(PROP_FILE);
+            if (propFile != null) {
+                p.load(propFile);
+                version = p.getProperty("version").trim();
+            } else {
+                System.out.println(PROP_FILE + " missing");
+            }
         } catch (IOException e) {
-            // NOTE This indicates a build problem, but we'd rather not explode
-            System.out.println("Could not load " + PROP_FILE);
-            e.printStackTrace();
+            // NOTE This indicates a build problem, but we'd rather not explode here
+            System.out.println("Could not load " + PROP_FILE + " because " + e.getMessage());
+            //e.printStackTrace();
         }
         PFont versionFont = loadFont("HelveticaNeue-BoldItalic-18.vlw");
         textFont(versionFont, 18);
