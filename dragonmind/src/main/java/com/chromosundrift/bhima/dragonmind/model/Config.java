@@ -42,7 +42,7 @@ public class Config {
 
     public Config save() throws IOException {
         ObjectMapper objectMapper = getObjectMapper();
-        objectMapper.writeValue(new File(DEFAULT_CONFIG_FILE), this);
+        objectMapper.writerWithDefaultPrettyPrinter().writeValue(new File(DEFAULT_CONFIG_FILE), this);
         return this;
     }
 
