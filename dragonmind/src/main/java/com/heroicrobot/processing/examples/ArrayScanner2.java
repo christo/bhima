@@ -32,14 +32,14 @@ import static java.lang.Thread.currentThread;
 // TODO load bgimage and map editor
 public class ArrayScanner2 extends DragonMind {
 
-    private static final int START_STRIP = 9;
+    private static final int START_STRIP = 20;
     private static final int START_PIXEL = 0;
-    private static final int STOP_STRIP = 9;
+    private static final int STOP_STRIP = 20;
 
     private boolean drawAllImages = true;
     private Strip previousPixelStrip = null;
     private int previousPixel = 0;;
-    private int brightnessThreshold = 170;
+    private int brightnessThreshold = 100;
     private boolean drawAllPoints = true;
     private boolean drawStatusMap = true;
     private long scanId;
@@ -90,7 +90,7 @@ public class ArrayScanner2 extends DragonMind {
 
         background(0);
         colorMode(RGB, 255, 255, 255, 255);
-        palette = new Palette(color(127, 127, 127), color(0, 0, 0));
+        palette = new Palette(color(200, 200, 200), color(0, 0, 0));
         rectMode(CORNER);
         camReady = false;
 
@@ -294,7 +294,7 @@ public class ArrayScanner2 extends DragonMind {
             List<Strip> strips = getPusherMan().getStrips();
             // TODO allow to use strips.size() again
             int finishStrip = STOP_STRIP;
-            if (nStrip >= finishStrip) {
+            if (nStrip > finishStrip) {
                 nStrip = START_STRIP;
                 log("Done last strip.");
             }
@@ -335,7 +335,7 @@ public class ArrayScanner2 extends DragonMind {
                 nPixel = 0;
                 nStrip++;
 
-                if (nStrip >= finishStrip) {
+                if (nStrip > finishStrip) {
                     writeMapping();
                 }
             }
@@ -348,7 +348,7 @@ public class ArrayScanner2 extends DragonMind {
     private void waitForPixelUpdate() {
         // NASTY HACK TODO FIX
         long bedTime = System.currentTimeMillis();
-        while ((System.currentTimeMillis() - bedTime) < 15) {
+        while ((System.currentTimeMillis() - bedTime) < 45) {
             Thread.yield();
         }
     }

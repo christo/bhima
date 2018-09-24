@@ -23,9 +23,11 @@ public class Mapper {
                 int y = PApplet.parseInt(m.group(3));
                 int fps = PApplet.parseInt(m.group(4));
                 int bandWidth = x * y * fps;
-                if (bandWidth > highest) {
+                System.out.println("camera = " + camera);
+                if (bandWidth > highest && fps >= 30) { //HACK
                     bestest = camera;
                     highest = bandWidth;
+                    System.out.println("new highest");
                 }
             }
         }
