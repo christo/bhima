@@ -1,7 +1,10 @@
 package com.chromosundrift.bhima.dragonmind;
 
+import com.jogamp.opengl.GL;
 import g4p_controls.GAlign;
 import g4p_controls.GLabel;
+import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.apache.commons.lang3.tuple.Pair;
 import processing.core.PFont;
 import processing.core.PGraphics;
 import processing.core.PImage;
@@ -35,7 +38,7 @@ public class DragonMind extends ProcessingBase {
     }
 
     protected void drawPattern(PImage img) {
-        PGraphics pg = balls.draw(this, img.width, img.height);;
+        PGraphics pg = balls.draw(this, img.width, img.height);
         // absorb the graphics pixels into the image, Processing manual says do it like this:
         img.loadPixels();
         img.pixels = pg.pixels;
@@ -94,14 +97,14 @@ public class DragonMind extends ProcessingBase {
         return label(text, x, y, w, h, GAlign.LEFT);
     }
 
-    protected void labelPair(String key, Integer val, float x, float y, float w, float h) {
-        labelPair(key, Integer.toString(val), x, y, w, h);
+    protected Pair<GLabel, GLabel> labelPair(String key, Integer val, float x, float y, float w, float h) {
+        return labelPair(key, Integer.toString(val), x, y, w, h);
     }
 
-    protected void labelPair(String key, String val, float x, float y, float w, float h) {
+    protected Pair<GLabel, GLabel> labelPair(String key, String val, float x, float y, float w, float h) {
         GLabel left = label(key, x, y, w, h, GAlign.RIGHT);
         GLabel right = label(val, x + w, y, w, h, GAlign.LEFT);
-        // TODO maybe return the tuple
+        return new ImmutablePair<>(left, right);
     }
 
     protected GLabel label(String title, float x, float y, float w, float h, GAlign halign) {

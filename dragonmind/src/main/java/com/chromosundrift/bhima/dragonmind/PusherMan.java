@@ -4,23 +4,35 @@ package com.chromosundrift.bhima.dragonmind;
 import com.heroicrobot.dropbit.devices.pixelpusher.PixelPusher;
 import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
 import com.heroicrobot.dropbit.registry.DeviceRegistry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Class for encapsulating common configuration and operations for Bhima's PusherMan
  */
+@SuppressWarnings("WeakerAccess")
 public class PusherMan implements Observer {
+
+    final static Logger logger = LoggerFactory.getLogger(PusherMan.class);
 
     private final boolean debug;
     private DeviceRegistry registry;
+
+    /**
+     * Possibly need this to prevent blocking inside the PixelPusher Processing library.
+     */
+    private ReentrantLock registryLock = new ReentrantLock();
+
     private AtomicReference<DeviceRegistry> observedRegistry = new AtomicReference<>();
-    private boolean initialised;
-    private boolean haveSetUpRegistry;
+    private AtomicBoolean initialised = new AtomicBoolean(false);
 
     public PusherMan(boolean debug) {
         this.debug = debug;
@@ -28,80 +40,107 @@ public class PusherMan implements Observer {
         registry.setLogging(debug);
     }
 
+    private void withLock(Runnable runme) {
+        try {
+            registryLock.lock();
+            runme.run();
+        } finally {
+            registryLock.unlock();
+        }
+    }
+
     public void init() {
-        if (!initialised) {
-            registry.addObserver(this);
-            initialised = true;
+        if (!initialised.get()) {
+            withLock(() -> {
+                registry.addObserver(PusherMan.this);
+                initialised.set(true);
+            });
         }
     }
 
     @Override
     public void update(Observable observable, Object updatedDevice) {
+
         ensureReady();
-        if (debug) {
-            System.out.println("Registry changed!");
-        }
+        logger.debug("Registry changed!");
         if (debug && updatedDevice != null) {
             if (updatedDevice instanceof PixelPusher) {
-                System.out.println("Device change: " + updatedDevice);
+                logger.debug("Device change: " + updatedDevice);
             }
         }
-        if (observable instanceof DeviceRegistry) {
-            observedRegistry.set((DeviceRegistry) observable);
-            Map<String, PixelPusher> pusherMap = registry.getPusherMap();
-            for (Map.Entry<String, PixelPusher> entry : pusherMap.entrySet()) {
-                PixelPusher pp = entry.getValue();
+        try {
+            registryLock.lock();
+            if (observable instanceof DeviceRegistry) {
+                observedRegistry.set((DeviceRegistry) observable);
+                Map<String, PixelPusher> pusherMap = registry.getPusherMap();
+                for (Map.Entry<String, PixelPusher> entry : pusherMap.entrySet()) {
+                    PixelPusher pp = entry.getValue();
 
-                String mac = entry.getKey();
-                System.out.println("PP update period microsec: " + mac + " " + pp.getUpdatePeriod());
+                    String mac = entry.getKey();
+                    logger.info("PP update period microsec: " + mac + " " + pp.getUpdatePeriod());
+                }
             }
+        } finally {
+            registryLock.unlock();
         }
     }
 
     public String report() {
-        String observed = report(observedRegistry.get());
-        String direct = report(registry);
-        return "Observed: " + observed + " Direct: " + direct;
+        try {
+            registryLock.lock();
+            String observed = report(observedRegistry.get());
+            String direct = report(registry);
+            return "Observed: " + observed + " Direct: " + direct;
+        } finally {
+            registryLock.unlock();
+        }
+
     }
 
+    // already covered by lock
     private String report(DeviceRegistry registry) {
         if (registry == null) {
             return "null";
         } else {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             for (PixelPusher pusher : registry.getPushers()) {
                 sb.append(" PP").append(pusher.getControllerOrdinal());
             }
-            return numPixelPushersFound(registry) + " Pixel Pushers " + numStripsFound(registry) + " total strips"
+            int result;
+            if (registry != null) {
+                result = registry.getStrips().size();
+            } else {
+                result = -1;
+            }
+            return numPixelPushersFound(registry) + " Pixel Pushers " + result + " total strips"
                     + sb.toString();
         }
     }
 
+    // already covered by lock
     private int numPixelPushersFound(DeviceRegistry registry) {
-        if (registry != null)
+        if (registry != null) {
             return registry.getPushers().size();
-        else return -1;
-    }
-
-    private int numStripsFound(DeviceRegistry registry) {
-        if (registry != null)
-            return registry.getStrips().size();
-        else return -1;
+        } else {
+            return -1;
+        }
     }
 
     public void ensureReady() {
         init();
         if (!isReady()) {
-            registry.setAntiLog(true);
-            registry.setAutoThrottle(false);
-            registry.startPushing();
+            withLock(() -> {
+                registry.setAntiLog(true);
+                registry.setAutoThrottle(false);
+                registry.startPushing();
+            });
         }
 
     }
 
     public void turnOffAllPixels() {
         if (!isReady()) {
-            System.out.println("Can't turn off pixels, PP not ready");
+            logger.warn("Can't turn off pixels, PP not ready");
         } else {
             List<Strip> strips = registry.getStrips();
             for (Strip strip : strips) {
@@ -116,33 +155,52 @@ public class PusherMan implements Observer {
     }
 
     public boolean isReady() {
-        return initialised && observedRegistry.get() != null;
+        return initialised.get() && observedRegistry.get() != null;
     }
 
     public List<Strip> getStrips() {
         ensureReady();
-        return registry.getStrips();
+        try {
+            registryLock.lock();
+            return registry.getStrips();
+        } finally {
+            registryLock.unlock();
+        }
     }
 
     public int numStrips() {
         ensureReady();
-        return registry.getStrips().size();
+        try {
+            registryLock.lock();
+            return registry.getStrips().size();
+        } finally {
+            registryLock.unlock();
+        }
+
     }
 
     public int numTotalLights() {
+        List<Strip> strips = getStrips();
         int count = 0;
-        for (Strip strip : getStrips()) {
+        for (Strip strip : strips) {
             count += strip.getLength();
         }
         return count;
     }
 
     public void addObserver(Observer observer) {
-        registry.addObserver(observer);
+        withLock(() -> {
+            registry.addObserver(observer);
+        });
     }
 
     public int numPixelPushers() {
-        return registry.getPushers().size();
+        try {
+            registryLock.lock();
+            return registry.getPushers().size();
+        } finally {
+            registryLock.unlock();
+        }
     }
 
 }
