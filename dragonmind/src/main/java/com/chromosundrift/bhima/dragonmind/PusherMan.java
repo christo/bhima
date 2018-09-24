@@ -59,17 +59,22 @@ public class PusherMan implements Observer {
     }
 
     public String report() {
-        return "Observed: " + report(observedRegistry.get())
-                + " Direct: " + report(registry);
+        String observed = report(observedRegistry.get());
+        String direct = report(registry);
+        return "Observed: " + observed + " Direct: " + direct;
     }
 
     private String report(DeviceRegistry registry) {
-        StringBuffer sb = new StringBuffer();
-        for (PixelPusher pusher : registry.getPushers()) {
-            sb.append(" PP").append(pusher.getControllerOrdinal());
+        if (registry == null) {
+            return "null";
+        } else {
+            StringBuffer sb = new StringBuffer();
+            for (PixelPusher pusher : registry.getPushers()) {
+                sb.append(" PP").append(pusher.getControllerOrdinal());
+            }
+            return numPixelPushersFound(registry) + " Pixel Pushers " + numStripsFound(registry) + " total strips"
+                    + sb.toString();
         }
-        return numPixelPushersFound(registry) + " Pixel Pushers " + numStripsFound(registry) + " total strips"
-                + sb.toString();
     }
 
     private int numPixelPushersFound(DeviceRegistry registry) {
@@ -131,4 +136,13 @@ public class PusherMan implements Observer {
         }
         return count;
     }
+
+    public void addObserver(Observer observer) {
+        registry.addObserver(observer);
+    }
+
+    public int numPixelPushers() {
+        return registry.getPushers().size();
+    }
+
 }

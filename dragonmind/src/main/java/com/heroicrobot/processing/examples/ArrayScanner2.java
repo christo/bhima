@@ -13,6 +13,15 @@ import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
 import com.chromosundrift.bhima.dragonmind.model.Point;
 import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
+import g4p_controls.GAlign;
+import g4p_controls.GButton;
+import g4p_controls.GDropList;
+import g4p_controls.GEditableTextControl;
+import g4p_controls.GEvent;
+import g4p_controls.GKnob;
+import g4p_controls.GLabel;
+import g4p_controls.GTextField;
+import g4p_controls.GValueControl;
 import processing.core.PApplet;
 import processing.core.PFont;
 import processing.core.PImage;
@@ -22,23 +31,27 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Observable;
+import java.util.Observer;
 
 import static java.lang.String.format;
 import static java.lang.Thread.currentThread;
+import static java.util.Collections.singletonList;
 
-// TODO UI with start and stop strips for scanning
-// TODO fix status map
 // TODO load bgimage and map editor
+@SuppressWarnings("unused")
 public class ArrayScanner2 extends DragonMind {
 
-    private static final int START_STRIP = 9;
-    private static final int START_PIXEL = 0;
-    private static final int STOP_STRIP = 9;
+    private int startStrip = 0;
+    private int startPixel = 0;
+    private int stopStrip = 0;
 
     private boolean drawAllImages = true;
     private Strip previousPixelStrip = null;
-    private int previousPixel = 0;;
+    private int previousPixel = 0;
     private int brightnessThreshold = 170;
     private boolean drawAllPoints = true;
     private boolean drawStatusMap = true;
@@ -61,8 +74,8 @@ public class ArrayScanner2 extends DragonMind {
     private Mapper.Mode mode = Mapper.Mode.WAIT;
     private int testStripNum = 0;
 
-    private int nStrip = START_STRIP;
-    private int nPixel = START_PIXEL;
+    private int nStrip = startStrip;
+    private int nPixel = startPixel;
     private Palette palette;
 
     private ArrayList<PixelPoint> displayMap;
@@ -70,6 +83,13 @@ public class ArrayScanner2 extends DragonMind {
     private String statusText = "";
     private String statusText2 = "";
     private Config config;
+    private GButton newScanButton;
+    private GTextField scanNameField;
+    private String currentScanName;
+    private GDropList startStripSelect;
+    private GDropList stopStripSelect;
+    private GKnob brightnessKnob;
+    private GLabel brightnessLabel;
 
     private ArrayList<Point> scanForLights(PImage deltaImage, float brightnessThreshold) {
         ArrayList<Point> hits = new ArrayList<>();
@@ -95,9 +115,10 @@ public class ArrayScanner2 extends DragonMind {
         camReady = false;
 
         doSplashScreen();
+        createGui();
         statusText = "ready to initialise camera";
-        nPixel = START_PIXEL;
-        nStrip = START_STRIP;
+        nPixel = startPixel;
+        nStrip = startStrip;
         displayMap = new ArrayList<>();
         fontSize = 20;
         statusFont = createFont("Helvetica", fontSize, true);
@@ -201,9 +222,7 @@ public class ArrayScanner2 extends DragonMind {
         if (getPusherMan().isReady() && getPusherMan().getStrips().size() > nStrip && mode == Mapper.Mode.CAM_SCAN) {
             drawProgressBar();
         }
-        if (drawStatusMap) {
-            drawStatusMap();
-        }
+        brightnessLabel.setText("brighness threshold: " + brightnessThreshold);
     }
 
 
@@ -282,8 +301,7 @@ public class ArrayScanner2 extends DragonMind {
 
         String ppStatus = getPusherMan().report();
         outlinedText(statusText + " | " + extendedStatus + " | " + ppStatus, 20, height - 37);
-        // right hand detail panel
-        drawStatusMap();
+
     }
 
     private void doCamScan() {
@@ -293,16 +311,16 @@ public class ArrayScanner2 extends DragonMind {
 
             List<Strip> strips = getPusherMan().getStrips();
             // TODO allow to use strips.size() again
-            int finishStrip = STOP_STRIP;
+            int finishStrip = stopStrip;
             if (nStrip >= finishStrip) {
-                nStrip = START_STRIP;
+                nStrip = startStrip;
                 log("Done last strip.");
             }
             Strip strip = strips.get(nStrip);
             int length_of_strip = strip.getLength();
             if (nPixel >= length_of_strip) {
                 log("finished strip " + nStrip + " at pixel " + nPixel);
-                nPixel = START_PIXEL;
+                nPixel = startPixel;
             }
 
             if (atBeginning()) {
@@ -359,7 +377,7 @@ public class ArrayScanner2 extends DragonMind {
     }
 
     private boolean atBeginning() {
-        return nStrip == START_STRIP && nPixel == START_PIXEL;
+        return nStrip == startStrip && nPixel == startPixel;
     }
 
     private void doDarkFrame() {
@@ -393,7 +411,7 @@ public class ArrayScanner2 extends DragonMind {
             // writing a fresh config too
             Segment segment = new Segment();
             String filename = "mappings/Mapping" + scanId + ".csv";
-            segment.setName("mapping "+ scanId);
+            segment.setName("mapping " + scanId);
             segment.setDescription("mapping file is " + filename);
             segment.setPixels(displayMap);
             config.addSegment(segment);
@@ -457,27 +475,133 @@ public class ArrayScanner2 extends DragonMind {
         }
     }
 
-    private void drawStatusMap() {
-        textAlign(RIGHT);
-        int margin = 5;
-        int w = 140;
-        int x = width - w - 10;
-        int lh = 20;
-        int y = 300;
+    private void createGui() {
+        log("creating GUI");
 
-        int pos = 0;
+        int guiAlpha = 205;
 
-        fill(0, 0, 0, 127);
-        stroke(255);
-        rect(x, y, width - x, 3 * lh);
+        float w = 240;
+        float margin = 5;
+        float x = width - w - 10;
+        float lh = 22;
+        float vPad = 3;
+        float sh = lh + vPad;
+        float y = 300;
+
+        float pos = 0;
+
+        float insetWidth = w - margin - margin;
 
         // create the map of stuff to show
-        fill(255);
-        textBoxPair("Strips", Integer.toString(getPusherMan().numStrips()), x, y + (lh * pos++), w, margin, lh);
-        textBoxPair("Strip #", Integer.toString(nStrip), x, y + (lh * pos++), w, margin, lh);
-        textBoxPair("Pixel #", Integer.toString(nPixel), x, y + (lh * pos++), w, margin, lh);
 
-        noFill();
+        float labelWidth = insetWidth / 2;
+
+        labelPair("PixelPushers", getPusherMan().numPixelPushers(), x, y + sh * pos++, labelWidth, lh);
+        labelPair("Strips", getPusherMan().numStrips(), x, y + sh * pos++, labelWidth, lh);
+        labelPair("Strip", nStrip, x, y + sh * pos++, labelWidth, lh);
+        labelPair("Pixel #", nPixel, x, y + sh * pos++, labelWidth, lh);
+
+        pos++;
+
+        float halfWit = (w - margin) / 2;
+        label("Start:", x, y + sh * pos, halfWit, lh, GAlign.RIGHT);
+
+        startStripSelect = new GDropList(this, x + halfWit + margin, y + sh * pos, halfWit, lh);
+
+        pos ++;
+
+        label("Stop:", x, y + sh * pos, halfWit, lh, GAlign.RIGHT);
+        stopStripSelect = new GDropList(this, x + halfWit + margin, y + sh * pos, halfWit, lh);
+
+        // Disable until we get info about what strips there are
+        startStripSelect.setItems(singletonList("nothing"), 0);
+        startStripSelect.setEnabled(false);
+        stopStripSelect.setItems(singletonList("nothing"), 0);
+        stopStripSelect.setEnabled(false);
+
+        pos++;
+
+        int buttonWidth = 90;
+        scanNameField = new GTextField(this, x, y + sh * pos, w - buttonWidth - margin - margin, lh);
+        scanNameField.setPromptText("segment name");
+        scanNameField.setOpaque(true);
+        scanNameField.setAlpha(guiAlpha);
+        newScanButton = new GButton(this, x + w - buttonWidth - margin, y + sh * pos, buttonWidth, lh, "Scan");
+        newScanButton.setEnabled(false);
+        newScanButton.setOpaque(true);
+        newScanButton.setAlpha(guiAlpha);
+        getPusherMan().addObserver((o, arg) -> updateStripChoicesGui());
+
+        pos+=2;
+
+        // triple line height
+        brightnessKnob = new GKnob(this, x + margin, y + sh * pos, w - margin - margin, lh*3, 0.8f);
+        brightnessKnob.setTurnRange(110, 70);
+        brightnessKnob.setTurnMode(GKnob.CTRL_VERTICAL);
+        brightnessKnob.setSensitivity(0.7f);
+        brightnessKnob.setShowArcOnly(false);
+        brightnessKnob.setOverArcOnly(false);
+        brightnessKnob.setIncludeOverBezel(false);
+        brightnessKnob.setShowTrack(true);
+        brightnessKnob.setLimits((float)brightnessThreshold, 15f, 255f);
+        brightnessKnob.setShowTicks(true);
+        brightnessKnob.setAlpha(guiAlpha);
+
+
+        pos +=3;
+        brightnessLabel = label("brighness threshold: " + brightnessThreshold, x+ margin, y + sh * pos++, insetWidth, lh, GAlign.CENTER);
+    }
+
+    public void handleDropListEvents(GDropList list, GEvent event) {
+        log("drop list event: " + list.getSelectedText());
+    }
+
+    public void handleKnobEvents(GValueControl knob, GEvent event) {
+        if (knob == brightnessKnob) {
+            brightnessLabel.setText("brighness threshold: " + brightnessThreshold);
+            brightnessThreshold = knob.getValueI();
+        }
+
+    }
+
+    private void updateStripChoicesGui() {
+        if (getPusherMan().isReady()) {
+            List<Strip> strips = getPusherMan().getStrips();
+            List<String> stripChoices = new ArrayList<>(strips.size());
+            for (int i = 0; i < strips.size(); i++) {
+                Strip strip = strips.get(i);
+                stripChoices.add("strip " + strip.getStripNumber());
+            }
+            if (stripChoices.isEmpty()) {
+                startStripSelect.setEnabled(false);
+                stopStripSelect.setEnabled(false);
+            }
+            startStripSelect.setItems(stripChoices, 0);
+            stopStripSelect.setItems(stripChoices, 0);
+        }
+    }
+
+    public void handleButtonEvents(GButton button, GEvent event) {
+        // Folder selection
+        if (button == newScanButton) {
+            startNewScan();
+        }
+    }
+
+    public void handleTextEvents(GEditableTextControl textcontrol, GEvent event) {
+        String segmentName = textcontrol.getText().trim();
+        if (!segmentName.equals("")) {
+            currentScanName = segmentName;
+            newScanButton.setEnabled(true);
+        } else {
+            currentScanName = "untitled"; // should never be used
+            newScanButton.setEnabled(false);
+        }
+    }
+
+    private void startNewScan() {
+        // show scan name request
+        log("TODO start new scan");
     }
 
     private void drawProgressBar() {
@@ -497,7 +621,7 @@ public class ArrayScanner2 extends DragonMind {
 
         int pixelsPerStrip = strips.get(nStrip).getLength();
         float pixelsDone = (nStrip * pixelsPerStrip) + nPixel + 1;
-        int totalPixels = 1 + START_STRIP - STOP_STRIP * pixelsPerStrip;
+        int totalPixels = 1 + startStrip - stopStrip * pixelsPerStrip;
         float completion = pixelsDone / totalPixels;
         fill(c);
         noStroke();
@@ -556,7 +680,7 @@ public class ArrayScanner2 extends DragonMind {
         if (key == '[') {
             testStripNum--;
             if (testStripNum < 0) {
-                testStripNum = getPusherMan().numStrips() -1;
+                testStripNum = getPusherMan().numStrips() - 1;
             }
         }
         if (key == 'z') {
@@ -591,8 +715,8 @@ public class ArrayScanner2 extends DragonMind {
         displayMap.clear();
         // reset the cumulative image
         cumulative = null; // TODO really?
-        nPixel = START_PIXEL;
-        nStrip = START_STRIP;
+        nPixel = startPixel;
+        nStrip = startStrip;
     }
 
     /**

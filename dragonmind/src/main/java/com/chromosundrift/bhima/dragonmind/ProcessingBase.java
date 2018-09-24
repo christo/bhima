@@ -47,15 +47,19 @@ public class ProcessingBase extends PApplet {
 
     // TODO pull out the duplication here
     protected void outlinedText(String label, float v1, float v2, float v3, float v4) {
+        pushStyle();
         // poor man's outline
+        pushStyle();
         fill(0, 0, 0, 127);
         for (int x = -1; x <= 1; x++) {
             for (int y = -1; y <= 1; y++) {
                 text(label, v1 + x, v2 + y, v3, v4);
             }
         }
+        popStyle();
         fill(255);
         text(label, v1, v2, v3, v4);
+        popStyle();
     }
 
     protected void outlinedText(String label, float v1, float v2) {
@@ -91,10 +95,12 @@ public class ProcessingBase extends PApplet {
         return image != null ? image : generateImageNoise(width, height);
     }
 
-    protected void textBoxPair(String text1, String text2, int x, int y, int fullWidth, int margin, int h) {
+    protected void textBoxPair(String text1, String text2, float x, float y, float fullWidth, float margin, float h) {
         // draw the left text
+        textAlign(RIGHT);
         outlinedText(text1, x, y, fullWidth/2 - margin, h);
         // draw the value
+        textAlign(LEFT);
         outlinedText(text2, x + fullWidth/2, y, fullWidth/2, h);
     }
 

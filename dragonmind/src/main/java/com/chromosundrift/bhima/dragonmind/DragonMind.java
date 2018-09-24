@@ -1,5 +1,7 @@
 package com.chromosundrift.bhima.dragonmind;
 
+import g4p_controls.GAlign;
+import g4p_controls.GLabel;
 import processing.core.PFont;
 import processing.core.PGraphics;
 import processing.core.PImage;
@@ -86,5 +88,27 @@ public class DragonMind extends ProcessingBase {
 
     public PusherMan getPusherMan() {
         return pusherMan;
+    }
+
+    protected GLabel label(String text, float x, float y, float w, float h) {
+        return label(text, x, y, w, h, GAlign.LEFT);
+    }
+
+    protected void labelPair(String key, Integer val, float x, float y, float w, float h) {
+        labelPair(key, Integer.toString(val), x, y, w, h);
+    }
+
+    protected void labelPair(String key, String val, float x, float y, float w, float h) {
+        GLabel left = label(key, x, y, w, h, GAlign.RIGHT);
+        GLabel right = label(val, x + w, y, w, h, GAlign.LEFT);
+        // TODO maybe return the tuple
+    }
+
+    protected GLabel label(String title, float x, float y, float w, float h, GAlign halign) {
+        GLabel glabel = new GLabel(this, x, y, w, h);
+        glabel.setOpaque(true);
+        glabel.setAlpha(200);
+        glabel.setText(title, halign, GAlign.MIDDLE);
+        return glabel;
     }
 }
