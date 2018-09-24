@@ -27,7 +27,9 @@ import java.util.List;
 import static java.lang.String.format;
 import static java.lang.Thread.currentThread;
 
-
+// TODO UI with start and stop strips for scanning
+// TODO fix status map
+// TODO load bgimage and map editor
 public class ArrayScanner2 extends DragonMind {
 
     private static final int START_STRIP = 9;
