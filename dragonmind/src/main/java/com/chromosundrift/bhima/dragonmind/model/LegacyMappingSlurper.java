@@ -16,20 +16,20 @@ import static java.lang.Integer.parseInt;
 
 public class LegacyMappingSlurper {
     public static void main(String[] args) throws IOException {
-        Config config = Config.load();
-        List<String> legacyFiles = Arrays.asList(
-                "Mapping-another.csv",
-                "Mapping22.csv",
-                "Mapping3.csv");
-        for (String file : legacyFiles) {
-            String path = "Mappings/" + file;
-            Segment segment = new Segment();
-            segment.setName("wings mapping from " + path);
-            List<PixelPoint> pixelPoints = readPointsFromMappingFile(path);
-            segment.setPixels(pixelPoints);
-            config.addSegment(segment);
+        if (args.length > 0) {
+            Config config = Config.load();
+            for (String file : args) {
+                String path = "Mappings/" + file;
+                Segment segment = new Segment();
+                segment.setName("wings mapping from " + path);
+                List<PixelPoint> pixelPoints = readPointsFromMappingFile(path);
+                segment.setPixels(pixelPoints);
+                config.addSegment(segment);
+            }
+            config.save();
+        } else {
+            System.out.println("usage: LegacyMappingSlurper <csvfile1.csv> <csvfile2.csv> ...");
         }
-        config.save("dragonmind.config.json");
     }
 
     private static List<PixelPoint> readPointsFromMappingFile(String path) throws IOException {
