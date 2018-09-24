@@ -1,5 +1,6 @@
 package com.chromosundrift.bhima.dragonmind.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -31,6 +32,7 @@ public final class Segment {
      * @return a rectangle snugly containing all points (including on the line).
      * @throws IllegalStateException if pixels is empty.
      */
+    @JsonIgnore
     public Rect getBoundingBox() throws IllegalStateException {
         if (pixels.isEmpty()) {
             throw new IllegalStateException("There are no points");
