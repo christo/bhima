@@ -20,7 +20,7 @@
       1080.0
     ]
   ],
-  "segments": [
+  "pixelMap": [
     {
       "segment": "left wing",
       "background": "bgimage.png",

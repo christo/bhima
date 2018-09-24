@@ -1,12 +1,19 @@
 package com.chromosundrift.bhima.dragonmind.model;
 
+import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static org.junit.Assert.assertTrue;
 
 public class ConfigTest {
     @Test
@@ -23,7 +30,7 @@ public class ConfigTest {
     }
 
     @Test
-    public void testSave2() throws ConfigException {
+    public void testSaveNontrivial() throws ConfigException, IOException {
         Config c = new Config("Bhima 2018", "1.0");
         c.setBrightnessThreshold(150);
         PixelPusherInfo ppi = new PixelPusherInfo("12:34:56:78:90", "PP1", "black, rectangular");
@@ -46,7 +53,11 @@ public class ConfigTest {
         c.setPixelMap(segments);
         String json = c.unParse(true);
 
-        System.out.println("json = \n" + json);
+        Assert.assertFalse(json.toLowerCase().contains("segments"));
+
+        ClassLoader cl = getClass().getClassLoader();
+        InputStreamReader expectedR = new InputStreamReader(cl.getResourceAsStream("expected.config.json"));
+        assertTrue("generated json not as expected", IOUtils.contentEquals(expectedR, new StringReader(json)));
     }
 
     @Test

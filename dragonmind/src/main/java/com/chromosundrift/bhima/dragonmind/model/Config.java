@@ -97,7 +97,7 @@ public class Config {
         this.cameraMask = cameraMask;
     }
 
-    public List<Segment> getSegments() {
+    public List<Segment> getPixelMap() {
         return pixelMap;
     }
 

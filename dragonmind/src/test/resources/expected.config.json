@@ -1,0 +1,16 @@
+{
+  "project" : "Bhima 2018",
+  "version" : "1.0",
+  "brightnessThreshold" : 150,
+  "pixelPushers" : [ {
+    "macAddress" : "12:34:56:78:90",
+    "name" : "PP1",
+    "description" : "black, rectangular"
+  } ],
+  "pixelMap" : [ {
+    "segment" : "butthole",
+    "background" : "bgImage.png",
+    "transforms" : [ ],
+    "pixels" : [ [ 0, 0, 500, 500 ], [ 0, 1, 510, 500 ], [ 0, 2, 520, 500 ], [ 0, 3, 530, 500 ], [ 0, 4, 500, 510 ], [ 0, 5, 510, 510 ] ]
+  } ]
+}
