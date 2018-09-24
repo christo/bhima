@@ -20,7 +20,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 @JsonPropertyOrder({"project", "version", "brightnessThreshold", "cameraMask", "pixelPushers"})
 public class Config {
 
-    private final static String DEFAULT_CONFIG_FILE = "dragonmind.config.json";
+    final static String DEFAULT_CONFIG_FILE = "dragonmind.config.json";
     private String project;
     private String version;
     /**
@@ -40,10 +40,14 @@ public class Config {
         this.version = version;
     }
 
-    public Config save() throws IOException {
+    public Config save(String filename) throws IOException {
         ObjectMapper objectMapper = getObjectMapper();
-        objectMapper.writerWithDefaultPrettyPrinter().writeValue(new File(DEFAULT_CONFIG_FILE), this);
+        objectMapper.writerWithDefaultPrettyPrinter().writeValue(new File(filename), this);
         return this;
+    }
+
+    public Config save() throws IOException {
+        return save(DEFAULT_CONFIG_FILE);
     }
 
     public static Config load() throws IOException {
