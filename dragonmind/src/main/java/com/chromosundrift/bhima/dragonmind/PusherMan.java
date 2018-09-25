@@ -36,6 +36,8 @@ public class PusherMan implements Observer {
 
     private final AtomicBoolean pendingUpdates = new AtomicBoolean(false);
 
+    private final AtomicBoolean started = new AtomicBoolean(false);
+
     public PusherMan(boolean debug) {
         registry = new DeviceRegistry();
         registry.setLogging(debug);
@@ -146,11 +148,13 @@ public class PusherMan implements Observer {
 
     public void ensureReady() {
         init();
-        if (!isReady()) {
+        if (!this.started.get()) {
             withLock(() -> {
+                logger.info("setting up registry");
                 registry.setAntiLog(true);
                 registry.setAutoThrottle(false);
                 registry.startPushing();
+                this.started.set(true);
             });
         }
 

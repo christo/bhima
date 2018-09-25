@@ -201,11 +201,10 @@ public class ArrayScanner2 extends DragonMind {
                     // TODO load model backgrounds
                     setMainImage(bgImage, "model");
                 }
-
-//                if (video.available()) {
-//                    video.read();
-//                    currentFrame = video.get();
-//                }
+                if (video.available()) {
+                    video.read();
+                    currentFrame = video.get();
+                }
                 if (mode != Mapper.Mode.WAIT) {
                     drawTestMode();
                 }
@@ -446,7 +445,7 @@ public class ArrayScanner2 extends DragonMind {
             // writing a fresh config too
             Segment segment = new Segment();
             String filename = "mappings/Mapping" + scanId + ".csv";
-            segment.setName("mapping " + scanId);
+            segment.setName(currentScanName);
             segment.setDescription("mapping file is " + filename);
             segment.setPixels(displayMap);
             config.addSegment(segment);
