@@ -1,6 +1,5 @@
 package com.chromosundrift.bhima.dragonmind;
 
-import com.jogamp.opengl.GL;
 import g4p_controls.GAlign;
 import g4p_controls.GLabel;
 import org.apache.commons.lang3.tuple.ImmutablePair;
