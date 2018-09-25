@@ -43,6 +43,10 @@
   }, {
     "segment" : "wings test 2",
     "description" : "quality unknown",
+    "background" : {
+      "colour" : "#ff0000",
+      "opacity" : 0.5
+    },
     "transforms" : [ {
       "type" : "translate",
       "parameters" : {
