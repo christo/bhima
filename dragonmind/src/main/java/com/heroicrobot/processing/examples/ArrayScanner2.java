@@ -809,7 +809,6 @@ public class ArrayScanner2 extends DragonMind {
      */
     public static void main(String[] args) {
         logger.warn("starting");
-        System.setProperty("org.slf4j.simpleLogger.log", "debug");
         // TODO fix dependency on Processing native libs
         //System.setProperty("jogl.debug", "true");
         System.setProperty("gstreamer.library.path", "/Users/christo/src/christo/processing/libraries/video/library/macosx64");
