@@ -4,19 +4,35 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 @SuppressWarnings("WeakerAccess")
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class PixelPusherInfo {
+public final class PixelPusherInfo {
+
+    // in a perfect world this generates pixel.rc / configures the pp via eeprom
+
     /**
      * Unique identifier as spewed from the device itself.
      */
     private String macAddress;
+
     /**
      * Name in this model.
      */
     private String name;
+
     /**
      * Purpose or notes.
      */
     private String description;
+
+    private Integer ordinal;
+
+    /**
+     * The list of which ports should be natively copied to which other. For the purpose of documentation and
+     * simulation only, this configuration should go in the pixel.rc
+     */
+    private String copyList;
+
+    public PixelPusherInfo() {
+    }
 
     public PixelPusherInfo(String macAddress, String name, String description) {
         this.macAddress = macAddress;
@@ -46,5 +62,21 @@ public class PixelPusherInfo {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Integer getOrdinal() {
+        return ordinal;
+    }
+
+    public void setOrdinal(Integer ordinal) {
+        this.ordinal = ordinal;
+    }
+
+    public String getCopyList() {
+        return copyList;
+    }
+
+    public void setCopyList(String copyList) {
+        this.copyList = copyList;
     }
 }

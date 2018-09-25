@@ -35,7 +35,7 @@ public class ConfigTest {
         c.setPixelPushers(Arrays.asList(ppi));
         ArrayList<Segment> segments = new ArrayList();
         Segment segment = new Segment();
-        segment.setBackground("bgImage.png");
+        segment.setBackground(new Background("bgImage.png"));
         segment.setName("butthole");
 
         List<PixelPoint> pixels = Arrays.asList(
@@ -49,13 +49,19 @@ public class ConfigTest {
         segment.setPixels(pixels);
         segments.add(segment);
         c.setPixelMap(segments);
-        String json = c.unParse(true);
+        String actual = c.unParse(true);
 
-        Assert.assertFalse(json.toLowerCase().contains("segments"));
+        Assert.assertFalse(actual.toLowerCase().contains("segments"));
 
         ClassLoader cl = getClass().getClassLoader();
         InputStreamReader expectedR = new InputStreamReader(cl.getResourceAsStream("expected.config.json"));
-        assertTrue("generated json not as expected", IOUtils.contentEquals(expectedR, new StringReader(json)));
+        boolean areEqual = IOUtils.contentEquals(expectedR, new StringReader(actual));
+
+        if (!areEqual) {
+            System.out.println("expected = " + IOUtils.toString(new InputStreamReader(cl.getResourceAsStream("expected.config.json"))));
+            System.out.println("actual = " + actual);
+        }
+        assertTrue("generated json not as expected", areEqual);
     }
 
     @Test
