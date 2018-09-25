@@ -45,4 +45,12 @@ public class Background {
     public void setOpacity(float opacity) {
         this.opacity = opacity;
     }
+
+    public List<Transform> getTransforms() {
+        return transforms;
+    }
+
+    public void setTransforms(List<Transform> transforms) {
+        this.transforms = transforms;
+    }
 }

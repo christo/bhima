@@ -791,7 +791,6 @@ public class ArrayScanner2 extends DragonMind {
             log("clearing all pixels");
             getPusherMan().turnOffAllPixels();
         }
-
     }
 
     private void restart() {

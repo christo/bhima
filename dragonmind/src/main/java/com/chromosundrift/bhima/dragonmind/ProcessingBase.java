@@ -1,6 +1,7 @@
 package com.chromosundrift.bhima.dragonmind;
 
 import com.chromosundrift.bhima.dragonmind.model.Point;
+import com.chromosundrift.bhima.dragonmind.model.Rect;
 import processing.core.PApplet;
 import processing.core.PImage;
 
@@ -106,5 +107,13 @@ public class ProcessingBase extends PApplet {
 
     protected void offload(Runnable runnable) {
         offloader.submit(runnable);
+    }
+
+    final boolean isArrow(int keyCode) {
+        return keyCode == UP || keyCode == DOWN || keyCode == LEFT  || keyCode == RIGHT;
+    }
+
+    protected void rect(Rect b) {
+        rect(b.getMinMin().getX(), b.getMinMin().getY(), b.getMaxMax().getX(), b.getMaxMax().getX());
     }
 }

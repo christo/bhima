@@ -100,4 +100,10 @@ public final class Segment {
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
+
+    @JsonIgnore
+    public Transform addTransform(Transform transform) {
+        transforms.add(transform);
+        return transform;
+    }
 }
