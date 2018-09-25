@@ -98,10 +98,10 @@ public class ProcessingBase extends PApplet {
     protected void textBoxPair(String text1, String text2, float x, float y, float fullWidth, float margin, float h) {
         // draw the left text
         textAlign(RIGHT);
-        outlinedText(text1, x, y, fullWidth/2 - margin, h);
+        outlinedText(text1, x, y, fullWidth / 2 - margin, h);
         // draw the value
         textAlign(LEFT);
-        outlinedText(text2, x + fullWidth/2, y, fullWidth/2, h);
+        outlinedText(text2, x + fullWidth / 2, y, fullWidth / 2, h);
     }
 
 

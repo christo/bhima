@@ -1,8 +1,8 @@
 package com.chromosundrift.bhima.dragonmind.model;
 
+import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import com.fasterxml.jackson.core.Version;
 import org.junit.Assert;
 import org.junit.Test;
 

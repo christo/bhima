@@ -47,6 +47,7 @@ public final class Palette {
     public void setLight() {
         this.colour = light;
     }
+
     public void setDark() {
         this.colour = dark;
     }

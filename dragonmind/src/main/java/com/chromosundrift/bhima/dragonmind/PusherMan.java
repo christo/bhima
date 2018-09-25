@@ -4,7 +4,6 @@ package com.chromosundrift.bhima.dragonmind;
 import com.heroicrobot.dropbit.devices.pixelpusher.PixelPusher;
 import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
 import com.heroicrobot.dropbit.registry.DeviceRegistry;
-import javafx.beans.value.WritableBooleanValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

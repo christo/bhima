@@ -51,8 +51,12 @@ public final class PixelPoint {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         PixelPoint that = (PixelPoint) o;
         return strip == that.strip &&
                 pixel == that.pixel &&
