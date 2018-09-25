@@ -9,7 +9,10 @@
   } ],
   "pixelMap" : [ {
     "segment" : "butthole",
-    "background" : "bgImage.png",
+    "background" : {
+      "filename" : "bgImage.png",
+      "opacity" : 1.0
+    },
     "transforms" : [ ],
     "pixels" : [ [ 0, 0, 500, 500 ], [ 0, 1, 510, 500 ], [ 0, 2, 520, 500 ], [ 0, 3, 530, 500 ], [ 0, 4, 500, 510 ], [ 0, 5, 510, 510 ] ],
     "enabled" : true

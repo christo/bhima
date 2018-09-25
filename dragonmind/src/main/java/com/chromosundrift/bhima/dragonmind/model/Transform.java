@@ -3,7 +3,7 @@ package com.chromosundrift.bhima.dragonmind.model;
 import java.util.Map;
 
 @SuppressWarnings("WeakerAccess")
-public class Transform {
+public final class Transform {
     private String type;
     private Map<String, Float> parameters;
 

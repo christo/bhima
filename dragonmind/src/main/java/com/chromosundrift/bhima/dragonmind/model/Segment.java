@@ -20,7 +20,7 @@ public final class Segment {
     @JsonProperty("segment")
     private String name;
     private String description;
-    private String background;
+    private Background background;
     private boolean enabled = true;
     @JsonInclude(NON_NULL)
     private List<Transform> transforms = Collections.emptyList();
@@ -69,11 +69,11 @@ public final class Segment {
         this.description = description;
     }
 
-    public String getBackground() {
+    public Background getBackground() {
         return background;
     }
 
-    public void setBackground(String background) {
+    public void setBackground(Background background) {
         this.background = background;
     }
 

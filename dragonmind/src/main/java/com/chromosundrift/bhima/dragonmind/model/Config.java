@@ -18,18 +18,31 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 @SuppressWarnings("WeakerAccess")
 @JsonInclude(NON_NULL)
 @JsonPropertyOrder({"project", "version", "brightnessThreshold", "cameraMask", "pixelPushers"})
-public class Config {
+public final class Config {
 
-    final static String DEFAULT_CONFIG_FILE = "dragonmind.config.json";
+    public final static String DEFAULT_CONFIG_FILE = "dragonmind.config.json";
+
+    /**
+     * Name
+     */
     private String project;
+
     private String version;
+
+    /**
+     * Background image.
+     */
+    private Background background;
+
     /**
      * Closed polygon defined by array of [x,y] points.
      */
     private float[][] cameraMask;
+
     private List<Segment> pixelMap;
 
     private List<PixelPusherInfo> pixelPushers;
+
     private int brightnessThreshold;
 
     public Config() {
@@ -50,9 +63,13 @@ public class Config {
         return save(DEFAULT_CONFIG_FILE);
     }
 
-    public static Config load() throws IOException {
+    public static Config load(String filename) throws IOException {
         ObjectMapper objectMapper = getObjectMapper();
-        return objectMapper.readValue(new File(DEFAULT_CONFIG_FILE), Config.class);
+        return objectMapper.readValue(new File(filename), Config.class);
+    }
+
+    public static Config load() throws IOException {
+        return load(DEFAULT_CONFIG_FILE);
     }
 
     private static ObjectMapper getObjectMapper() {
@@ -91,6 +108,14 @@ public class Config {
 
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    public Background getBackground() {
+        return background;
+    }
+
+    public void setBackground(Background background) {
+        this.background = background;
     }
 
     public float[][] getCameraMask() {

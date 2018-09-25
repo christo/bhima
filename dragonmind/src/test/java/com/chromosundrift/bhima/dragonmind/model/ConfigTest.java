@@ -37,7 +37,7 @@ public class ConfigTest {
         c.setPixelPushers(Arrays.asList(ppi));
         ArrayList<Segment> segments = new ArrayList();
         Segment segment = new Segment();
-        segment.setBackground("bgImage.png");
+        segment.setBackground(new Background("bgImage.png"));
         segment.setName("butthole");
 
         List<PixelPoint> pixels = Arrays.asList(
