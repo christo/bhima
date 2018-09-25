@@ -104,7 +104,6 @@ public class ProcessingBase extends PApplet {
         outlinedText(text2, x + fullWidth / 2, y, fullWidth / 2, h);
     }
 
-
     protected void offload(Runnable runnable) {
         offloader.submit(runnable);
     }

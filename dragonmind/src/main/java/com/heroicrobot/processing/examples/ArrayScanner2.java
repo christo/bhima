@@ -26,6 +26,7 @@ import processing.core.PFont;
 import processing.core.PImage;
 import processing.video.Capture;
 
+import java.awt.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -174,14 +175,19 @@ public class ArrayScanner2 extends DragonMind {
         clear();
         textAlign(LEFT);
         getPusherMan().ensureReady();
-
-        if (camera == null) {
-            camList();
-        }
-        if (!camReady) {
-            camInit();
+        if (mode == Mapper.Mode.EDIT) {
+            if (config.getBackgroundImage() != null) {
+                // TODO config transform
+                // TODO local zoom
+                bgImage.set(0,0,new PImage(config.getBackgroundImage()));
+            }
         } else {
-            if (mode == Mapper.Mode.CAM_SCAN) {
+            if (camera == null) {
+                camList();
+            }
+            if (!camReady) {
+                camInit();
+            } else if (mode == Mapper.Mode.CAM_SCAN) {
                 doCamScan();
             } else if (mode == Mapper.Mode.PATTERN) {
                 drawPattern(bgImage);
@@ -193,44 +199,51 @@ public class ArrayScanner2 extends DragonMind {
             } else {
                 if (mode == Mapper.Mode.WAIT) {
                     // TODO load model backgrounds
-                    setMainImage(currentFrame, "model");
+                    setMainImage(bgImage, "model");
                 }
-                if (video.available()) {
-                    video.read();
-                    currentFrame = video.get();
-                }
+
+//                if (video.available()) {
+//                    video.read();
+//                    currentFrame = video.get();
+//                }
                 if (mode != Mapper.Mode.WAIT) {
                     drawTestMode();
                 }
             }
             renderMainImage();
-            if (displayMap.size() > 0) {
-                if (drawAllPoints) {
-                    PixelPoint prev = null;
-                    for (PixelPoint pixelPoint : displayMap) {
-                        if (prev != null && prev.getStrip() == pixelPoint.getStrip()) {
-                            // draw wire from previous to current
-                            stroke(10, 230, 170, 200);
-                            line(prev.getX(), prev.getY(), pixelPoint.getX(), pixelPoint.getY());
-                        }
-                        prev = pixelPoint;
-                        drawCrossHair(pixelPoint.getPoint());
-                    }
-                } else {
-                    drawCrossHair(displayMap.get(displayMap.size() - 1).getPoint());
-                }
-            }
+            renderMap();
 
         }
         drawStatus();
         if (drawAllImages && currentFrame != null && mode != Mapper.Mode.PATTERN) {
             renderAllImges();
         }
-//        if (getPusherMan().isReady() && getPusherMan().getStrips().size() > nStrip && mode == Mapper.Mode.CAM_SCAN) {
-//            drawProgressBar();
-//        }
+        if (mode == CAM_SCAN) {
+            if (getPusherMan().isReady() && getPusherMan().getStrips().size() > nStrip) {
+                drawProgressBar();
+            }
+        }
 
         updateGui();
+    }
+
+    private void renderMap() {
+        if (displayMap.size() > 0) {
+            if (drawAllPoints) {
+                PixelPoint prev = null;
+                for (PixelPoint pixelPoint : displayMap) {
+                    if (prev != null && prev.getStrip() == pixelPoint.getStrip()) {
+                        // draw wire from previous to current
+                        stroke(10, 230, 170, 200);
+                        line(prev.getX(), prev.getY(), pixelPoint.getX(), pixelPoint.getY());
+                    }
+                    prev = pixelPoint;
+                    drawCrossHair(pixelPoint.getPoint());
+                }
+            } else {
+                drawCrossHair(displayMap.get(displayMap.size() - 1).getPoint());
+            }
+        }
     }
 
     private void updateGui() {
@@ -240,6 +253,7 @@ public class ArrayScanner2 extends DragonMind {
         nStripLabel.setText(Integer.toString(nStrip));
         nPixelLabel.setText(Integer.toString(nPixel));
         modeLabel.setText(mode.toString());
+        newScanButton.setEnabled(scanNameField.getText() != null);
         testButton.setLocalColorScheme(mode == TEST ? 5 : 0); // TODO wtf are the colour schemes?
     }
 
@@ -283,7 +297,7 @@ public class ArrayScanner2 extends DragonMind {
         log("testing strip " + testStripNum);
         List<Strip> strips = getPusherMan().getStrips();
         // pixelpusher strips are numbered on the PCB starting from 1
-        int sNum = 1;
+        int sNum = 0;
         for (Strip strip : strips) {
             int c = palette.getDark();
             if (sNum == testStripNum) {
@@ -294,8 +308,8 @@ public class ArrayScanner2 extends DragonMind {
                 // only light every 10th to reduce power
 
                 // 1 in 10 chaser changing each 200 millis
-                long sec = System.currentTimeMillis() / 200;
-                if (i % 10 == sec % 10) {
+                long sec = System.currentTimeMillis() / 100;
+                if (i % 5 == sec % 5) {
                     strip.setPixel(c, i);
                 } else {
                     strip.setPixel(palette.getDark(), i);
@@ -393,7 +407,7 @@ public class ArrayScanner2 extends DragonMind {
     }
 
     private void log(String message) {
-        logger.debug(message);
+        logger.info(message);
         statusText2 = message;
     }
 
@@ -525,12 +539,12 @@ public class ArrayScanner2 extends DragonMind {
 
         float halfWit = (w - margin) / 2;
 
-        startStripField = new GTextField(this, x + margin, y + sh * pos, halfWit, lh);
+        startStripField = new GTextField(this, x, y + sh * pos, halfWit, lh);
         startStripField.setPromptText("start #");
         startStripField.setOpaque(true);
         startStripField.setAlpha(guiAlpha);
 
-        stopStripField = new GTextField(this, x + halfWit + margin, y + sh * pos, halfWit, lh);
+        stopStripField = new GTextField(this, x + halfWit, y + sh * pos, halfWit, lh);
         stopStripField.setPromptText("stop #");
         stopStripField.setOpaque(true);
         stopStripField.setAlpha(guiAlpha);
@@ -546,7 +560,6 @@ public class ArrayScanner2 extends DragonMind {
         newScanButton.setEnabled(false);
         newScanButton.setOpaque(true);
         newScanButton.setAlpha(guiAlpha);
-        getPusherMan().addObserver((o, arg) -> updateGui());
 
         pos += 2;
 
@@ -605,12 +618,16 @@ public class ArrayScanner2 extends DragonMind {
                 mode = TEST;
             }
         } else if (button == nextStripButton) {
-            testStripNum++;
-            testStripNum %= getPusherMan().numStrips();
+            if (getPusherMan().isReady()) {
+                testStripNum++;
+                testStripNum %= getPusherMan().numStrips();
+            }
         } else if (button == prevStripButton) {
-            testStripNum--;
-            if (testStripNum < 0) {
-                testStripNum = getPusherMan().numStrips() - 1;
+            if (getPusherMan().isReady()) {
+                testStripNum--;
+                if (testStripNum < 0) {
+                    testStripNum = getPusherMan().numStrips() - 1;
+                }
             }
         }
         log("finished handle button events");
@@ -747,18 +764,28 @@ public class ArrayScanner2 extends DragonMind {
         }
     }
 
+    @Override
+    public void mouseMoved() {
+        if (drawAllImages && mouseY < smallImageHeight) {
+            cursor(HAND);
+        } else {
+            cursor(Cursor.DEFAULT_CURSOR);
+        }
+
+    }
+
     public void keyPressed() {
-// TODO make collapsible small images
-//        if (key == 'z') {
-//            drawAllImages = !drawAllImages;
-//        }
+        // TODO make collapsible small images
+        //        if (key == 'z') {
+        //            drawAllImages = !drawAllImages;
+        //        }
         // whether to show all found points
-//        if (key == 'a') {
-//            drawAllPoints = !drawAllPoints;
-//        }
-//        if (key == 's') {
-//            drawStatusMap = !drawStatusMap; // TODO make GUI collapse
-//        }
+        //        if (key == 'a') {
+        //            drawAllPoints = !drawAllPoints;
+        //        }
+        //        if (key == 's') {
+        //            drawStatusMap = !drawStatusMap; // TODO make GUI collapse
+        //        }
 
         // TODO make button to clear all pixels
         if (key == ';') {

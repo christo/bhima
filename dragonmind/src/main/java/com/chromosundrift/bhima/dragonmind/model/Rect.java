@@ -1,8 +1,8 @@
 package com.chromosundrift.bhima.dragonmind.model;
 
 
+import static java.lang.Math.max;
 import static java.lang.Math.min;
-import static sun.swing.MenuItemLayoutHelper.max;
 
 /**
  * Rectangle implementation based on minimum x,y and maximum x,y points.

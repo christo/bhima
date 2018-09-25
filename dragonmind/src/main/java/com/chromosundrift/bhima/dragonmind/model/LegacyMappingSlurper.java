@@ -1,15 +1,11 @@
 package com.chromosundrift.bhima.dragonmind.model;
 
-import com.chromosundrift.bhima.dragonmind.model.Config;
-import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
-import com.chromosundrift.bhima.dragonmind.model.Segment;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static java.lang.Integer.parseInt;

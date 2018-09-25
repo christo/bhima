@@ -1,6 +1,7 @@
 package com.chromosundrift.bhima.dragonmind.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
@@ -8,17 +9,23 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 
-@SuppressWarnings("WeakerAccess")
+@SuppressWarnings({"WeakerAccess", "unused"})
 @JsonInclude(NON_NULL)
 @JsonPropertyOrder({"project", "version", "brightnessThreshold", "cameraMask", "pixelPushers"})
 public final class Config {
+
+    public static final Logger logger = LoggerFactory.getLogger(Config.class);
 
     public final static String DEFAULT_CONFIG_FILE = "dragonmind.config.json";
 
@@ -44,6 +51,7 @@ public final class Config {
     private List<PixelPusherInfo> pixelPushers;
 
     private int brightnessThreshold;
+    private BufferedImage bgImage;
 
     public Config() {
     }
@@ -152,5 +160,26 @@ public final class Config {
 
     public void addSegment(Segment segment) {
         pixelMap.add(segment);
+    }
+
+    @JsonIgnore
+    public BufferedImage getBackgroundImage() {
+        if (bgImage == null && background != null && background.getFilename() != null) {
+            try {
+                return loadBackgroundImage();
+            } catch (IOException e) {
+                logger.error("cannot load background image " + background.getFilename(), e);
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
+    private BufferedImage loadBackgroundImage() throws IOException {
+        String filename = background.getFilename();
+        BufferedImage read = ImageIO.read(new File(background.getFilename()));
+        bgImage = read;
+        return read;
     }
 }
