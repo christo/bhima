@@ -119,7 +119,7 @@ public class ArrayScanner2 extends DragonMind {
 
         background(0);
         colorMode(RGB, 255, 255, 255, 255);
-        palette = new Palette(color(200, 200, 200), color(0, 0, 0));
+        palette = new Palette(color(255, 255, 255), color(0, 0, 0));
         rectMode(CORNER);
         camReady = false;
 
