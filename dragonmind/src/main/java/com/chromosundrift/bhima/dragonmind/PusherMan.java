@@ -4,6 +4,7 @@ package com.chromosundrift.bhima.dragonmind;
 import com.heroicrobot.dropbit.devices.pixelpusher.PixelPusher;
 import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
 import com.heroicrobot.dropbit.registry.DeviceRegistry;
+import javafx.beans.value.WritableBooleanValue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,19 +24,20 @@ public class PusherMan implements Observer {
 
     final static Logger logger = LoggerFactory.getLogger(PusherMan.class);
 
-    private final boolean debug;
     private DeviceRegistry registry;
 
     /**
      * Possibly need this to prevent blocking inside the PixelPusher Processing library.
      */
-    private ReentrantLock registryLock = new ReentrantLock();
+    private final ReentrantLock registryLock = new ReentrantLock();
 
-    private AtomicReference<DeviceRegistry> observedRegistry = new AtomicReference<>();
-    private AtomicBoolean initialised = new AtomicBoolean(false);
+    private final AtomicReference<DeviceRegistry> observedRegistry = new AtomicReference<>();
+
+    private final AtomicBoolean initialised = new AtomicBoolean(false);
+
+    private final AtomicBoolean pendingUpdates = new AtomicBoolean(false);
 
     public PusherMan(boolean debug) {
-        this.debug = debug;
         registry = new DeviceRegistry();
         registry.setLogging(debug);
     }
@@ -58,39 +60,59 @@ public class PusherMan implements Observer {
         }
     }
 
+    /**
+     * Note this is executed by PixelPusher's thread.
+     *
+     * @param observable
+     * @param updatedDevice
+     */
     @Override
     public void update(Observable observable, Object updatedDevice) {
+        this.pendingUpdates.set(true);
 
-        ensureReady();
         logger.debug("Registry changed!");
-        if (debug && updatedDevice != null) {
+        if (updatedDevice != null) {
             if (updatedDevice instanceof PixelPusher) {
                 logger.debug("Device change: " + updatedDevice);
             }
         }
-        try {
-            registryLock.lock();
-            if (observable instanceof DeviceRegistry) {
-                observedRegistry.set((DeviceRegistry) observable);
-                Map<String, PixelPusher> pusherMap = registry.getPusherMap();
-                for (Map.Entry<String, PixelPusher> entry : pusherMap.entrySet()) {
-                    PixelPusher pp = entry.getValue();
 
-                    String mac = entry.getKey();
-                    logger.info("PP update period microsec: " + mac + " " + pp.getUpdatePeriod());
-                }
+        if (observable instanceof DeviceRegistry) {
+            observedRegistry.set((DeviceRegistry) observable);
+
+        }
+
+    }
+
+    private void reportPixelPusherShiz() {
+        if (pendingUpdates.get()) {
+            pendingUpdates.set(false);
+            Map<String, PixelPusher> pusherMap = observedRegistry.get().getPusherMap();
+            for (Map.Entry<String, PixelPusher> entry : pusherMap.entrySet()) {
+                PixelPusher pp = entry.getValue();
+
+                String mac = entry.getKey();
+                logger.info("PP update period microsec: " + mac + " " + pp.getUpdatePeriod());
             }
-        } finally {
-            registryLock.unlock();
         }
     }
 
     public String report() {
+        reportPixelPusherShiz();
         try {
             registryLock.lock();
-            String observed = report(observedRegistry.get());
-            String direct = report(registry);
-            return "Observed: " + observed + " Direct: " + direct;
+            if (observedRegistry.get() != registry) {
+                // don't know if the API makes any guarantees about this
+                if (observedRegistry.get() != null && registry != null) {
+                    logger.warn("observed and direct registries are not the same");
+                }
+                String observed = report(observedRegistry.get());
+                String direct = report(registry);
+                return "Observed: " + observed + " Direct: " + direct;
+            } else {
+                return "Registry: " + report(registry);
+            }
+
         } finally {
             registryLock.unlock();
         }
@@ -102,16 +124,13 @@ public class PusherMan implements Observer {
         if (registry == null) {
             return "null";
         } else {
+
             StringBuilder sb = new StringBuilder();
             for (PixelPusher pusher : registry.getPushers()) {
                 sb.append(" PP").append(pusher.getControllerOrdinal());
             }
-            int result;
-            if (registry != null) {
-                result = registry.getStrips().size();
-            } else {
-                result = -1;
-            }
+            int result = registry.getStrips().size();
+
             return numPixelPushersFound(registry) + " Pixel Pushers " + result + " total strips"
                     + sb.toString();
         }
