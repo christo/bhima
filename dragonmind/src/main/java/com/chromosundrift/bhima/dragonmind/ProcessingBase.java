@@ -114,6 +114,6 @@ public class ProcessingBase extends PApplet {
     }
 
     protected void rect(Rect b) {
-        rect(b.getMinMin().getX(), b.getMinMin().getY(), b.getMaxMax().getX(), b.getMaxMax().getX());
+        rect(b.getMinMin().getX(), b.getMinMin().getY(), b.getMaxMax().getX(), b.getMaxMax().getY());
     }
 }

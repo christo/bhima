@@ -57,6 +57,14 @@ public final class Transform {
         this.parameters = parameters;
     }
 
+    public Transform(Transform t) {
+        this.type = t.type;
+        this.parameters = new HashMap<>();
+        for (Map.Entry<String, Float> kv : t.parameters.entrySet()) {
+            this.parameters.put(kv.getKey(), kv.getValue());
+        }
+    }
+
     private String type;
 
     private Map<String, Float> parameters;

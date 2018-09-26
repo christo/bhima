@@ -13,6 +13,7 @@ import processing.event.KeyEvent;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -129,7 +130,8 @@ public class MapEditor extends DragonMind {
                     .append(defaultString(segment.getDescription(), ""))
                     .append("\n\n").append("pixels: ").append(pixels.size());
             Set<Integer> strips = pixels.stream().map(PixelPoint::getStrip).collect(toSet());
-            text.append(" strips: ").append(StringUtils.join(strips, ", "));
+            text.append(" strips: ").append(StringUtils.join(strips, ", ")).append("\n\n");
+            text.append("Pixel ").append(highlight);
 
             text(text.toString(), screenX + margin, 50, 290, 200);
             popStyle();
@@ -152,6 +154,10 @@ public class MapEditor extends DragonMind {
                 if (i == selectedSegment) {
                     stroke(255, 0, 0);
                     strokeWeight(2);
+                } else if (segment.getIgnored()) {
+                    // ignored stuff is feinter
+                    stroke(127, 127, 0);
+                    strokeWeight(0.5f);
                 } else {
                     stroke(255, 100, 0);
                     strokeWeight(1);
@@ -169,7 +175,6 @@ public class MapEditor extends DragonMind {
                 drawPoints(segment.getPixels());
                 popStyle();
                 popMatrix();
-
             }
         }
     }
@@ -198,13 +203,14 @@ public class MapEditor extends DragonMind {
                 pushStyle();
                 PixelPoint prev = pixels.get(i - 1);
                 line(prev.getX(), prev.getY(), pixel.getX(), pixel.getY());
-                stroke(color(170, 0, 0));
+                stroke(170, 0, 0);
                 popStyle();
             }
             // now draw the actual point
             if (highlight == i) {
                 pushStyle();
                 fill(255, 0, 0, 127);
+                stroke(255, 0, 0);
                 ellipse(pixel.getX(), pixel.getY(), 12, 12);
                 popStyle();
                 ellipse(pixel.getX(), pixel.getY(), 6, 6);
@@ -250,16 +256,16 @@ public class MapEditor extends DragonMind {
             }
 
             // CMD + Arrows translate the whole background
-            if (event.getKeyCode() == LEFT) {
+            if (event.getKeyCode() == RIGHT) {
                 bgX -= dt;
             }
-            if (event.getKeyCode() == RIGHT) {
+            if (event.getKeyCode() == LEFT) {
                 bgX += dt;
             }
-            if (event.getKeyCode() == UP) {
+            if (event.getKeyCode() == DOWN) {
                 bgY -= dt;
             }
-            if (event.getKeyCode() == DOWN) {
+            if (event.getKeyCode() == UP) {
                 bgY += dt;
             }
 
@@ -342,10 +348,10 @@ public class MapEditor extends DragonMind {
                     rotate.set("z", rotate.get("z") - theta);
                 }
                 if (k == '\\') {
-                    segment.setEnabled(!segment.getEnabled());
+                    segment.flipEnabled();
                 }
                 if (k == 'i') {
-                    segment.setIgnored(!segment.getIgnored());
+                    segment.flipIgnored();
                 }
 
                 // highlight
@@ -357,6 +363,25 @@ public class MapEditor extends DragonMind {
                     if (highlight < 0) {
                         highlight = segment.getPixels().size() - 1;
                     }
+                } else if (k == '|') {
+                    // split the segment
+                    Segment second = new Segment();
+                    second.setName("split of " + segment.getName());
+                    second.setDescription("split of " + segment.getDescription());
+                    for (Transform t : ts) {
+                        second.addTransform(new Transform(t));
+                    }
+
+                    // remove pixels from the segment and put them in the second
+                    List<PixelPoint> pixels = segment.getPixels();
+                    second.setPixels(pixels.subList(highlight, pixels.size()));
+                    segment.setPixels(pixels.subList(0, highlight));
+
+                    config.getPixelMap().add(second);
+                } else if (k == '?') {
+                    // delete pixel
+                    segment.getPixels().remove(highlight);
+                    highlight %= segment.getPixels().size();
                 }
 
             }

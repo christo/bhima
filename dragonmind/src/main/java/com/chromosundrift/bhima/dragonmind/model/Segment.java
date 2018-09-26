@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -21,10 +22,18 @@ public final class Segment {
     private String name;
     private String description;
     private Background background;
+
+    /**
+     * Does not light up nor display in the editor.
+     */
     private boolean enabled = true;
+
+    /**
+     * Does not light up, usually because hardware mirroring is on.
+     */
     private boolean ignored = false;
     @JsonInclude(NON_NULL)
-    private List<Transform> transforms = Collections.emptyList();
+    private List<Transform> transforms = new ArrayList<>();
     private List<PixelPoint> pixels;
 
     /**
