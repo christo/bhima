@@ -93,7 +93,7 @@ public final class Segment {
         this.pixels = pixels;
     }
 
-    public boolean isEnabled() {
+    public boolean getEnabled() {
         return enabled;
     }
 

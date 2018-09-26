@@ -15,10 +15,9 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
-import static com.chromosundrift.bhima.dragonmind.model.Transform.*;
+import static com.chromosundrift.bhima.dragonmind.model.Transform.Type;
 import static com.chromosundrift.bhima.dragonmind.model.Transform.Type.*;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
@@ -44,7 +43,7 @@ public class MapEditor extends DragonMind {
     /**
      * The rotation step in radians
      */
-    private float theta = PI / 20;
+    private float theta = PI * dt / 200;
 
     public void settings() {
         fullScreen(P3D);
@@ -118,6 +117,9 @@ public class MapEditor extends DragonMind {
             // label for segment
             StringBuilder text = new StringBuilder();
             List<PixelPoint> pixels = segment.getPixels();
+            if (!segment.getEnabled()) {
+                text.append("DISABLED ");
+            }
             text.append(selectedSegment).append(": ").append(segment.getName()).append("\n\n")
                     .append(defaultString(segment.getDescription(), ""))
                     .append("\n\n").append("pixels: ").append(pixels.size());
@@ -133,34 +135,37 @@ public class MapEditor extends DragonMind {
         List<Segment> pixelMap = config.getPixelMap();
         for (int i = 0; i < pixelMap.size(); i++) {
             Segment segment = pixelMap.get(i);
-            pushMatrix();
-            pushStyle();
-            if (!segment.getTransforms().isEmpty()) {
-                // restore the segment in its location by applying the transforms to the points
-                applyTransforms(segment);
-            }
+            if (segment.getEnabled()) {
+                pushMatrix();
+                pushStyle();
+                if (!segment.getTransforms().isEmpty()) {
+                    // restore the segment in its location by applying the transforms to the points
+                    applyTransforms(segment);
+                }
 
-            // draw it
-            if (i == selectedSegment) {
-                stroke(255, 0, 0);
-                strokeWeight(2);
-            } else {
-                stroke(255, 100, 0);
-                strokeWeight(1);
+                // draw it
+                if (i == selectedSegment) {
+                    stroke(255, 0, 0);
+                    strokeWeight(2);
+                } else {
+                    stroke(255, 100, 0);
+                    strokeWeight(1);
+                }
+                noFill();
+                rect(segment.getBoundingBox());
+                if (i == selectedSegment) {
+                    // style for points of selected segement
+                    stroke(0);
+                    strokeWeight(5);
+                } else {
+                    stroke(127);
+                    strokeWeight(3);
+                }
+                drawPoints(segment.getPixels());
+                popStyle();
+                popMatrix();
+
             }
-            noFill();
-            rect(segment.getBoundingBox());
-            if (i == selectedSegment) {
-                // style for points of selected segement
-                stroke(0);
-                strokeWeight(5);
-            } else {
-                stroke(127);
-                strokeWeight(3);
-            }
-            drawPoints(segment.getPixels());
-            popStyle();
-            popMatrix();
         }
     }
 
@@ -205,6 +210,8 @@ public class MapEditor extends DragonMind {
 
     @Override
     public void keyPressed(KeyEvent event) {
+        pushMatrix();
+        resetMatrix();
         char k = event.getKey();
         // only Mac standard key binding for now
         if (event.isMetaDown()) {
@@ -217,7 +224,7 @@ public class MapEditor extends DragonMind {
                 }
                 logger.info("saved");
             }
-            if (k=='o') {
+            if (k == 'o') {
                 try {
                     restoreConfig();
                 } catch (IOException e) {
@@ -275,36 +282,39 @@ public class MapEditor extends DragonMind {
 
                 if (k == '=' || k == '-' || k == '0') {
                     // change scale of currently selected segment
-                    ts.stream().filter(t -> t.is(Type.SCALE)).findFirst().ifPresent(t -> {
-                        if (k == '=') {
-                            t.set("x", (float) (t.get("x") * 1.03));
-                            t.set("y", (float) (t.get("y") * 1.03));
-                        } else if (k == '-') {
-                            t.set("x", (float) (t.get("x") * 0.97));
-                            t.set("y", (float) (t.get("y") * 0.97));
-                        } else {//noinspection ConstantConditions
-                            if (k == '0') {
-                                t.set("x", 1f);
-                                t.set("y", 1f);
-                            }
+                    Transform t = ts.stream().filter(tt -> tt.is(Type.SCALE)).findFirst()
+                            .orElseGet(() -> segment.addTransform(Transform.scale(1)));
+                    if (k == '=') {
+                        t.set("x", (float) (t.get("x") * 1.03));
+                        t.set("y", (float) (t.get("y") * 1.03));
+                    } else if (k == '-') {
+                        t.set("x", (float) (t.get("x") * 0.97));
+                        t.set("y", (float) (t.get("y") * 0.97));
+                    } else {//noinspection ConstantConditions
+                        if (k == '0') {
+                            t.set("x", 1f);
+                            t.set("y", 1f);
                         }
-                    });
+                    }
                 }
                 int c = event.getKeyCode();
+
                 if (k == CODED && isArrow(c)) {
-                    ts.stream().filter(t1 -> t1.is(Type.TRANSLATE)).findFirst().ifPresent(t -> {
-                        if (c == RIGHT) {
-                            t.set("x", (t.get("x") + dt));
-                        } else if (c == DOWN) {
-                            t.set("y", (t.get("y") + dt));
-                        } else if (c == LEFT) {
-                            t.set("x", (t.get("x") - dt));
-                        } else if (c == UP) {
-                            t.set("y", (t.get("y") - dt));
-                        }
-                    });
+                    Transform t = ts.stream().filter(tr -> tr.is(Type.TRANSLATE)).findFirst()
+                            .orElseGet(() -> segment.addTransform(Transform.translate(0f, 0f)));
+
+                    if (c == RIGHT) {
+                        t.set("x", (t.get("x") + dt));
+                    } else if (c == DOWN) {
+                        t.set("y", (t.get("y") + dt));
+                    } else if (c == LEFT) {
+                        t.set("x", (t.get("x") - dt));
+                    } else if (c == UP) {
+                        t.set("y", (t.get("y") - dt));
+                    }
+
                 }
-                // Rotate transform may not exist (TODO, strictly should do same thing for translate and scale)
+                // Rotate transform may not exist, in which case create identity rotation transform
                 Transform rotate = ts.stream().filter(t -> t.is(Type.ROTATE)).findFirst()
                         .orElseGet(() -> segment.addTransform(Transform.rotate(0f)));
                 if (k == '.') {
@@ -313,7 +323,9 @@ public class MapEditor extends DragonMind {
                 if (k == ',') {
                     rotate.set("z", rotate.get("z") - theta);
                 }
-
+                if (k == '\\') {
+                    segment.setEnabled(!segment.getEnabled());
+                }
             }
             if (k == '1') {
                 dt = 1;
@@ -343,6 +355,7 @@ public class MapEditor extends DragonMind {
                 dt = 256;
             }
         }
+        popMatrix();
     }
 
     /**
