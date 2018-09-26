@@ -9,8 +9,10 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertTrue;
 
 public class ConfigTest {
@@ -19,7 +21,7 @@ public class ConfigTest {
         Config c = new Config("test proj", "123");
         c.setBrightnessThreshold(160);
         PixelPusherInfo ppi = new PixelPusherInfo("12:34:56:78:90", "PP1", "black, rectangular");
-        c.setPixelPushers(Arrays.asList(ppi));
+        c.setPixelPushers(singletonList(ppi));
         String config = c.unParse(false);
         String expected = "{\"project\":\"test proj\",\"version\":\"123\",\"brightnessThreshold\":160," +
                 "\"pixelPushers\":[{\"macAddress\":\"12:34:56:78:90\"," +
@@ -32,8 +34,8 @@ public class ConfigTest {
         Config c = new Config("Bhima 2018", "1.0");
         c.setBrightnessThreshold(150);
         PixelPusherInfo ppi = new PixelPusherInfo("12:34:56:78:90", "PP1", "black, rectangular");
-        c.setPixelPushers(Arrays.asList(ppi));
-        ArrayList<Segment> segments = new ArrayList();
+        c.setPixelPushers(singletonList(ppi));
+        ArrayList<Segment> segments = new ArrayList<>();
         Segment segment = new Segment();
         segment.setBackground(new Background("bgImage.png"));
         segment.setName("butthole");
@@ -65,7 +67,7 @@ public class ConfigTest {
     }
 
     @Test
-    public void testLoad() throws IOException {
+    public void testLoadNotAsplode() throws IOException {
         Config config = Config.load();
     }
 }

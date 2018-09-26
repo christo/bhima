@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static java.lang.Math.max;
@@ -15,7 +16,7 @@ import static java.lang.Math.min;
 
 @SuppressWarnings("WeakerAccess")
 @JsonInclude(NON_NULL)
-@JsonPropertyOrder({"name", "description", "background", "transforms", "pixels"})
+@JsonPropertyOrder({"name", "description", "enabled", "ignored", "background", "transforms", "pixels"})
 public final class Segment {
 
     @JsonProperty("segment")
@@ -34,7 +35,7 @@ public final class Segment {
     private boolean ignored = false;
     @JsonInclude(NON_NULL)
     private List<Transform> transforms = new ArrayList<>();
-    private List<PixelPoint> pixels;
+    private List<PixelPoint> pixels = new CopyOnWriteArrayList<>();
 
     /**
      * Get the smallest rectangle that contains all the points.
@@ -100,7 +101,7 @@ public final class Segment {
     }
 
     public void setPixels(List<PixelPoint> pixels) {
-        this.pixels = pixels;
+        this.pixels = new CopyOnWriteArrayList<>(pixels);
     }
 
     public boolean getEnabled() {

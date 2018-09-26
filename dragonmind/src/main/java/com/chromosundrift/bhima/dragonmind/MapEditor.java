@@ -13,7 +13,6 @@ import processing.event.KeyEvent;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,7 +25,8 @@ import static org.apache.commons.lang3.StringUtils.defaultString;
 
 public class MapEditor extends DragonMind {
 
-    Logger logger = LoggerFactory.getLogger(MapEditor.class);
+    private static Logger logger = LoggerFactory.getLogger(MapEditor.class);
+    private static final String IMAGES_DIR = "mappings";
 
     private Config config;
     private PImage bg;
@@ -37,14 +37,14 @@ public class MapEditor extends DragonMind {
     private int selectedSegment = 0;
 
     /**
-     * Translation step.
+     * Translation step / rotation factor.
      */
     private int dt = 1;
 
     /**
      * The rotation step in radians
      */
-    private float theta = PI * dt / 200;
+    private float theta = PI / 200;
 
     /**
      * The LED to highlight in the editor.
@@ -115,7 +115,13 @@ public class MapEditor extends DragonMind {
             // TODO reproduce background + segment transform arithmetically to get screen coord of bounding box
 
             noStroke();
-            fill(230);
+            if (segment.getEnabled()) {
+                fill(230);
+            } else if (segment.getIgnored()) {
+                fill(230, 230, 160);
+            } else {
+                fill(230, 200, 200);
+            }
             // background for text
             rect(screenX, screenY, 290, 200);
             fill(0);
@@ -125,6 +131,9 @@ public class MapEditor extends DragonMind {
             List<PixelPoint> pixels = segment.getPixels();
             if (!segment.getEnabled()) {
                 text.append("DISABLED ");
+            }
+            if (segment.getIgnored()) {
+                text.append("IGNORED ");
             }
             text.append(selectedSegment).append(": ").append(segment.getName()).append("\n\n")
                     .append(defaultString(segment.getDescription(), ""))
@@ -151,20 +160,24 @@ public class MapEditor extends DragonMind {
                 }
 
                 // draw it
-                if (i == selectedSegment) {
-                    stroke(255, 0, 0);
-                    strokeWeight(2);
-                } else if (segment.getIgnored()) {
+                if (segment.getIgnored()) {
                     // ignored stuff is feinter
                     stroke(127, 127, 0);
                     strokeWeight(0.5f);
+                } else if (i == selectedSegment) {
+                    stroke(255, 0, 0);
+                    strokeWeight(2);
                 } else {
                     stroke(255, 100, 0);
                     strokeWeight(1);
                 }
                 noFill();
                 rect(segment.getBoundingBox());
-                if (i == selectedSegment) {
+                if (segment.getIgnored()) {
+                    // ignored stuff is feinter
+                    stroke(127, 127, 0);
+                    strokeWeight(0.5f);
+                } else if (i == selectedSegment) {
                     // style for points of selected segement
                     stroke(0);
                     strokeWeight(5);
@@ -287,7 +300,9 @@ public class MapEditor extends DragonMind {
             }
         } else {
             if (!config.getPixelMap().isEmpty()) {
+
                 // NO META KEY DOWN; segment operations
+
                 if (k == ']') {
                     selectedSegment++;
                     selectedSegment %= config.getPixelMap().size();
@@ -342,10 +357,10 @@ public class MapEditor extends DragonMind {
                 Transform rotate = ts.stream().filter(t -> t.is(Type.ROTATE)).findFirst()
                         .orElseGet(() -> segment.addTransform(Transform.rotate(0f)));
                 if (k == '.') {
-                    rotate.set("z", rotate.get("z") + theta);
+                    rotate.set("z", rotate.get("z") + theta * dt);
                 }
                 if (k == ',') {
-                    rotate.set("z", rotate.get("z") - theta);
+                    rotate.set("z", rotate.get("z") - theta * dt);
                 }
                 if (k == '\\') {
                     segment.flipEnabled();
@@ -353,6 +368,8 @@ public class MapEditor extends DragonMind {
                 if (k == 'i') {
                     segment.flipIgnored();
                 }
+
+                // point operations
 
                 // highlight
                 if (k == '\'') {
@@ -385,6 +402,8 @@ public class MapEditor extends DragonMind {
                 }
 
             }
+
+            // movement step size choices
             if (k == '1') {
                 dt = 1;
             }
