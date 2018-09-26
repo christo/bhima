@@ -45,6 +45,11 @@ public class MapEditor extends DragonMind {
      */
     private float theta = PI * dt / 200;
 
+    /**
+     * The LED to highlight in the editor.
+     */
+    private int highlight;
+
     public void settings() {
         fullScreen(P3D);
         pixelDensity(2);
@@ -185,17 +190,28 @@ public class MapEditor extends DragonMind {
     }
 
     private void drawPoints(List<PixelPoint> pixels) {
-        PixelPoint prev = null;
         pushStyle();
         ellipseMode(CENTER);
-        for (PixelPoint pixel : pixels) {
-            if (prev != null) {
+        for (int i = 0; i < pixels.size(); i++) {
+            PixelPoint pixel = pixels.get(i);
+            if (i > 0) {
+                pushStyle();
+                PixelPoint prev = pixels.get(i - 1);
                 line(prev.getX(), prev.getY(), pixel.getX(), pixel.getY());
-                fill(color(255, 0, 0));
+                stroke(color(170, 0, 0));
+                popStyle();
             }
-            noFill();
-            ellipse(pixel.getX(), pixel.getY(), 6, 6);
-            prev = pixel;
+            // now draw the actual point
+            if (highlight == i) {
+                pushStyle();
+                fill(255, 0, 0, 127);
+                ellipse(pixel.getX(), pixel.getY(), 12, 12);
+                popStyle();
+                ellipse(pixel.getX(), pixel.getY(), 6, 6);
+            } else {
+                noFill();
+                ellipse(pixel.getX(), pixel.getY(), 6, 6);
+            }
         }
         popStyle();
     }
@@ -269,12 +285,14 @@ public class MapEditor extends DragonMind {
                 if (k == ']') {
                     selectedSegment++;
                     selectedSegment %= config.getPixelMap().size();
+                    highlight = 0;
                 } else if (k == '[') {
                     if (selectedSegment <= 0) {
                         selectedSegment = config.getPixelMap().size() - 1;
                     } else {
                         selectedSegment--;
                     }
+                    highlight = 0;
                 }
 
                 Segment segment = config.getPixelMap().get(selectedSegment);
@@ -326,6 +344,21 @@ public class MapEditor extends DragonMind {
                 if (k == '\\') {
                     segment.setEnabled(!segment.getEnabled());
                 }
+                if (k == 'i') {
+                    segment.setIgnored(!segment.getIgnored());
+                }
+
+                // highlight
+                if (k == '\'') {
+                    highlight++;
+                    highlight %= segment.getPixels().size();
+                } else if (k == ';') {
+                    highlight--;
+                    if (highlight < 0) {
+                        highlight = segment.getPixels().size() - 1;
+                    }
+                }
+
             }
             if (k == '1') {
                 dt = 1;

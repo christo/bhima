@@ -22,6 +22,7 @@ public final class Segment {
     private String description;
     private Background background;
     private boolean enabled = true;
+    private boolean ignored = false;
     @JsonInclude(NON_NULL)
     private List<Transform> transforms = Collections.emptyList();
     private List<PixelPoint> pixels;
@@ -99,6 +100,22 @@ public final class Segment {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public boolean getIgnored() {
+        return ignored;
+    }
+
+    public void setIgnored(boolean ignored) {
+        this.ignored = ignored;
+    }
+
+    public void flipIgnored() {
+        ignored = !ignored;
+    }
+
+    public void flipEnabled() {
+        enabled = !enabled;
     }
 
     @JsonIgnore
