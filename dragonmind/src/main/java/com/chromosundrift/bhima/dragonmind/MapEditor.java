@@ -69,7 +69,7 @@ public class MapEditor extends DragonMind {
     private int lineAlpha = 255;
 
     public void settings() {
-        fullScreen(P3D);
+        fullScreen(P2D);
         pixelDensity(2);
         smooth();
         try {
@@ -104,7 +104,7 @@ public class MapEditor extends DragonMind {
     }
 
     public void setup() {
-        background(190);
+        background(220);
         registerColour("Violet", 148, 0, 211);
         registerColour("Indigo", 75, 0, 130);
         registerColour("Blue", 0, 0, 255);
@@ -338,7 +338,7 @@ public class MapEditor extends DragonMind {
                 } catch (IOException e) {
                     logger.error("could not save config", e);
                 }
-                logger.info("saved");
+                logger.info("config saved");
             }
             if (k == 'o') {
                 try {
@@ -346,7 +346,7 @@ public class MapEditor extends DragonMind {
                 } catch (IOException e) {
                     logger.error("could not load config", e);
                 }
-                logger.info("loaded");
+                logger.info("config loaded");
             }
 
             // CMD + Arrows translate the whole background
