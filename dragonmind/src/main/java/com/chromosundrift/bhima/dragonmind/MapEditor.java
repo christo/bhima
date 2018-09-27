@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.chromosundrift.bhima.dragonmind.model.Transform.Type;
 import static com.chromosundrift.bhima.dragonmind.model.Transform.Type.*;
@@ -27,9 +29,9 @@ import static org.apache.commons.lang3.StringUtils.defaultString;
 public class MapEditor extends DragonMind {
 
     private static Logger logger = LoggerFactory.getLogger(MapEditor.class);
-    private static final String IMAGES_DIR = "mappings";
 
     private Config config;
+    private final CachingImageLoader loader = new CachingImageLoader(300);
     private PImage bg;
     private float bgX = 0;
     private float bgY = 0;
@@ -58,7 +60,13 @@ public class MapEditor extends DragonMind {
     private boolean rainbow;
 
     private List<NamedColour> colours = new ArrayList<>();
+
     private boolean showImage = false;
+
+    /**
+     * Global alpha value for all geometry. Toggle between mostly transparent and opaque.
+     */
+    private int lineAlpha = 255;
 
     public void settings() {
         fullScreen(P3D);
@@ -136,7 +144,7 @@ public class MapEditor extends DragonMind {
             pushStyle();
             // draw a callout box with the info in the top right, TODO connect to the segment with a line
             float w = 320;
-            float h = 200;
+            float h = 300;
             float screenX = width - w;
             float screenY = 50;
 
@@ -171,10 +179,11 @@ public class MapEditor extends DragonMind {
 
             PixelPoint thisPixel = pixels.get(highlight);
             text.append("Strip: " + thisPixel.getStrip())
-                    .append(" P#: ").append(thisPixel.getPixel()).append("\n");
-            text.append("Pixel ").append(highlight)
-                    .append(" ").append(thisPixel.getPoint().toString()).append("\n");
-            text.append("step size: " + dt);
+                    .append(" Pixel: ").append(thisPixel.getPixel())
+                    .append(" x,y: ").append(thisPixel.getPoint().toString()).append("\n");
+            text.append("P# ").append(highlight).append("\n\n");
+            text.append("step size: " + dt).append("\n");
+            text.append("seg xform: " + segment.getTransforms().toString());
 
             text(text.toString(), screenX + margin, screenY + margin, w - margin, 200 - margin);
             popStyle();
@@ -191,6 +200,8 @@ public class MapEditor extends DragonMind {
                 if (!segment.getTransforms().isEmpty()) {
                     // restore the segment in its location by applying the transforms to the points
                     applyTransforms(segment);
+                } else {
+                    logger.warn("Transform empty for segment " + i + ": " +segment.getName());
                 }
 
                 // draw it
@@ -201,6 +212,9 @@ public class MapEditor extends DragonMind {
                 } else if (i == selectedSegment) {
                     stroke(255, 0, 0);
                     strokeWeight(2);
+                    if (showImage) {
+                        drawSegmentImage(segment);
+                    }
                 } else {
                     stroke(255, 100, 0);
                     strokeWeight(1);
@@ -222,6 +236,28 @@ public class MapEditor extends DragonMind {
                 drawPoints(segment.getPixels());
                 popStyle();
                 popMatrix();
+            }
+        }
+    }
+
+    private void drawSegmentImage(Segment segment) {
+        String name = segment.getName();
+        // TODO add proper metadata for scan id
+        Pattern scanIdRx = Pattern.compile("mapping file is mappings/Mapping(\\d+)\\.csv");
+        Matcher m = scanIdRx.matcher(segment.getDescription());
+        if (m.find()) {
+            String scanId = m.group(1);
+            // image files look like this:
+            // Mapping-1537359798903-lightframe-00-0000.png
+            PixelPoint p = segment.getPixels().get(highlight);
+            String file = imageFile(scanId, "lightframe", p.getStrip(), p.getPixel());
+            try {
+                PImage image = loader.loadPimage(file);
+                image(image, 0, 0); // should be in transform matrix here
+            } catch (IOException e) {
+                logger.error("exception loading " + file, e);
+                logger.warn("turning off image loading");
+                showImage = false;
             }
         }
     }
@@ -249,27 +285,30 @@ public class MapEditor extends DragonMind {
             if (i > 0) {
                 pushStyle();
                 PixelPoint prev = pixels.get(i - 1);
-                stroke(170, 170, 170);
+                stroke(170, 170, 170, lineAlpha);
                 line(prev.getX(), prev.getY(), pixel.getX(), pixel.getY());
                 popStyle();
             }
             // now draw the actual point
             if (highlight == i) {
                 pushStyle();
-                fill(255, 0, 0, 127);
-                stroke(255, 0, 0);
-                ellipse(pixel.getX(), pixel.getY(), 16, 16);
+
+                stroke(255, 0, 0, lineAlpha);
+                noFill();
+                ellipse(pixel.getX(), pixel.getY(), 30, 30);
+
+                stroke(255, 0, 0, lineAlpha);
+                ellipse(pixel.getX(), pixel.getY(), 5, 5);
                 popStyle();
-                ellipse(pixel.getX(), pixel.getY(), 8, 8);
             } else {
                 noFill();
                 if (rainbow) {
                     NamedColour c = colours.get(pixel.getStrip() % colours.size());
-                    stroke(c.getRed(), c.getGreen(), c.getBlue());
-                    fill(c.getRed(), c.getGreen(), c.getBlue());
+                    stroke(c.getRed(), c.getGreen(), c.getBlue(), lineAlpha);
+                    fill(c.getRed(), c.getGreen(), c.getBlue(), lineAlpha);
                 } else {
-                    stroke(0);
-                    fill(0);
+                    stroke(0, lineAlpha);
+                    fill(0, lineAlpha);
                 }
                 ellipse(pixel.getX(), pixel.getY(), 8, 8);
             }
@@ -412,6 +451,15 @@ public class MapEditor extends DragonMind {
                 }
                 if (k == 'I') {
                     showImage = !showImage;
+                    logger.info("showImage: " + showImage);
+                }
+                if (k == 'U') {
+                    // make lines more opaque
+                    lineAlpha = min(255, lineAlpha + 16);
+                }
+                if (k == 'u') {
+                    // make lines more transparent
+                    lineAlpha = max(0, lineAlpha - 16);
                 }
 
                 // point operations

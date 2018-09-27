@@ -13,6 +13,8 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.Properties;
 
+import static java.lang.String.format;
+
 /**
  * Processing-based app for running patterns.
  */
@@ -23,6 +25,10 @@ public class DragonMind extends ProcessingBase {
 
     private BallsProgram balls = new BallsProgram();
     private PusherMan pusherMan;
+
+    protected static String imageFile(String scanId, String frame, int strip, int pixel) {
+        return format("mappings/Mapping-%s-%s-%02d-%04d%s", scanId, frame, strip, pixel, ".png");
+    }
 
     public void settings() {
         size(1920, 1080);

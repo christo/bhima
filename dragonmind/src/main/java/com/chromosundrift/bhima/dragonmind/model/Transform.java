@@ -91,10 +91,7 @@ public final class Transform {
 
     @Override
     public String toString() {
-        return "Transform{" +
-                "type='" + type + '\'' +
-                ", parameters=" + parameters +
-                '}';
+        return type + "{" + parameters + '}';
     }
 
     @JsonIgnore

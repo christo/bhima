@@ -179,7 +179,7 @@ public class ArrayScanner2 extends DragonMind {
             if (config.getBackgroundImage() != null) {
                 // TODO config transform
                 // TODO local zoom
-                bgImage.set(0,0,new PImage(config.getBackgroundImage()));
+                bgImage.set(0, 0, new PImage(config.getBackgroundImage()));
             }
         } else {
             if (camera == null) {
@@ -428,8 +428,7 @@ public class ArrayScanner2 extends DragonMind {
     private void saveScanImage(PImage image, String frameName, int strip, int pixel) {
         offload(() -> {
             try {
-                String prefix = "mappings/Mapping";
-                image.save(format("%s-%d-%s-%02d-%04d%s", prefix, scanId, frameName, strip, pixel, ".png"));
+                image.save(imageFile(Long.toString(scanId), frameName, strip, pixel));
             } catch (RuntimeException e) {
                 log(format("thread %s error %s", currentThread().getName(), e.getMessage()));
                 e.printStackTrace();
