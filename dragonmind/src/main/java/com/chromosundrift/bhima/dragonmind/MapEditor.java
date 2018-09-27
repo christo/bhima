@@ -13,6 +13,7 @@ import processing.event.KeyEvent;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,6 +52,14 @@ public class MapEditor extends DragonMind {
      */
     private int highlight;
 
+    /**
+     * Whether to show strips in different colours.
+     */
+    private boolean rainbow;
+
+    private List<NamedColour> colours = new ArrayList<>();
+    private boolean showImage = false;
+
     public void settings() {
         fullScreen(P3D);
         pixelDensity(2);
@@ -88,28 +97,47 @@ public class MapEditor extends DragonMind {
 
     public void setup() {
         background(190);
+        registerColour("Violet", 148, 0, 211);
+        registerColour("Indigo", 75, 0, 130);
+        registerColour("Blue", 0, 0, 255);
+        registerColour("Green", 0, 255, 0);
+        registerColour("Yellow", 255, 255, 0);
+        registerColour("Orange", 255, 127, 0);
+        registerColour("Red", 255, 0, 0);
+    }
+
+    private void registerColour(String name, int red, int green, int blue) {
+        colours.add(new NamedColour(name, red, green, blue));
     }
 
     @Override
     public void draw() {
-        fill(190);
-        rect(0, 0, width, height);
-        pushMatrix();
-        translate(bgX, bgY);
-        scale(bgScaleX, bgScaleY);
-        drawBackground();
-        drawSegments();
-        popMatrix();
-        drawSegmentInfo();
+        try {
+            fill(190);
+            rect(0, 0, width, height);
+            pushMatrix();
+            translate(bgX, bgY);
+            scale(bgScaleX, bgScaleY);
+            drawBackground();
+            drawSegments();
+            popMatrix();
+            drawSegmentInfo();
+        } catch (RuntimeException e) {
+            // TODO fix hack; split causes modification under iteration
+            logger.error("got runtime exception while drawing: " + e.getMessage(), e);
+            highlight = 0;
+        }
     }
 
     private void drawSegmentInfo() {
         if (!config.getPixelMap().isEmpty()) {
             Segment segment = config.getPixelMap().get(selectedSegment);
-            int margin = 10;
+            int margin = 20;
             pushStyle();
             // draw a callout box with the info in the top right, TODO connect to the segment with a line
-            float screenX = width - 300;
+            float w = 320;
+            float h = 200;
+            float screenX = width - w;
             float screenY = 50;
 
             // TODO reproduce background + segment transform arithmetically to get screen coord of bounding box
@@ -118,12 +146,12 @@ public class MapEditor extends DragonMind {
             if (segment.getEnabled()) {
                 fill(230);
             } else if (segment.getIgnored()) {
-                fill(230, 230, 160);
+                fill(240, 240, 140);
             } else {
                 fill(230, 200, 200);
             }
             // background for text
-            rect(screenX, screenY, 290, 200);
+            rect(screenX, screenY, w, h);
             fill(0);
             stroke(255, 0, 0);
             // label for segment
@@ -140,9 +168,15 @@ public class MapEditor extends DragonMind {
                     .append("\n\n").append("pixels: ").append(pixels.size());
             Set<Integer> strips = pixels.stream().map(PixelPoint::getStrip).collect(toSet());
             text.append(" strips: ").append(StringUtils.join(strips, ", ")).append("\n\n");
-            text.append("Pixel ").append(highlight);
 
-            text(text.toString(), screenX + margin, 50, 290, 200);
+            PixelPoint thisPixel = pixels.get(highlight);
+            text.append("Strip: " + thisPixel.getStrip())
+                    .append(" P#: ").append(thisPixel.getPixel()).append("\n");
+            text.append("Pixel ").append(highlight)
+                    .append(" ").append(thisPixel.getPoint().toString()).append("\n");
+            text.append("step size: " + dt);
+
+            text(text.toString(), screenX + margin, screenY + margin, w - margin, 200 - margin);
             popStyle();
         }
     }
@@ -215,8 +249,8 @@ public class MapEditor extends DragonMind {
             if (i > 0) {
                 pushStyle();
                 PixelPoint prev = pixels.get(i - 1);
+                stroke(170, 170, 170);
                 line(prev.getX(), prev.getY(), pixel.getX(), pixel.getY());
-                stroke(170, 0, 0);
                 popStyle();
             }
             // now draw the actual point
@@ -224,12 +258,20 @@ public class MapEditor extends DragonMind {
                 pushStyle();
                 fill(255, 0, 0, 127);
                 stroke(255, 0, 0);
-                ellipse(pixel.getX(), pixel.getY(), 12, 12);
+                ellipse(pixel.getX(), pixel.getY(), 16, 16);
                 popStyle();
-                ellipse(pixel.getX(), pixel.getY(), 6, 6);
+                ellipse(pixel.getX(), pixel.getY(), 8, 8);
             } else {
                 noFill();
-                ellipse(pixel.getX(), pixel.getY(), 6, 6);
+                if (rainbow) {
+                    NamedColour c = colours.get(pixel.getStrip() % colours.size());
+                    stroke(c.getRed(), c.getGreen(), c.getBlue());
+                    fill(c.getRed(), c.getGreen(), c.getBlue());
+                } else {
+                    stroke(0);
+                    fill(0);
+                }
+                ellipse(pixel.getX(), pixel.getY(), 8, 8);
             }
         }
         popStyle();
@@ -368,17 +410,21 @@ public class MapEditor extends DragonMind {
                 if (k == 'i') {
                     segment.flipIgnored();
                 }
+                if (k == 'I') {
+                    showImage = !showImage;
+                }
 
                 // point operations
 
                 // highlight
                 if (k == '\'') {
-                    highlight++;
+                    highlight += dt;
                     highlight %= segment.getPixels().size();
                 } else if (k == ';') {
-                    highlight--;
+                    highlight -= dt;
                     if (highlight < 0) {
-                        highlight = segment.getPixels().size() - 1;
+                        // wrap around at bottom
+                        highlight = segment.getPixels().size() + highlight;
                     }
                 } else if (k == '|') {
                     // split the segment
@@ -401,6 +447,9 @@ public class MapEditor extends DragonMind {
                     highlight %= segment.getPixels().size();
                 }
 
+            }
+            if (k == 'r') {
+                rainbow = !rainbow;
             }
 
             // movement step size choices
