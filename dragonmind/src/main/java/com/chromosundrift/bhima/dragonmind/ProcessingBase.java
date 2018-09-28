@@ -1,7 +1,10 @@
 package com.chromosundrift.bhima.dragonmind;
 
+import com.chromosundrift.bhima.dragonmind.model.Config;
+import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
 import com.chromosundrift.bhima.dragonmind.model.Point;
 import com.chromosundrift.bhima.dragonmind.model.Rect;
+import com.chromosundrift.bhima.dragonmind.model.Segment;
 import processing.core.PApplet;
 import processing.core.PImage;
 
@@ -115,5 +118,23 @@ public class ProcessingBase extends PApplet {
 
     protected void rect(Rect b) {
         rect(b.getMinMin().getX(), b.getMinMin().getY(), b.getMaxMax().getX(), b.getMaxMax().getY());
+    }
+
+    protected Rect boundingRect(Config config) {
+        int minx = Integer.MAX_VALUE;
+        int miny = Integer.MAX_VALUE;
+        int maxx = Integer.MIN_VALUE;
+        int maxy = Integer.MIN_VALUE;
+        for (Segment segment : config.getPixelMap()) {
+            for (PixelPoint pixel : segment.getPixels()) {
+                int x = pixel.getX();
+                int y = pixel.getY();
+                minx = min(minx, x);
+                miny = min(miny, y);
+                maxx = max(maxx, x);
+                maxy = max(maxy, y);
+            }
+        }
+        return new Rect(new Point(minx, miny), new Point(maxx, maxy));
     }
 }

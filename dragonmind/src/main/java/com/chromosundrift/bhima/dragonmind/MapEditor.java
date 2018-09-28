@@ -2,6 +2,7 @@ package com.chromosundrift.bhima.dragonmind;
 
 import com.chromosundrift.bhima.dragonmind.model.Config;
 import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
+import com.chromosundrift.bhima.dragonmind.model.Rect;
 import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.chromosundrift.bhima.dragonmind.model.Transform;
 import org.apache.commons.lang3.StringUtils;
@@ -9,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
 import processing.core.PImage;
+import processing.core.PMatrix;
 import processing.event.KeyEvent;
 
 import java.awt.image.BufferedImage;
@@ -130,12 +132,24 @@ public class MapEditor extends DragonMind {
             drawSegments();
             popMatrix();
             drawSegmentInfo();
+            drawGlobalBoundingBox();
         } catch (RuntimeException e) {
             // TODO fix hack; split causes modification under iteration
             logger.error("got runtime exception while drawing: " + e.getMessage(), e);
             highlight = 0;
         }
     }
+
+    private void drawGlobalBoundingBox() {
+        noFill();
+        stroke(0, 0, 255);
+
+        Rect b = boundingRect(config);
+        // TODO need to use getMatrix, applyMatrix and matrix.invert to get us to screen space to draw this properly
+        rect(b);
+
+    }
+
 
     private void drawSegmentInfo() {
         if (!config.getPixelMap().isEmpty()) {
@@ -201,7 +215,7 @@ public class MapEditor extends DragonMind {
                     // restore the segment in its location by applying the transforms to the points
                     applyTransforms(segment);
                 } else {
-                    logger.warn("Transform empty for segment " + i + ": " +segment.getName());
+                    logger.warn("Transform empty for segment " + i + ": " + segment.getName());
                 }
 
                 // draw it
