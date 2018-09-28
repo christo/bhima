@@ -8,6 +8,7 @@ group 'com.chromosundrift'
 version '1.0-SNAPSHOT'
 
 mainClassName = "com.heroicrobot.processing.examples.ArrayScanner2"
+applicationDefaultJvmArgs = ["-Dgreeting.language=en"]
 
 sourceCompatibility = 1.8
 
