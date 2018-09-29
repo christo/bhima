@@ -7,7 +7,7 @@ plugins {
 group 'com.chromosundrift'
 version '1.0-SNAPSHOT'
 
-mainClassName = "com.heroicrobot.processing.examples.ArrayScanner2"
+mainClassName = "com.chromosundrift.bhima.dragonmind.BhimaSup"
 applicationDefaultJvmArgs = ["-Dgreeting.language=en"]
 
 sourceCompatibility = 1.8
