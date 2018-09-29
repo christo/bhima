@@ -193,7 +193,7 @@ public class ArrayScanner2 extends DragonMind {
                 drawPattern(bgImage);
                 renderMainImage();
                 if (displayMap.size() > 0) {
-                    mapSurfaceToPixels(bgImage);
+                    mapSurfaceToPixels(bgImage, displayMap);
                     return;
                 }
             } else {
@@ -256,17 +256,6 @@ public class ArrayScanner2 extends DragonMind {
         testButton.setLocalColorScheme(mode == TEST ? 5 : 0); // TODO wtf are the colour schemes?
     }
 
-
-    private void mapSurfaceToPixels(PImage pImage) {
-        if (getPusherMan().isReady()) {
-            List<Strip> strips = getPusherMan().getStrips();
-            for (PixelPoint pp : displayMap) {
-                Strip strip = strips.get(pp.getStrip());
-                int targetColour = pImage.get(pp.getX(), pp.getY());
-                strip.setPixel(targetColour, pp.getPixel());
-            }
-        }
-    }
 
     private void drawTestMode() {
         testPixels();

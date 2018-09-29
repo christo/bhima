@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
 import processing.core.PImage;
-import processing.core.PMatrix;
 import processing.event.KeyEvent;
 
 import java.awt.image.BufferedImage;
@@ -23,7 +22,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.chromosundrift.bhima.dragonmind.model.Transform.Type;
-import static com.chromosundrift.bhima.dragonmind.model.Transform.Type.*;
+import static com.chromosundrift.bhima.dragonmind.model.Transform.Type.SCALE;
+import static com.chromosundrift.bhima.dragonmind.model.Transform.Type.TRANSLATE;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.defaultString;
@@ -130,13 +130,16 @@ public class MapEditor extends DragonMind {
             scale(bgScaleX, bgScaleY);
             drawBackground();
             drawSegments();
-            popMatrix();
-            drawSegmentInfo();
-            drawGlobalBoundingBox();
+
         } catch (RuntimeException e) {
             // TODO fix hack; split causes modification under iteration
             logger.error("got runtime exception while drawing: " + e.getMessage(), e);
             highlight = 0;
+
+        } finally {
+            popMatrix();
+            drawSegmentInfo();
+            drawGlobalBoundingBox();
         }
     }
 
@@ -213,7 +216,7 @@ public class MapEditor extends DragonMind {
                 pushStyle();
                 if (!segment.getTransforms().isEmpty()) {
                     // restore the segment in its location by applying the transforms to the points
-                    applyTransforms(segment);
+                    applyTransformsFor(segment);
                 } else {
                     logger.warn("Transform empty for segment " + i + ": " + segment.getName());
                 }
@@ -225,7 +228,7 @@ public class MapEditor extends DragonMind {
                     strokeWeight(0.5f);
                 } else if (i == selectedSegment) {
                     stroke(255, 0, 0);
-                    strokeWeight(2);
+                    strokeWeight(5);
                     if (showImage) {
                         drawSegmentImage(segment);
                     }
@@ -276,21 +279,6 @@ public class MapEditor extends DragonMind {
         }
     }
 
-    private void applyTransforms(Segment segment) {
-        List<Transform> transforms = segment.getTransforms();
-        for (Transform t : transforms) {
-            Map<String, Float> params = t.getParameters();
-            if (t.is(TRANSLATE)) {
-                translate(params.get("x"), params.get("y"));
-            } else if (t.is(SCALE)) {
-                scale(params.get("x"), params.get("y"));
-            } else if (t.is(ROTATE)) {
-                // radians
-                rotate(params.get("z"));
-            }
-        }
-    }
-
     private void drawPoints(List<PixelPoint> pixels) {
         pushStyle();
         ellipseMode(CENTER);
@@ -331,11 +319,13 @@ public class MapEditor extends DragonMind {
     }
 
     private void drawBackground() {
-        if (bg == null) {
-            BufferedImage backgroundImage = config.getBackgroundImage();
-            bg = new PImage(backgroundImage);
+        if (config.getBackgroundImage() != null) {
+            if (bg == null) {
+                BufferedImage backgroundImage = config.getBackgroundImage();
+                bg = new PImage(backgroundImage);
+            }
+            image(bg, 0, 0);
         }
-        image(bg, 0, 0);
     }
 
     @Override

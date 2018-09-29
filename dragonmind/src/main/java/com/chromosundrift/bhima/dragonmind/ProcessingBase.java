@@ -5,12 +5,19 @@ import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
 import com.chromosundrift.bhima.dragonmind.model.Point;
 import com.chromosundrift.bhima.dragonmind.model.Rect;
 import com.chromosundrift.bhima.dragonmind.model.Segment;
+import com.chromosundrift.bhima.dragonmind.model.Transform;
 import processing.core.PApplet;
 import processing.core.PImage;
 
+import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import static com.chromosundrift.bhima.dragonmind.model.Transform.Type.ROTATE;
+import static com.chromosundrift.bhima.dragonmind.model.Transform.Type.SCALE;
+import static com.chromosundrift.bhima.dragonmind.model.Transform.Type.TRANSLATE;
 
 public class ProcessingBase extends PApplet {
 
@@ -136,5 +143,20 @@ public class ProcessingBase extends PApplet {
             }
         }
         return new Rect(new Point(minx, miny), new Point(maxx, maxy));
+    }
+
+    protected void applyTransformsFor(Segment segment) {
+        List<Transform> transforms = segment.getTransforms();
+        for (Transform t : transforms) {
+            Map<String, Float> params = t.getParameters();
+            if (t.is(TRANSLATE)) {
+                translate(params.get("x"), params.get("y"));
+            } else if (t.is(SCALE)) {
+                scale(params.get("x"), params.get("y"));
+            } else if (t.is(ROTATE)) {
+                // radians
+                rotate(params.get("z"));
+            }
+        }
     }
 }

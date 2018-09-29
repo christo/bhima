@@ -1,5 +1,7 @@
 package com.chromosundrift.bhima.dragonmind;
 
+import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
+import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
 import g4p_controls.GAlign;
 import g4p_controls.GLabel;
 import org.apache.commons.lang3.tuple.ImmutablePair;
@@ -11,6 +13,8 @@ import processing.core.PImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import static java.lang.String.format;
@@ -118,5 +122,16 @@ public class DragonMind extends ProcessingBase {
         glabel.setAlpha(200);
         glabel.setText(title, halign, GAlign.MIDDLE);
         return glabel;
+    }
+
+    protected void mapSurfaceToPixels(PImage pImage, List<PixelPoint> pixelPoints) {
+        if (getPusherMan().isReady()) {
+            List<Strip> strips = getPusherMan().getStrips();
+            for (PixelPoint pp : pixelPoints) {
+                Strip strip = strips.get(pp.getStrip());
+                int targetColour = pImage.get(pp.getX(), pp.getY());
+                strip.setPixel(targetColour, pp.getPixel());
+            }
+        }
     }
 }
