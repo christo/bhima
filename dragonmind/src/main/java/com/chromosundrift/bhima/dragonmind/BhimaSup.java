@@ -45,23 +45,25 @@ public class BhimaSup extends DragonMind {
 
     @Override
     public void draw() {
-        image(movie, 0, 0, width, height);
-        pushMatrix();
-        applyTransforms(config.getBackground().getTransforms());
-        translate(-2.38f * width, -0.70f * height);
-        scale((float) width / 1920);
-        PImage pImage = movie.get();
-        getPusherMan().ensureReady();
-        config.getPixelMap().forEach(segment -> {
-            if (segment.getEnabled() && !segment.getIgnored()) {
-                pushMatrix();
-                applyTransforms(segment.getTransforms());
-                mapSurfaceToPixels(pImage, segment.getPixels());
-                drawPoints(segment.getPixels(), 255, false, Collections.emptyList(), -1, color(255, 0, 0, 255), color(170, 170, 170, 255), color(255, 255));
-                popMatrix();
-            }
-        });
-        popMatrix();
+        if (movie != null) {
+            image(movie, 0, 0, width, height);
+            pushMatrix();
+            applyTransforms(config.getBackground().getTransforms());
+            translate(-2.38f * width, -0.70f * height);
+            scale((float) width / 1920);
+            PImage pImage = movie.get();
+            getPusherMan().ensureReady();
+            config.getPixelMap().forEach(segment -> {
+                if (segment.getEnabled() && !segment.getIgnored()) {
+                    pushMatrix();
+                    applyTransforms(segment.getTransforms());
+                    mapSurfaceToPixels(pImage, segment.getPixels());
+                    drawPoints(segment.getPixels(), 255, false, Collections.emptyList(), -1, color(255, 0, 0, 255), color(170, 170, 170, 255), color(255, 255));
+                    popMatrix();
+                }
+            });
+            popMatrix();
+        }
 
     }
 
@@ -82,10 +84,6 @@ public class BhimaSup extends DragonMind {
             movie.loop();
         } else {
             logger.error(("movie not loaded and available"));
-        }
-
-        if (movie != null) {
-            image(movie, 0, height/2 - movie.height/2, width, height * movie.width/width);
         }
     }
 
