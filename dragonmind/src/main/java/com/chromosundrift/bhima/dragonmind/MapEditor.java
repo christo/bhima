@@ -216,7 +216,8 @@ public class MapEditor extends DragonMind {
                 pushStyle();
                 if (!segment.getTransforms().isEmpty()) {
                     // restore the segment in its location by applying the transforms to the points
-                    applyTransformsFor(segment);
+                    List<Transform> transforms = segment.getTransforms();
+                    applyTransforms(transforms);
                 } else {
                     logger.warn("Transform empty for segment " + i + ": " + segment.getName());
                 }
@@ -250,7 +251,7 @@ public class MapEditor extends DragonMind {
                     stroke(127);
                     strokeWeight(3);
                 }
-                drawPoints(segment.getPixels());
+                drawPoints(segment.getPixels(), lineAlpha, rainbow, colours, highlight, color(255, 0, 0, lineAlpha), color(170, 170, 170, lineAlpha), color(0, 255));
                 popStyle();
                 popMatrix();
             }
@@ -277,45 +278,6 @@ public class MapEditor extends DragonMind {
                 showImage = false;
             }
         }
-    }
-
-    private void drawPoints(List<PixelPoint> pixels) {
-        pushStyle();
-        ellipseMode(CENTER);
-        for (int i = 0; i < pixels.size(); i++) {
-            PixelPoint pixel = pixels.get(i);
-            if (i > 0) {
-                pushStyle();
-                PixelPoint prev = pixels.get(i - 1);
-                stroke(170, 170, 170, lineAlpha);
-                line(prev.getX(), prev.getY(), pixel.getX(), pixel.getY());
-                popStyle();
-            }
-            // now draw the actual point
-            if (highlight == i) {
-                pushStyle();
-
-                stroke(255, 0, 0, lineAlpha);
-                noFill();
-                ellipse(pixel.getX(), pixel.getY(), 30, 30);
-
-                stroke(255, 0, 0, lineAlpha);
-                ellipse(pixel.getX(), pixel.getY(), 5, 5);
-                popStyle();
-            } else {
-                noFill();
-                if (rainbow) {
-                    NamedColour c = colours.get(pixel.getStrip() % colours.size());
-                    stroke(c.getRed(), c.getGreen(), c.getBlue(), lineAlpha);
-                    fill(c.getRed(), c.getGreen(), c.getBlue(), lineAlpha);
-                } else {
-                    stroke(0, lineAlpha);
-                    fill(0, lineAlpha);
-                }
-                ellipse(pixel.getX(), pixel.getY(), 8, 8);
-            }
-        }
-        popStyle();
     }
 
     private void drawBackground() {

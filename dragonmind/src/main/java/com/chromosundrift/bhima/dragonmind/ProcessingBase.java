@@ -1,5 +1,6 @@
 package com.chromosundrift.bhima.dragonmind;
 
+import com.chromosundrift.bhima.dragonmind.model.Background;
 import com.chromosundrift.bhima.dragonmind.model.Config;
 import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
 import com.chromosundrift.bhima.dragonmind.model.Point;
@@ -145,8 +146,7 @@ public class ProcessingBase extends PApplet {
         return new Rect(new Point(minx, miny), new Point(maxx, maxy));
     }
 
-    protected void applyTransformsFor(Segment segment) {
-        List<Transform> transforms = segment.getTransforms();
+    protected void applyTransforms(List<Transform> transforms) {
         for (Transform t : transforms) {
             Map<String, Float> params = t.getParameters();
             if (t.is(TRANSLATE)) {

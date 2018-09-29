@@ -9,6 +9,7 @@ import processing.video.Movie;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 
 public class BhimaSup extends DragonMind {
@@ -45,22 +46,23 @@ public class BhimaSup extends DragonMind {
     @Override
     public void draw() {
         image(movie, 0, 0, width, height);
-        // TODO apply global transform
-        //
-
-        translate(-252, -110);
-        scale(0.60655075f);
-
+        pushMatrix();
+        applyTransforms(config.getBackground().getTransforms());
+        translate(-2.38f * width, -0.70f * height);
+        scale((float) width / 1920);
         PImage pImage = movie.get();
-
+        getPusherMan().ensureReady();
         config.getPixelMap().forEach(segment -> {
-            pushMatrix();
-            applyTransformsFor(segment);
-            mapSurfaceToPixels(pImage, segment.getPixels());
-
-            popMatrix();
+            if (segment.getEnabled() && !segment.getIgnored()) {
+                pushMatrix();
+                applyTransforms(segment.getTransforms());
+                mapSurfaceToPixels(pImage, segment.getPixels());
+                drawPoints(segment.getPixels(), 255, false, Collections.emptyList(), -1, color(255, 0, 0, 255), color(170, 170, 170, 255), color(255, 255));
+                popMatrix();
+            }
         });
-        // render the segment pixels
+        popMatrix();
+
     }
 
     private void drawWithRotation() {

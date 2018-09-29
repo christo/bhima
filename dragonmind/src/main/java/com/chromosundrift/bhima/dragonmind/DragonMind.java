@@ -1,6 +1,7 @@
 package com.chromosundrift.bhima.dragonmind;
 
 import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
+import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
 import g4p_controls.GAlign;
 import g4p_controls.GLabel;
@@ -13,7 +14,6 @@ import processing.core.PImage;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
@@ -133,5 +133,52 @@ public class DragonMind extends ProcessingBase {
                 strip.setPixel(targetColour, pp.getPixel());
             }
         }
+    }
+
+    protected void drawPoints(List<PixelPoint> pixels,
+                              int lineAlpha,
+                              boolean rainbow,
+                              List<NamedColour> colours,
+                              int highlight,
+                              int brightHighlight,
+                              int wire,
+                              int strongForeground) {
+
+        pushStyle();
+        ellipseMode(CENTER);
+        for (int i = 0; i < pixels.size(); i++) {
+            PixelPoint pixel = pixels.get(i);
+            if (i > 0) {
+                pushStyle();
+                PixelPoint prev = pixels.get(i - 1);
+                stroke(wire);
+                line(prev.getX(), prev.getY(), pixel.getX(), pixel.getY());
+                popStyle();
+            }
+            // now draw the actual point
+            if (highlight == i) {
+                pushStyle();
+
+                stroke(brightHighlight);
+                noFill();
+                ellipse(pixel.getX(), pixel.getY(), 30, 30);
+
+                stroke(brightHighlight);
+                ellipse(pixel.getX(), pixel.getY(), 5, 5);
+                popStyle();
+            } else {
+                noFill();
+                if (rainbow) {
+                    NamedColour c = colours.get(pixel.getStrip() % colours.size());
+                    stroke(c.getRed(), c.getGreen(), c.getBlue(), lineAlpha);
+                    fill(c.getRed(), c.getGreen(), c.getBlue(), lineAlpha);
+                } else {
+                    stroke(strongForeground);
+                    fill(strongForeground);
+                }
+                ellipse(pixel.getX(), pixel.getY(), 8, 8);
+            }
+        }
+        popStyle();
     }
 }
