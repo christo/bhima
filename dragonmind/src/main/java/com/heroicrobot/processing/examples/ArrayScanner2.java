@@ -39,10 +39,12 @@ import static java.lang.String.format;
 import static java.lang.Thread.currentThread;
 
 // TODO load bgimage and map editor
+// TODO separate the UI
 @SuppressWarnings("unused")
 public class ArrayScanner2 extends DragonMind {
 
     final static Logger logger = LoggerFactory.getLogger(ArrayScanner2.class);
+    private static final boolean ENABLE_CAMERA = false;
     private int startStrip = 0;
     private int startPixel = 0;
     private int stopStrip = 0;
@@ -141,14 +143,16 @@ public class ArrayScanner2 extends DragonMind {
     }
 
     private void camList() {
-        camera = Mapper.highestBandwidthCamera(Capture.list());
-        video = new Capture(this, camera);
-        video.start();
-        camInit();
+        if (ENABLE_CAMERA) {
+            camera = Mapper.highestBandwidthCamera(Capture.list());
+            video = new Capture(this, camera);
+            video.start();
+            camInit();
+        }
     }
 
     private void camInit() {
-        if (video.available()) {
+        if (ENABLE_CAMERA && video.available()) {
             video.read();
             currentFrame = video.get();
 
@@ -182,10 +186,10 @@ public class ArrayScanner2 extends DragonMind {
                 bgImage.set(0, 0, new PImage(config.getBackgroundImage()));
             }
         } else {
-            if (camera == null) {
+            if (ENABLE_CAMERA && camera == null) {
                 camList();
             }
-            if (!camReady) {
+            if (ENABLE_CAMERA && !camReady) {
                 camInit();
             } else if (mode == Mapper.Mode.CAM_SCAN) {
                 doCamScan();
@@ -201,12 +205,12 @@ public class ArrayScanner2 extends DragonMind {
                     // TODO load model backgrounds
                     setMainImage(bgImage, "model");
                 }
-                if (video.available()) {
+                if (ENABLE_CAMERA && video.available()) {
                     video.read();
                     currentFrame = video.get();
                 }
                 if (mode != Mapper.Mode.WAIT) {
-                    drawTestMode();
+                    testPixels();
                 }
             }
             renderMainImage();
@@ -257,10 +261,6 @@ public class ArrayScanner2 extends DragonMind {
     }
 
 
-    private void drawTestMode() {
-        testPixels();
-    }
-
     private void renderAllImges() {
         // divide screen by number of images
         smallImageWidth = (float) width / 5;
@@ -287,6 +287,7 @@ public class ArrayScanner2 extends DragonMind {
         // pixelpusher strips are numbered on the PCB starting from 1
         int sNum = 0;
         for (Strip strip : strips) {
+            //log("sNum " + sNum + " strip "+strip.getStripNumber()+" is on PP" + strip.getPusher());
             int c = palette.getDark();
             if (sNum == testStripNum) {
                 c = palette.getLight();
@@ -593,7 +594,6 @@ public class ArrayScanner2 extends DragonMind {
     }
 
     public void handleButtonEvents(GButton button, GEvent event) {
-        log("got button event for " + button.getText());
         // Folder selection
         if (button == newScanButton) {
             startNewScan();
@@ -617,7 +617,6 @@ public class ArrayScanner2 extends DragonMind {
                 }
             }
         }
-        log("finished handle button events");
     }
 
     public void handleTextEvents(GEditableTextControl textcontrol, GEvent event) {
