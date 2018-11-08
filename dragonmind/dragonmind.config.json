@@ -83,6 +83,7 @@
   }, {
     "segment" : "Right neck",
     "description" : "2 panels, registered. lidcombe scan, mapping file is mappings/Mapping1537779597264.csv",
+    "stripNumberOverride" : 19,
     "enabled" : true,
     "ignored" : false,
     "transforms" : [ {
@@ -251,6 +252,7 @@
   }, {
     "segment" : "Right second headmost trio mapping 1537784392804",
     "description" : "lidcombe scan, mapping file is mappings/Mapping1537784392804.csv",
+    "stripNumberOverride" : 1,
     "enabled" : true,
     "ignored" : false,
     "transforms" : [ {
@@ -275,6 +277,7 @@
   }, {
     "segment" : "Right third headmost trio mapping 1537785224894",
     "description" : "lidcombe scan, mapping file is mappings/Mapping1537785224894.csv",
+    "stripNumberOverride" : 2,
     "enabled" : true,
     "ignored" : false,
     "transforms" : [ {
@@ -323,6 +326,7 @@
   }, {
     "segment" : "Right fourth headmost trio mapping 1537788427342",
     "description" : "lidcombe scan, mapping file is mappings/Mapping1537788427342.csv",
+    "stripNumberOverride" : 3,
     "enabled" : true,
     "ignored" : false,
     "transforms" : [ {
@@ -347,6 +351,7 @@
   }, {
     "segment" : "Right fifth headmost trio, mapping 1537789150522",
     "description" : "lidcombe scan, mapping file is mappings/Mapping1537789150522.csv",
+    "stripNumberOverride" : 8,
     "enabled" : true,
     "ignored" : false,
     "transforms" : [ {

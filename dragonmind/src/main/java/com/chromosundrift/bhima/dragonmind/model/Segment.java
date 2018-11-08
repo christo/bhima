@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -23,6 +22,7 @@ public final class Segment {
     private String name;
     private String description;
     private Background background;
+    private int stripNumberOverride = -1;
 
     /**
      * Does not light up nor display in the editor.
@@ -118,6 +118,14 @@ public final class Segment {
 
     public void setIgnored(boolean ignored) {
         this.ignored = ignored;
+    }
+
+    public int getStripNumberOverride() {
+        return stripNumberOverride;
+    }
+
+    public void setStripNumberOverride(int stripNumberOverride) {
+        this.stripNumberOverride = stripNumberOverride;
     }
 
     public void flipIgnored() {

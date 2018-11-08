@@ -200,6 +200,7 @@ public class MapEditor extends DragonMind {
                     .append(" x,y: ").append(thisPixel.getPoint().toString()).append("\n");
             text.append("P# ").append(highlight).append("\n\n");
             text.append("step size: " + dt).append("\n");
+            text.append("strip num override: ").append(segment.getStripNumberOverride()).append("\n\n");
             text.append("seg xform: " + segment.getTransforms().toString());
 
             text(text.toString(), screenX + margin, screenY + margin, w - margin, 200 - margin);

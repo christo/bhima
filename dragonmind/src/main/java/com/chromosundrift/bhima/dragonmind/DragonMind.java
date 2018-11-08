@@ -1,12 +1,13 @@
 package com.chromosundrift.bhima.dragonmind;
 
 import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
-import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
 import g4p_controls.GAlign;
 import g4p_controls.GLabel;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import processing.core.PFont;
 import processing.core.PGraphics;
 import processing.core.PImage;
@@ -24,6 +25,7 @@ import static java.lang.String.format;
  */
 public class DragonMind extends ProcessingBase {
 
+    private static final Logger logger = LoggerFactory.getLogger(DragonMind.class);
     public static final String PROP_FILE = "build.properties";
     private static final boolean DEBUG_NOISY = false;
 
@@ -128,8 +130,46 @@ public class DragonMind extends ProcessingBase {
         if (getPusherMan().isReady()) {
             List<Strip> strips = getPusherMan().getStrips();
             for (PixelPoint pp : pixelPoints) {
-                Strip strip = strips.get(pp.getStrip());
-                int targetColour = pImage.get(pp.getX(), pp.getY());
+                // TODO fix this HACK, need to edit mapped strip nums in config
+                int mappedStripNum = pp.getStrip();
+                int actualStripNum= mappedStripNum;
+                switch (mappedStripNum) {
+                    case 5:
+                        actualStripNum = 2;
+                        break;
+                    case 6:
+                        actualStripNum = 10;
+                        break;
+                    case 7:
+                        actualStripNum = 1;
+                        break;
+                    case 8:
+                        actualStripNum = 3;
+                        break;
+                    case 9:
+                        actualStripNum = 20;
+                        break;
+                    case 12:
+                        actualStripNum = 8;
+                        break;
+                    case 17:
+                        actualStripNum = 19;
+                        break;
+                }
+
+                if (actualStripNum != mappedStripNum) {
+                    logger.debug(String.format("hackmap: strip %d -> %d", mappedStripNum, actualStripNum));
+                }
+                Strip strip = strips.get(actualStripNum);
+                // translate local strip number into global
+
+                // TODO big fat wrong: check this out - trying to get the screen x,y for the transformed x and y of the model
+                int ppx = (int) screenX(pp.getX(),pp.getY(), 0);
+                int ppy = (int) screenX(pp.getX(), pp.getY(), 0);
+//                int ppx = pp.getX();
+//                int ppy = pp.getY();
+                int targetColour = pImage.get(ppx, ppy);
+
                 strip.setPixel(targetColour, pp.getPixel());
             }
         }
