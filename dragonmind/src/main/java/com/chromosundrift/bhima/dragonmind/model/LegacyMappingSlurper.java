@@ -1,5 +1,6 @@
 package com.chromosundrift.bhima.dragonmind.model;
 
+import com.chromosundrift.bhima.geometry.PixelPoint;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 
