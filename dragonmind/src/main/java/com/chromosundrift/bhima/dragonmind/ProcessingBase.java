@@ -1,24 +1,23 @@
 package com.chromosundrift.bhima.dragonmind;
 
-import com.chromosundrift.bhima.dragonmind.model.Background;
 import com.chromosundrift.bhima.dragonmind.model.Config;
-import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
-import com.chromosundrift.bhima.dragonmind.model.Point;
-import com.chromosundrift.bhima.dragonmind.model.Rect;
+import com.chromosundrift.bhima.geometry.PixelPoint;
 import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.chromosundrift.bhima.dragonmind.model.Transform;
+import com.chromosundrift.bhima.geometry.Point;
+import com.chromosundrift.bhima.geometry.Rect;
 import processing.core.PApplet;
 import processing.core.PImage;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Stream;
 
-import static com.chromosundrift.bhima.dragonmind.model.Transform.Type.ROTATE;
-import static com.chromosundrift.bhima.dragonmind.model.Transform.Type.SCALE;
-import static com.chromosundrift.bhima.dragonmind.model.Transform.Type.TRANSLATE;
+import static com.chromosundrift.bhima.dragonmind.model.Transform.Type.*;
 
 public class ProcessingBase extends PApplet {
 
@@ -121,19 +120,28 @@ public class ProcessingBase extends PApplet {
     }
 
     final boolean isArrow(int keyCode) {
-        return keyCode == UP || keyCode == DOWN || keyCode == LEFT  || keyCode == RIGHT;
+        return keyCode == UP || keyCode == DOWN || keyCode == LEFT || keyCode == RIGHT;
     }
 
-    protected void rect(Rect b) {
-        rect(b.getMinMin().getX(), b.getMinMin().getY(), b.getMaxMax().getX(), b.getMaxMax().getY());
+    /**
+     * Draw the given Rect.
+     *
+     * @param r rectangle to draw.
+     */
+    protected void rect(Rect r) {
+        rect(r.getMinMin().getX(), r.getMinMin().getY(), r.getMaxMax().getX(), r.getMaxMax().getY());
     }
 
-    protected Rect boundingRect(Config config) {
+
+    protected static Rect boundingRect(Config config) {
+        // TODO flatmap this shit!
+        List<Segment> pixelMap = config.getPixelMap();
         int minx = Integer.MAX_VALUE;
         int miny = Integer.MAX_VALUE;
         int maxx = Integer.MIN_VALUE;
         int maxy = Integer.MIN_VALUE;
-        for (Segment segment : config.getPixelMap()) {
+        boolean gotPixels = false;
+        for (Segment segment : pixelMap) {
             for (PixelPoint pixel : segment.getPixels()) {
                 int x = pixel.getX();
                 int y = pixel.getY();
@@ -141,12 +149,17 @@ public class ProcessingBase extends PApplet {
                 miny = min(miny, y);
                 maxx = max(maxx, x);
                 maxy = max(maxy, y);
+                gotPixels = true;
             }
         }
-        return new Rect(new Point(minx, miny), new Point(maxx, maxy));
+        if (!gotPixels) {
+            throw new IllegalStateException("No pixels found for config!");
+        }
+        return new Rect(minx, miny, maxx, maxy);
     }
 
     protected void applyTransforms(List<Transform> transforms) {
+        // TODO clean these up to use PMatrix forms
         for (Transform t : transforms) {
             Map<String, Float> params = t.getParameters();
             if (t.is(TRANSLATE)) {
