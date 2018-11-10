@@ -7,8 +7,8 @@ import com.chromosundrift.bhima.dragonmind.Mapper;
 import com.chromosundrift.bhima.dragonmind.Palette;
 import com.chromosundrift.bhima.dragonmind.ProcessingBase;
 import com.chromosundrift.bhima.dragonmind.model.Config;
-import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
-import com.chromosundrift.bhima.dragonmind.model.Point;
+import com.chromosundrift.bhima.geometry.PixelPoint;
+import com.chromosundrift.bhima.geometry.Point;
 import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
 import g4p_controls.GAlign;
@@ -378,7 +378,11 @@ public class ArrayScanner2 extends DragonMind {
                 nStrip++;
 
                 if (nStrip > finishStrip) {
-                    writeMapping();
+                    boolean wrote = writeMapping();
+                    if (wrote) {
+                        // doneski now show something pretty
+                        mode = Mapper.Mode.PATTERN;
+                    }
                 }
             }
         } else {
@@ -426,10 +430,14 @@ public class ArrayScanner2 extends DragonMind {
         });
     }
 
-    private void writeMapping() {
+    /**
+     * Writes a csv file and the config json for the current mapping. Returns true iff some points were captured.
+     */
+    private boolean writeMapping() {
         log("finished all strips, checking for mappings");
         if (displayMap.size() == 0) {
             log("did not capture any points :(");
+            return false;
         } else {
             // writing a fresh config too
             Segment segment = new Segment();
@@ -453,8 +461,7 @@ public class ArrayScanner2 extends DragonMind {
             }
 
             ps.close();
-
-            mode = Mapper.Mode.PATTERN;
+            return true;
         }
     }
 
