@@ -10,7 +10,13 @@ import java.util.List;
 
 import static java.lang.Integer.parseInt;
 
+/**
+ * Round trips serialisation of the config model, of periodic benefit for upgrading the config file format.
+ */
 public class LegacyMappingSlurper {
+
+    private static final String FIELD_SEP = ",";
+
     public static void main(String[] args) throws IOException {
         if (args.length > 0) {
             Config config = Config.load();
@@ -33,7 +39,7 @@ public class LegacyMappingSlurper {
         LineIterator lineIterator = FileUtils.lineIterator(new File(path));
         boolean firstLine = true;
         while (lineIterator.hasNext()) {
-            String[] s = lineIterator.next().split(",");
+            String[] s = lineIterator.next().split(FIELD_SEP);
             if (!firstLine) {
                 pixelPoints.add(new PixelPoint(parseInt(s[0]), parseInt(s[1]), parseInt(s[2]), parseInt(s[3])));
             } else {
