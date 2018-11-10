@@ -1,5 +1,8 @@
 package com.chromosundrift.bhima.dragonmind.model;
 
+import com.chromosundrift.bhima.geometry.PixelPoint;
+import com.chromosundrift.bhima.geometry.Point;
+import com.chromosundrift.bhima.geometry.Rect;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
