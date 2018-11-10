@@ -25,7 +25,7 @@ public final class Segment {
     private String name;
     private String description;
     private Background background;
-    private int stripNumberOverride = -1;
+    private int stripNumberOverride = -1; // TODO delete or this should be a map since we contain arbitrary strip numbers
 
     /**
      * Does not light up nor display in the editor.
