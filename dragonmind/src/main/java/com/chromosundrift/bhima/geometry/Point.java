@@ -1,9 +1,8 @@
-package com.chromosundrift.bhima.dragonmind.model;
+package com.chromosundrift.bhima.geometry;
 
 import java.util.Collection;
 import java.util.Objects;
 
-// TODO calculate largest centre of multimodal distribution
 @SuppressWarnings("WeakerAccess")
 public final class Point {
 
@@ -53,8 +52,7 @@ public final class Point {
             return false;
         }
         Point point = (Point) o;
-        return x == point.x &&
-                y == point.y;
+        return x == point.x && y == point.y;
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.chromosundrift.bhima.dragonmind.model;
 
+import com.chromosundrift.bhima.geometry.PixelPoint;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.ObjectCodec;
@@ -10,7 +11,7 @@ import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import java.io.IOException;
 
 @SuppressWarnings("WeakerAccess")
-public class PixelPointDeserializer extends StdDeserializer<PixelPoint> {
+public final class PixelPointDeserializer extends StdDeserializer<PixelPoint> {
 
     public PixelPointDeserializer(Class vc) {
         super(vc);

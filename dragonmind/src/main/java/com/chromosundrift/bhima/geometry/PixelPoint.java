@@ -1,4 +1,4 @@
-package com.chromosundrift.bhima.dragonmind.model;
+package com.chromosundrift.bhima.geometry;
 
 import java.util.Objects;
 

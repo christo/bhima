@@ -1,12 +1,13 @@
 package com.chromosundrift.bhima.dragonmind.model;
 
+import com.chromosundrift.bhima.geometry.PixelPoint;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
 import java.io.IOException;
 
-public class PixelPointSerializer extends StdSerializer<PixelPoint> {
+public final class PixelPointSerializer extends StdSerializer<PixelPoint> {
 
     protected PixelPointSerializer(Class<PixelPoint> t) {
         super(t);
@@ -18,6 +19,5 @@ public class PixelPointSerializer extends StdSerializer<PixelPoint> {
         int y = pp.getPoint().getY();
         int[] vals = new int[]{pp.getStrip(), pp.getPixel(), x, y};
         gen.writeArray(vals, 0, vals.length);
-
     }
 }
