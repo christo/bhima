@@ -1,10 +1,10 @@
 package com.chromosundrift.bhima.dragonmind;
 
 import com.chromosundrift.bhima.dragonmind.model.Config;
-import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
-import com.chromosundrift.bhima.dragonmind.model.Rect;
 import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.chromosundrift.bhima.dragonmind.model.Transform;
+import com.chromosundrift.bhima.geometry.PixelPoint;
+import com.chromosundrift.bhima.geometry.Rect;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,14 +20,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static com.chromosundrift.bhima.dragonmind.model.Transform.Type;
-import static com.chromosundrift.bhima.dragonmind.model.Transform.Type.SCALE;
-import static com.chromosundrift.bhima.dragonmind.model.Transform.Type.TRANSLATE;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.defaultString;
 
+/**
+ * App for editing layout of segments, loading and saving from config file.
+ */
 public class MapEditor extends DragonMind {
 
     private static Logger logger = LoggerFactory.getLogger(MapEditor.class);
@@ -35,10 +37,7 @@ public class MapEditor extends DragonMind {
     private Config config;
     private final CachingImageLoader loader = new CachingImageLoader(300);
     private PImage bg;
-    private float bgX = 0;
-    private float bgY = 0;
-    private float bgScaleX = 1f;
-    private float bgScaleY = 1f;
+
     private int selectedSegment = 0;
 
     /**
@@ -63,10 +62,13 @@ public class MapEditor extends DragonMind {
 
     private List<NamedColour> colours = new ArrayList<>();
 
+    /**
+     * Whether or not to show scan images if they are available in the usual place on disk.
+     */
     private boolean showImage = false;
 
     /**
-     * Global alpha value for all geometry. Toggle between mostly transparent and opaque.
+     * Global alpha value for lines.
      */
     private int lineAlpha = 255;
 
@@ -75,33 +77,9 @@ public class MapEditor extends DragonMind {
         pixelDensity(2);
         smooth();
         try {
-            restoreConfig();
+            config = Config.load();
         } catch (IOException e) {
             logger.error("Could not load config", e);
-        }
-    }
-
-    private void restoreConfig() throws IOException {
-        config = Config.load();
-        List<Transform> transforms = config.getBackground().getTransforms();
-        slurpBackgroundTransforms(transforms);
-    }
-
-    private void slurpBackgroundTransforms(List<Transform> transforms) {
-        for (Transform transform : transforms) {
-            logger.debug("background transform: " + transform.toString());
-            // TODO need to model inheritance in JSON
-            Map<String, Float> params = transform.getParameters();
-            if (transform.is(TRANSLATE)) {
-                logger.info("loading translate transform");
-                bgX = params.get("x");
-                bgY = params.get("y");
-            } else if (transform.is(SCALE)) {
-                logger.info("loading scale transform");
-                bgScaleX = params.get("x");
-                bgScaleY = params.get("y");
-            }
-            // don't bother with background rotation for now
         }
     }
 
@@ -126,8 +104,7 @@ public class MapEditor extends DragonMind {
             fill(190);
             rect(0, 0, width, height);
             pushMatrix();
-            translate(bgX, bgY);
-            scale(bgScaleX, bgScaleY);
+            applyGlobalTransforms();
             drawBackground();
             drawSegments();
 
@@ -137,20 +114,29 @@ public class MapEditor extends DragonMind {
             highlight = 0;
 
         } finally {
+            drawGlobalBoundingBox();
             popMatrix();
             drawSegmentInfo();
-            drawGlobalBoundingBox();
         }
     }
 
+    private void applyGlobalTransforms() {
+        applyTransforms(config.getBackground().getTransforms());
+    }
+
+    /**
+     * Draws a box around the entire configured map.
+     */
     private void drawGlobalBoundingBox() {
-        noFill();
-        stroke(0, 0, 255);
-
-        Rect b = boundingRect(config);
-        // TODO need to use getMatrix, applyMatrix and matrix.invert to get us to screen space to draw this properly
-        rect(b);
-
+        fill(255, 255, 0, 20);
+        stroke(200, 255, 0);
+        strokeWeight(4);
+        List<Segment> enabledSegments = config.enabledSegments().collect(Collectors.toList());
+        Rect rect = screenspaceBoundingRect(enabledSegments);
+        pushMatrix();
+        resetMatrix();
+        rect(rect);
+        popMatrix();
     }
 
 
@@ -195,19 +181,22 @@ public class MapEditor extends DragonMind {
             text.append(" strips: ").append(StringUtils.join(strips, ", ")).append("\n\n");
 
             PixelPoint thisPixel = pixels.get(highlight);
-            text.append("Strip: " + thisPixel.getStrip())
+            text.append("Strip: ").append(thisPixel.getStrip())
                     .append(" Pixel: ").append(thisPixel.getPixel())
                     .append(" x,y: ").append(thisPixel.getPoint().toString()).append("\n");
             text.append("P# ").append(highlight).append("\n\n");
-            text.append("step size: " + dt).append("\n");
+            text.append("step size: ").append(dt).append("\n");
             text.append("strip num override: ").append(segment.getStripNumberOverride()).append("\n\n");
-            text.append("seg xform: " + segment.getTransforms().toString());
+            text.append("seg xform: ").append(segment.getTransforms().toString());
 
             text(text.toString(), screenX + margin, screenY + margin, w - margin, 200 - margin);
             popStyle();
         }
     }
 
+    /**
+     * Draw only enabled segments, ignored segments are more transparent.
+     */
     private void drawSegments() {
         List<Segment> pixelMap = config.getPixelMap();
         for (int i = 0; i < pixelMap.size(); i++) {
@@ -239,7 +228,12 @@ public class MapEditor extends DragonMind {
                     strokeWeight(1);
                 }
                 noFill();
-                rect(segment.getBoundingBox());
+                Rect r = modelToScreenSpace(segment.getBoundingBox());
+                pushMatrix();
+                resetMatrix();
+                rect(r);
+                String name = segment.getName(); // TODO draw segment name just outside bounding box
+                popMatrix();
                 if (segment.getIgnored()) {
                     // ignored stuff is feinter
                     stroke(127, 127, 0);
@@ -252,7 +246,8 @@ public class MapEditor extends DragonMind {
                     stroke(127);
                     strokeWeight(3);
                 }
-                drawPoints(segment.getPixels(), lineAlpha, rainbow, colours, highlight, color(255, 0, 0, lineAlpha), color(170, 170, 170, lineAlpha), color(0, 255));
+
+                drawPoints(segment.getPixels(), lineAlpha, rainbow, colours, highlight, color(255, 0, 0, lineAlpha), color(120, 70, 120, lineAlpha), color(0, 255));
                 popStyle();
                 popMatrix();
             }
@@ -260,7 +255,6 @@ public class MapEditor extends DragonMind {
     }
 
     private void drawSegmentImage(Segment segment) {
-        String name = segment.getName();
         // TODO add proper metadata for scan id
         Pattern scanIdRx = Pattern.compile("mapping file is mappings/Mapping(\\d+)\\.csv");
         Matcher m = scanIdRx.matcher(segment.getDescription());
@@ -300,7 +294,6 @@ public class MapEditor extends DragonMind {
         if (event.isMetaDown()) {
             if (k == 's') {
                 try {
-                    config.getBackground().setTransforms(makeBackgroundTransforms());
                     config.save();
                 } catch (IOException e) {
                     logger.error("could not save config", e);
@@ -309,7 +302,7 @@ public class MapEditor extends DragonMind {
             }
             if (k == 'o') {
                 try {
-                    restoreConfig();
+                    config = Config.load();
                 } catch (IOException e) {
                     logger.error("could not load config", e);
                 }
@@ -318,33 +311,30 @@ public class MapEditor extends DragonMind {
 
             // CMD + Arrows translate the whole background
             if (event.getKeyCode() == RIGHT) {
-                bgX -= dt;
+                globalTranslateX(dt * -1);
             }
             if (event.getKeyCode() == LEFT) {
-                bgX += dt;
+                globalTranslateX(dt);
             }
             if (event.getKeyCode() == DOWN) {
-                bgY -= dt;
+                globalTranslateY(dt * -1);
             }
             if (event.getKeyCode() == UP) {
-                bgY += dt;
+                globalTranslateY(dt);
             }
 
             // aka plus key
             if (k == '=') {
                 // zoom in
-                bgScaleX *= 1.01;
-                bgScaleY *= 1.01;
+                globalScale(1.01);
             }
             if (k == '-') {
                 // zoom out
-                bgScaleX *= 0.99;
-                bgScaleY *= 0.99;
+                globalScale(0.99);
             }
             if (k == '0') {
                 // reset zoom
-                bgScaleX = 1f;
-                bgScaleY = 1f;
+                setScaleTransform(1f, 1f);
             }
         } else {
             if (!config.getPixelMap().isEmpty()) {
@@ -386,6 +376,7 @@ public class MapEditor extends DragonMind {
                 }
                 int c = event.getKeyCode();
 
+                // handle arrows as segment translations
                 if (k == CODED && isArrow(c)) {
                     Transform t = ts.stream().filter(tr -> tr.is(Type.TRANSLATE)).findFirst()
                             .orElseGet(() -> segment.addTransform(Transform.translate(0f, 0f)));
@@ -433,9 +424,11 @@ public class MapEditor extends DragonMind {
 
                 // highlight
                 if (k == '\'') {
+                    // next (dt) pixel(s)
                     highlight += dt;
                     highlight %= segment.getPixels().size();
                 } else if (k == ';') {
+                    // previous (dt) pixel(s)
                     highlight -= dt;
                     if (highlight < 0) {
                         // wrap around at bottom
@@ -499,15 +492,53 @@ public class MapEditor extends DragonMind {
         popMatrix();
     }
 
+    private void globalScale(double v) {
+        Map<String, Float> params = globalTransformByType(Type.SCALE).getParameters();
+        float x = (float) (params.get("x") * v);
+        float y = (float) (params.get("y") * v);
+        setScaleTransform(x, y);
+    }
+
+    private void globalTranslateX(int dx) {
+        Map<String, Float> params = globalTransformByType(Type.TRANSLATE).getParameters();
+        setTranslateTransform((params.get("x") + dx), (params.get("y")));
+    }
+
+    private void globalTranslateY(int dy) {
+        Map<String, Float> params = globalTransformByType(Type.TRANSLATE).getParameters();
+        setTranslateTransform((params.get("x")), (params.get("y") + dy));
+    }
+
     /**
-     * Create a list of {@link Transform}s corresponding to the current orientation of the background.
+     * Fetches from config, defaulting to identity transform.
      *
-     * @return transforms suitable for serialisation.
+     * @param type
+     * @return
      */
-    private List<Transform> makeBackgroundTransforms() {
-        Transform offset = Transform.translate(bgX, bgY);
+    private Transform globalTransformByType(final Type type) {
+        return config.getBackground().getTransforms().stream().filter(t -> t.is(type)).findFirst().orElse(type.id);
+    }
+
+    private void setTranslateTransform(float bgX, float bgY) {
+        setTranslateTransform(Transform.translate(bgX, bgY));
+    }
+
+    private void setScaleTransform(float bgScaleX, float bgScaleY) {
         Transform scale = Transform.scale(bgScaleX, bgScaleY);
-        return asList(offset, scale);
+        setScaleTransform(scale);
+    }
+
+    private void setTranslateTransform(Transform translate) {
+        setTransforms(translate, globalTransformByType(Type.SCALE));
+    }
+
+    private void setScaleTransform(Transform scale) {
+        setTransforms(globalTransformByType(Type.TRANSLATE), scale);
+    }
+
+    private void setTransforms(Transform offset, Transform scale) {
+        List<Transform> transforms = asList(offset, scale);
+        config.getBackground().setTransforms(transforms);
     }
 
     public static void main(String[] args) {

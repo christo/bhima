@@ -1,6 +1,6 @@
 package com.chromosundrift.bhima.dragonmind;
 
-import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
+import com.chromosundrift.bhima.geometry.PixelPoint;
 import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
 import g4p_controls.GAlign;
 import g4p_controls.GLabel;
@@ -164,17 +164,30 @@ public class DragonMind extends ProcessingBase {
                 // translate local strip number into global
 
                 // TODO big fat wrong: check this out - trying to get the screen x,y for the transformed x and y of the model
-                int ppx = (int) screenX(pp.getX(),pp.getY(), 0);
-                int ppy = (int) screenX(pp.getX(), pp.getY(), 0);
-//                int ppx = pp.getX();
-//                int ppy = pp.getY();
+                int ppx = (int) screenX(pp.getX(),pp.getY());
+                int ppy = (int) screenY(pp.getX(), pp.getY());
                 int targetColour = pImage.get(ppx, ppy);
-
+                logger.info(String.format("(%d,%d)@s%dp%d: %h", ppx, ppy, pp.getStrip(), pp.getPixel(), targetColour));
+                if (!(ppx >= 0 && ppx < width) || !(ppy >= 0 && ppy < height)) {
+                    logger.error(String.format("out of bounds pixel: %d, %d", ppx, ppy));
+                }
                 strip.setPixel(targetColour, pp.getPixel());
             }
         }
     }
 
+    /**
+     * Draws the LED points and connecting wires in configured model space.
+     *
+     * @param pixels
+     * @param lineAlpha
+     * @param rainbow
+     * @param colours
+     * @param highlight
+     * @param brightHighlight
+     * @param wire
+     * @param strongForeground
+     */
     protected void drawPoints(List<PixelPoint> pixels,
                               int lineAlpha,
                               boolean rainbow,

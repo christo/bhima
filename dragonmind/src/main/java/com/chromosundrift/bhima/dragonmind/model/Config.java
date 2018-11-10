@@ -18,6 +18,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 
@@ -182,5 +184,9 @@ public final class Config {
         BufferedImage read = ImageIO.read(new File(background.getFilename()));
         bgImage = read;
         return read;
+    }
+
+    public Stream<Segment> enabledSegments() {
+        return getPixelMap().stream().filter(Segment::getEnabled);
     }
 }

@@ -1,21 +1,18 @@
 package com.chromosundrift.bhima.dragonmind;
 
-import com.chromosundrift.bhima.dragonmind.model.Config;
-import com.chromosundrift.bhima.geometry.PixelPoint;
 import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.chromosundrift.bhima.dragonmind.model.Transform;
+import com.chromosundrift.bhima.geometry.PixelPoint;
 import com.chromosundrift.bhima.geometry.Point;
 import com.chromosundrift.bhima.geometry.Rect;
 import processing.core.PApplet;
 import processing.core.PImage;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Stream;
 
 import static com.chromosundrift.bhima.dragonmind.model.Transform.Type.*;
 
@@ -24,7 +21,7 @@ public class ProcessingBase extends PApplet {
     private final ExecutorService offloader;
 
     public ProcessingBase(int offloaderThreads) {
-        offloader = Executors.newFixedThreadPool(10);
+        offloader = Executors.newFixedThreadPool(offloaderThreads);
         Runtime.getRuntime().addShutdownHook(new Thread(offloader::shutdown));
     }
 
@@ -132,10 +129,14 @@ public class ProcessingBase extends PApplet {
         rect(r.getMinMin().getX(), r.getMinMin().getY(), r.getMaxMax().getX(), r.getMaxMax().getY());
     }
 
-
-    protected static Rect boundingRect(Config config) {
+    /**
+     * Returns the bound rectangle for the given list of segments in screen space.
+     *
+     * @param pixelMap
+     * @return
+     */
+    protected final Rect screenspaceBoundingRect(List<Segment> pixelMap) {
         // TODO flatmap this shit!
-        List<Segment> pixelMap = config.getPixelMap();
         int minx = Integer.MAX_VALUE;
         int miny = Integer.MAX_VALUE;
         int maxx = Integer.MIN_VALUE;
@@ -143,8 +144,8 @@ public class ProcessingBase extends PApplet {
         boolean gotPixels = false;
         for (Segment segment : pixelMap) {
             for (PixelPoint pixel : segment.getPixels()) {
-                int x = pixel.getX();
-                int y = pixel.getY();
+                int x = (int) screenX(pixel.getX(), pixel.getY());
+                int y = (int) screenY(pixel.getX(), pixel.getY());
                 minx = min(minx, x);
                 miny = min(miny, y);
                 maxx = max(maxx, x);
@@ -171,5 +172,13 @@ public class ProcessingBase extends PApplet {
                 rotate(params.get("z"));
             }
         }
+    }
+
+    protected Rect modelToScreenSpace(Rect r) {
+        return new Rect(modelToScreen(r.getMinMin()), modelToScreen(r.getMaxMax()));
+    }
+
+    private Point modelToScreen(Point p) {
+        return new Point((int) screenX(p.getX(), p.getY()), (int) screenY(p.getX(), p.getY()));
     }
 }

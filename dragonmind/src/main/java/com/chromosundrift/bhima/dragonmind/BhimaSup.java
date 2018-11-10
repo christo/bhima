@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.core.PImage;
+import processing.event.MouseEvent;
 import processing.video.Movie;
 
 import java.io.File;
@@ -13,6 +14,8 @@ import java.io.IOException;
 import java.util.List;
 
 import static java.util.Collections.emptyList;
+
+// TODO fix filesystem monitoring and movie cycling
 
 /**
  * Loads and plays video on Bhima configured by file.
@@ -26,12 +29,13 @@ public class BhimaSup extends DragonMind {
     private static long MS_POLLING_INTERVAL = 1000 * 30;
     private Movie movie;
     private Config config;
-    private boolean movieMode = false;
+    private boolean movieMode = true;
     private static int INNER_WIDTH = 400;
     private static int INNER_HEIGHT = 100;
 
     private int inx = 0;
     private int iny = 0;
+    private boolean mouseMode = false;
 
     @Override
     public void settings() {
@@ -42,9 +46,8 @@ public class BhimaSup extends DragonMind {
     public void setup() {
         super.setup();
         background(0);
-        // TODO remove movie load and loop from setup, make "movie" a local variable
-//        movie = new Movie(this, "video/diagonal-bars.mp4");
-                movie = new Movie(this, "video/fire-ex.m4v");
+        movie = new Movie(this, "video/diagonal-bars.mp4");
+//                movie = new Movie(this, "video/fire-ex.m4v");
         //        movie = new Movie(this, "video/100x1000 aztec rug.m4v");
         movie.loop();
         try {
@@ -63,7 +66,8 @@ public class BhimaSup extends DragonMind {
             keepFreshMovie();
         }
         if (movie != null) {
-            image(movie, inx, iny, INNER_WIDTH, INNER_HEIGHT);
+            PImage pImage = getPImage();
+            image(pImage, inx, iny, INNER_WIDTH, INNER_HEIGHT);
 
             pushMatrix();
             applyTransforms(config.getBackground().getTransforms());
@@ -73,8 +77,6 @@ public class BhimaSup extends DragonMind {
             // flip upside down for some weird reason then shift down back into frame
             // scale(1, -1);
             // translate(0, height);
-
-            PImage pImage = getPImage();
 
             getPusherMan().ensureReady();
             config.getPixelMap().forEach(segment -> {
@@ -86,6 +88,7 @@ public class BhimaSup extends DragonMind {
                     int bright = color(255, 0, 0, 255);
                     int color = color(170, 170, 170, 255);
                     int strongFg = color(255, 255);
+                    // draw the pixelpoints into the current view
                     drawPoints(segment.getPixels(), 255, false, emptyList(), -1, bright, color, strongFg);
                     popMatrix();
                 }
@@ -99,26 +102,12 @@ public class BhimaSup extends DragonMind {
         if (movieMode) {
             return movie.get();
         } else {
-            return testPattern(this, width, height);
+            if (mouseMode)
+            {
+                return fullCrossHair(this, mouseX, mouseY, width, height);
+            }
+            return cycleTestPattern(this, width, height);
         }
-    }
-
-    static PImage testPattern(PApplet papp, int width, int height) {
-        PGraphics pg = papp.createGraphics(width, height);
-        pg.colorMode(RGB, 255);
-        pg.beginDraw();
-        pg.background(0);
-        pg.noStroke();
-        pg.fill(0);
-        pg.rect(0, 0, width, height);
-        pg.strokeWeight(3);
-        pg.stroke(90, 90, 255);
-        long timeUnit = System.currentTimeMillis() / 10;
-        pg.line(0, timeUnit % height, width, timeUnit % height);
-        pg.line(timeUnit % width, 0, timeUnit % width, height);
-        pg.endDraw();
-        return pg;
-
     }
 
     private void keepFreshMovie() {
@@ -151,15 +140,43 @@ public class BhimaSup extends DragonMind {
         m.read();
     }
 
+    @Override
+    public void mouseClicked(MouseEvent event) {
+        mouseMode = !mouseMode;
+    }
 
     /**
-     * Standard
+     * Standard shiz.
      *
-     * @param args
+     * @param args relayed to Processing entry point.
      */
     public static void main(String[] args) {
         System.setProperty("gstreamer.library.path", "/Users/christo/src/christo/processing/libraries/video/library/macosx64");
         System.setProperty("gstreamer.plugin.path", "/Users/christo/src/christo/processing/libraries/video/library//macosx64/plugins/");
         PApplet.main(BhimaSup.class, args);
     }
+
+    private static PImage cycleTestPattern(PApplet papp, int width, int height) {
+        long timeUnit = System.currentTimeMillis() / 100;
+        long l1y = timeUnit % height;
+        long l2x = timeUnit % width;
+        return fullCrossHair(papp, l2x, l1y, width, height);
+    }
+
+    private static PImage fullCrossHair(PApplet papp, long l2x, long l1y, int width, int height) {
+        PGraphics pg = papp.createGraphics(width, height);
+        pg.colorMode(RGB, 255);
+        pg.beginDraw();
+        pg.background(100, 50, 50);
+        pg.noStroke();
+        pg.fill(100, 50, 50);
+        pg.rect(0, 0, width, height);
+        pg.strokeWeight(3);
+        pg.stroke(90, 90, 255);
+        pg.line(0, l1y, width, l1y);
+        pg.line(l2x, 0, l2x, height);
+        pg.endDraw();
+        return pg;
+    }
+
 }

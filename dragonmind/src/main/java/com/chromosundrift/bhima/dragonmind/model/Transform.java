@@ -10,17 +10,23 @@ import static com.chromosundrift.bhima.dragonmind.model.Transform.Type.*;
 @SuppressWarnings("WeakerAccess")
 public final class Transform {
 
+    public static final Transform ID_TRANSLATE = translate(0, 0);
+    public static final Transform ID_SCALE = scale(1, 1);
+    public static final Transform ID_ROTATE = rotate(0);
+
     // TODO this whole thing needs to be rethought
     public enum Type {
 
-        TRANSLATE("translate"),
-        SCALE("scale"),
-        ROTATE("rotate");
+        TRANSLATE("translate", Transform.ID_TRANSLATE),
+        SCALE("scale", Transform.ID_SCALE),
+        ROTATE("rotate", Transform.ID_ROTATE);
 
         private final String name;
+        public final Transform id;
 
-        Type(String name) {
+        Type(String name, Transform id) {
             this.name = name;
+            this.id = id;
         }
     }
 
@@ -49,6 +55,7 @@ public final class Transform {
         return params;
     }
 
+    @SuppressWarnings("unused")
     public Transform() {
     }
 

@@ -47,4 +47,9 @@ public final class Rect {
         int y2 = (int) (maxMax.getY() + h * scaleY / 2);
         return new Rect(new Point(x1, y1), new Point(x2, y2));
     }
+
+    @Override
+    public String toString() {
+        return "Rect{" + minMin + ", " + maxMax + '}';
+    }
 }
