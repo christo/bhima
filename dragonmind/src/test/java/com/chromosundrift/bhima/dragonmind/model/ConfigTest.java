@@ -1,5 +1,6 @@
 package com.chromosundrift.bhima.dragonmind.model;
 
+import com.chromosundrift.bhima.geometry.PixelPoint;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -9,7 +10,6 @@ import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import static java.util.Collections.singletonList;
