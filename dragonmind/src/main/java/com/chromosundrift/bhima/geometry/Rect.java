@@ -1,5 +1,8 @@
 package com.chromosundrift.bhima.geometry;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 
@@ -7,6 +10,9 @@ import static java.lang.Math.min;
  * Rectangle implementation based on minimum x,y (top left) and maximum x,y (bottom right) points.
  */
 public final class Rect {
+
+    private static final Logger logger = LoggerFactory.getLogger(Rect.class);
+
     private final Point minMin;
     private final Point maxMax;
 
@@ -35,17 +41,6 @@ public final class Rect {
 
     public Point getMaxMax() {
         return maxMax;
-    }
-
-    // TODO possibly delete; of questionable legitimacy
-    public Rect scaled(float scaleX, float scaleY) {
-        int w = maxMax.getX() - minMin.getX();
-        int x1 = (int) (minMin.getX() - w * scaleX / 2);
-        int x2 = (int) (maxMax.getX() + w * scaleX / 2);
-        int h = maxMax.getY() - minMin.getY();
-        int y1 = (int) (minMin.getY() - h * scaleY / 2);
-        int y2 = (int) (maxMax.getY() + h * scaleY / 2);
-        return new Rect(new Point(x1, y1), new Point(x2, y2));
     }
 
     @Override

@@ -143,6 +143,8 @@ public class ProcessingBase extends PApplet {
         int maxy = Integer.MIN_VALUE;
         boolean gotPixels = false;
         for (Segment segment : pixelMap) {
+            pushMatrix();
+            applyTransforms(segment.getTransforms());
             for (PixelPoint pixel : segment.getPixels()) {
                 int x = (int) screenX(pixel.getX(), pixel.getY());
                 int y = (int) screenY(pixel.getX(), pixel.getY());
@@ -152,6 +154,7 @@ public class ProcessingBase extends PApplet {
                 maxy = max(maxy, y);
                 gotPixels = true;
             }
+            popMatrix();
         }
         if (!gotPixels) {
             throw new IllegalStateException("No pixels found for config!");

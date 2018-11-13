@@ -28,7 +28,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 @JsonPropertyOrder({"project", "version", "brightnessThreshold", "cameraMask", "pixelPushers"})
 public final class Config {
 
-    public static final Logger logger = LoggerFactory.getLogger(Config.class);
+    private static final Logger logger = LoggerFactory.getLogger(Config.class);
 
     public final static String DEFAULT_CONFIG_FILE = "dragonmind.config.json";
 
@@ -78,7 +78,7 @@ public final class Config {
         logger.info("will try to load config file " + filename);
         ObjectMapper objectMapper = getObjectMapper();
         Config config = objectMapper.readValue(new File(filename), Config.class);
-        logger.info("config loaded");
+        logger.info("config loaded: " + config.project);
         return config;
     }
 

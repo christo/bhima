@@ -73,11 +73,12 @@ public class MapEditor extends DragonMind {
     private int lineAlpha = 255;
 
     public void settings() {
-        fullScreen(P2D);
+        //fullScreen(P2D);
+        size(1920, 1080, P2D);
         pixelDensity(2);
         smooth();
         try {
-            loadConfigFromFirstArgOrDefault();
+            config = loadConfigFromFirstArgOrDefault();
         } catch (IOException e) {
             logger.error("Could not load config", e);
         }
@@ -128,6 +129,7 @@ public class MapEditor extends DragonMind {
      * Draws a box around the entire configured map.
      */
     private void drawGlobalBoundingBox() {
+        pushStyle();
         fill(255, 255, 0, 20);
         stroke(200, 255, 0);
         strokeWeight(4);
@@ -137,6 +139,7 @@ public class MapEditor extends DragonMind {
         resetMatrix();
         rect(rect);
         popMatrix();
+        popStyle();
     }
 
 
@@ -215,6 +218,9 @@ public class MapEditor extends DragonMind {
 
                 // draw it
                 Rect r = modelToScreenSpace(segment.getBoundingBox());
+                if (r.getMaxMax().getY() > height) {
+                    logger.warn("screen y off screen " + r);
+                }
                 if (segment.getIgnored()) {
                     // ignored stuff is feinter
                     stroke(127, 127, 0);
@@ -222,13 +228,13 @@ public class MapEditor extends DragonMind {
                 } else if (i == selectedSegment) {
                     if (r.contains(mouseX, mouseY)) {
                         fill(0, 255, 255, 110);
-                        logger.warn("seg " + i + " mouse " + mouseX + ", " + mouseY);
+                        logger.debug("seg " + i + " mouse " + mouseX + ", " + mouseY);
                     }
 
                     stroke(255, 0, 0);
                     strokeWeight(5);
                     if (showImage) {
-                        //drawSegmentImage(segment);
+                        drawSegmentImage(segment);
                     }
                 } else {
                     stroke(255, 100, 0);
@@ -414,7 +420,7 @@ public class MapEditor extends DragonMind {
                 }
                 if (k == 'I') {
                     showImage = !showImage;
-                    logger.info("showImage: " + showImage);
+                    logger.debug("showImage: " + showImage);
                 }
                 if (k == 'U') {
                     // make lines more opaque
