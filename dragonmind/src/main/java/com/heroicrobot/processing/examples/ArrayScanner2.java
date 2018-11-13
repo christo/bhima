@@ -447,7 +447,7 @@ public class ArrayScanner2 extends DragonMind {
             segment.setPixels(displayMap);
             config.addSegment(segment);
             try {
-                config.save();
+                saveConfigToFirstArgOrDefault(config);
             } catch (IOException e) {
                 e.printStackTrace();
             }

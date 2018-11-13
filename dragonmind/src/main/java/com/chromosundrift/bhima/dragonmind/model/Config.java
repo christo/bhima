@@ -75,12 +75,19 @@ public final class Config {
     }
 
     public static Config load(String filename) throws IOException {
+        logger.info("will try to load config file " + filename);
         ObjectMapper objectMapper = getObjectMapper();
-        return objectMapper.readValue(new File(filename), Config.class);
+        Config config = objectMapper.readValue(new File(filename), Config.class);
+        logger.info("config loaded");
+        return config;
     }
 
     public static Config load() throws IOException {
-        return load(DEFAULT_CONFIG_FILE);
+        try {
+            return load(DEFAULT_CONFIG_FILE);
+        } catch (IOException e) {
+            throw new IOException("Failed to load config " + e.getMessage(), e);
+        }
     }
 
     private static ObjectMapper getObjectMapper() {

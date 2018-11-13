@@ -1,5 +1,6 @@
 package com.chromosundrift.bhima.dragonmind;
 
+import com.chromosundrift.bhima.dragonmind.model.Config;
 import com.chromosundrift.bhima.geometry.PixelPoint;
 import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
 import g4p_controls.GAlign;
@@ -233,5 +234,12 @@ public class DragonMind extends ProcessingBase {
             }
         }
         popStyle();
+    }
+
+    protected Config saveConfigToFirstArgOrDefault(Config config) throws IOException {
+        return (args.length > 0)? config.save(args[0]): config.save();
+    }
+    protected Config loadConfigFromFirstArgOrDefault() throws IOException {
+        return (args.length > 0)? Config.load(args[0]): Config.load();
     }
 }

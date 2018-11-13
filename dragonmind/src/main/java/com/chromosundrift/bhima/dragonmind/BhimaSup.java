@@ -47,17 +47,17 @@ public class BhimaSup extends DragonMind {
         super.setup();
         background(0);
         movie = new Movie(this, "video/diagonal-bars.mp4");
-//                movie = new Movie(this, "video/fire-ex.m4v");
-        //        movie = new Movie(this, "video/100x1000 aztec rug.m4v");
+        // movie = new Movie(this, "video/fire-ex.m4v");
+        // movie = new Movie(this, "video/100x1000 aztec rug.m4v");
         movie.loop();
         try {
-            config = Config.load();
+            loadConfigFromFirstArgOrDefault();
             ss = new StickSlurper();
             ss.start();
-
         } catch (IOException e) {
-            logger.error("Failed to load config " + e.getMessage(), e);
+            throw new RuntimeException(e);
         }
+
     }
 
     @Override
@@ -102,8 +102,7 @@ public class BhimaSup extends DragonMind {
         if (movieMode) {
             return movie.get();
         } else {
-            if (mouseMode)
-            {
+            if (mouseMode) {
                 return fullCrossHair(this, mouseX, mouseY, width, height);
             }
             return cycleTestPattern(this, width, height);
