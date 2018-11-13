@@ -77,7 +77,7 @@ public class MapEditor extends DragonMind {
         pixelDensity(2);
         smooth();
         try {
-            config = Config.load();
+            loadConfigFromFirstArgOrDefault();
         } catch (IOException e) {
             logger.error("Could not load config", e);
         }
@@ -204,6 +204,7 @@ public class MapEditor extends DragonMind {
             if (segment.getEnabled()) {
                 pushMatrix();
                 pushStyle();
+                noFill();
                 if (!segment.getTransforms().isEmpty()) {
                     // restore the segment in its location by applying the transforms to the points
                     List<Transform> transforms = segment.getTransforms();
@@ -213,22 +214,26 @@ public class MapEditor extends DragonMind {
                 }
 
                 // draw it
+                Rect r = modelToScreenSpace(segment.getBoundingBox());
                 if (segment.getIgnored()) {
                     // ignored stuff is feinter
                     stroke(127, 127, 0);
                     strokeWeight(0.5f);
                 } else if (i == selectedSegment) {
+                    if (r.contains(mouseX, mouseY)) {
+                        fill(0, 255, 255, 110);
+                        logger.warn("seg " + i + " mouse " + mouseX + ", " + mouseY);
+                    }
+
                     stroke(255, 0, 0);
                     strokeWeight(5);
                     if (showImage) {
-                        drawSegmentImage(segment);
+                        //drawSegmentImage(segment);
                     }
                 } else {
                     stroke(255, 100, 0);
                     strokeWeight(1);
                 }
-                noFill();
-                Rect r = modelToScreenSpace(segment.getBoundingBox());
                 pushMatrix();
                 resetMatrix();
                 rect(r);
@@ -294,7 +299,7 @@ public class MapEditor extends DragonMind {
         if (event.isMetaDown()) {
             if (k == 's') {
                 try {
-                    config.save();
+                    saveConfigToFirstArgOrDefault(config);
                 } catch (IOException e) {
                     logger.error("could not save config", e);
                 }
@@ -302,11 +307,11 @@ public class MapEditor extends DragonMind {
             }
             if (k == 'o') {
                 try {
-                    config = Config.load();
+                    config = loadConfigFromFirstArgOrDefault();
                 } catch (IOException e) {
                     logger.error("could not load config", e);
                 }
-                logger.info("config loaded");
+
             }
 
             // CMD + Arrows translate the whole background
@@ -394,7 +399,7 @@ public class MapEditor extends DragonMind {
                 }
                 // Rotate transform may not exist, in which case create identity rotation transform
                 Transform rotate = ts.stream().filter(t -> t.is(Type.ROTATE)).findFirst()
-                        .orElseGet(() -> segment.addTransform(Transform.rotate(0f)));
+                        .orElseGet(() -> segment.addTransform(Transform.ID_ROTATE));
                 if (k == '.') {
                     rotate.set("z", rotate.get("z") + theta * dt);
                 }
