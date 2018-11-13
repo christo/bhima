@@ -126,7 +126,9 @@ public class ProcessingBase extends PApplet {
      * @param r rectangle to draw.
      */
     protected void rect(Rect r) {
-        rect(r.getMinMin().getX(), r.getMinMin().getY(), r.getMaxMax().getX(), r.getMaxMax().getY());
+        Point minMin = r.getMinMin();
+        Point maxMax = r.getMaxMax();
+        rect(minMin.getX(), minMin.getY(), maxMax.getX() - minMin.getX(), maxMax.getY() - minMin.getY());
     }
 
     /**
