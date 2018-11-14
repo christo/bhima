@@ -22,12 +22,18 @@ public final class Transform {
         ROTATE("rotate", Transform.ID_ROTATE);
 
         private final String name;
+
         public final Transform id;
 
         Type(String name, Transform id) {
             this.name = name;
             this.id = id;
         }
+
+        public boolean is(Transform t) {
+            return t.is(this);
+        }
+
     }
 
     public static Transform rotate(float theta) {
@@ -111,4 +117,49 @@ public final class Transform {
         parameters.put(key, value);
     }
 
+    /**
+     * Return a new {@link Transform} instance which increments the z rotation by the given amount.
+     *
+     * @param theta the possibly negative z rotation.
+     * @return the new Transform instance.
+     */
+    public Transform addRotateZ(float theta) {
+        Map<String, Float> params = getParameters();
+        return rotate(params.get("z") + theta);
+    }
+
+    /**
+     * Return a new {@link Transform} instance which increments the translate in the y direction by the given amount.
+     *
+     * @param dy the possibly negative y delta.
+     * @return the new Transform instance.
+     */
+    public Transform addTranslateY(int dy) {
+        Map<String, Float> params = getParameters();
+        return translate(params.get("x"), params.get("y") + dy);
+    }
+
+    /**
+     * Return a new {@link Transform} instance which increments the translate in the x direction by the given amount.
+     *
+     * @param dx the possibly negative x delta.
+     * @return the new Transform instance.
+     */
+    public Transform addTranslateX(int dx) {
+        Map<String, Float> params = getParameters();
+        return translate(params.get("x") + dx, params.get("y"));
+    }
+
+    /**
+     * Return a new {@link Transform} instance which multiplies the scale by the given amount.
+     *
+     * @param v the possibly negative factor.
+     * @return the new Transform instance.
+     */
+    public Transform multiplyScale(double v) {
+        Map<String, Float> params = getParameters();
+        float x = (float) (params.get("x") * v);
+        float y = (float) (params.get("y") * v);
+        return scale(x, y);
+    }
 }

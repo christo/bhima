@@ -18,10 +18,10 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+import static java.util.Arrays.asList;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
 @JsonInclude(NON_NULL)
@@ -196,4 +196,50 @@ public final class Config {
     public Stream<Segment> enabledSegments() {
         return getPixelMap().stream().filter(Segment::getEnabled);
     }
+
+    /**
+     * Fetches from config, defaulting to identity transform if there is no configured global transform.
+     *
+     * @param type
+     * @return
+     */
+    public Transform getGlobalTransformByType(final Transform.Type type) {
+        return getBackground().getTransforms().stream().filter(t -> t.is(type)).findFirst().orElse(type.id);
+    }
+
+    public void setGlobalTransforms(Transform offset, Transform scale) {
+        List<Transform> transforms = asList(offset, scale);
+        getBackground().setTransforms(transforms);
+    }
+
+    public Transform getGlobalScale() {
+        return getGlobalTransformByType(Transform.Type.SCALE);
+    }
+
+    public Transform getGlobalTranslate() {
+        return getGlobalTransformByType(Transform.Type.TRANSLATE);
+    }
+
+    public void setGlobalTranslate(Transform translate) {
+        setGlobalTransforms(translate, getGlobalScale());
+    }
+
+    public void setGlobalScale(Transform scale) {
+        setGlobalTransforms(getGlobalTranslate(), scale);
+    }
+
+    public void multiplyGlobalScale(double v) {
+        setGlobalScale(getGlobalScale().multiplyScale(v));
+    }
+
+    public void addGlobalTranslateY(int dy) {
+        setGlobalTranslate(getGlobalTranslate().addTranslateY(dy));
+    }
+
+    public void addGlobalTranslateX(int dx) {
+        Transform globalTranslate = getGlobalTranslate();
+        Transform translate = globalTranslate.addTranslateX(dx);
+        setGlobalTranslate(translate);
+    }
+
 }

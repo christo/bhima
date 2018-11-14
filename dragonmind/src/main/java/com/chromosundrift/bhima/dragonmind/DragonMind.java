@@ -237,9 +237,9 @@ public class DragonMind extends ProcessingBase {
     }
 
     protected Config saveConfigToFirstArgOrDefault(Config config) throws IOException {
-        return (args.length > 0)? config.save(args[0]): config.save();
+        return (args != null && args.length > 0)? config.save(args[0]): config.save();
     }
     protected Config loadConfigFromFirstArgOrDefault() throws IOException {
-        return (args.length > 0)? Config.load(args[0]): Config.load();
+        return (args != null && args.length > 0)? Config.load(args[0]): Config.load();
     }
 }

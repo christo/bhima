@@ -134,8 +134,8 @@ public class ProcessingBase extends PApplet {
     /**
      * Returns the bound rectangle for the given list of segments in screen space.
      *
-     * @param pixelMap
-     * @return
+     * @param pixelMap the segments.
+     * @return a bounding {@link Rect} in screen pixels.
      */
     protected final Rect screenspaceBoundingRect(List<Segment> pixelMap) {
         // TODO flatmap this shit!
@@ -159,6 +159,7 @@ public class ProcessingBase extends PApplet {
             popMatrix();
         }
         if (!gotPixels) {
+            // a bit heavy handed perhaps
             throw new IllegalStateException("No pixels found for config!");
         }
         return new Rect(minx, miny, maxx, maxy);
@@ -183,7 +184,7 @@ public class ProcessingBase extends PApplet {
         return new Rect(modelToScreen(r.getMinMin()), modelToScreen(r.getMaxMax()));
     }
 
-    private Point modelToScreen(Point p) {
+    protected Point modelToScreen(Point p) {
         return new Point((int) screenX(p.getX(), p.getY()), (int) screenY(p.getX(), p.getY()));
     }
 }

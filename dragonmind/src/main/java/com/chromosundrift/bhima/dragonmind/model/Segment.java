@@ -10,7 +10,10 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static java.lang.Math.max;
@@ -44,27 +47,23 @@ public final class Segment {
      * Get the smallest rectangle that contains all the points.
      *
      * @return a rectangle snugly containing all points (including on the line).
-     * @throws IllegalStateException if pixels is empty.
+     * @param points
      */
     @JsonIgnore
-    public Rect getBoundingBox() throws IllegalStateException {
-        if (pixels.isEmpty()) {
-            throw new IllegalStateException("There are no points");
-        }
+    public Rect getBoundingBox(Stream<Point> points) {
         // initialise to the first point
-        int minX = pixels.get(0).getX();
-        int maxX = minX;
-        int minY = pixels.get(0).getY();
-        int maxY = minY;
+        final AtomicInteger minX = new AtomicInteger(Integer.MAX_VALUE);
+        final AtomicInteger minY = new AtomicInteger(Integer.MAX_VALUE);
+        final AtomicInteger maxX = new AtomicInteger(Integer.MIN_VALUE);
+        final AtomicInteger maxY = new AtomicInteger(Integer.MIN_VALUE);
 
-        for (PixelPoint pixel : pixels) {
-            Point point = pixel.getPoint();
-            minX = min(minX, point.getX());
-            maxX = max(maxX, point.getX());
-            minY = min(minY, point.getY());
-            maxY = max(maxY, point.getY());
-        }
-        return new Rect(new Point(minX, minY), new Point(maxX, maxY));
+        points.forEach((Point point) -> {
+            minX.set(min(minX.get(), point.getX()));
+            maxX.set(max(maxX.get(), point.getX()));
+            minY.set(min(minY.get(), point.getY()));
+            maxY.set(max(maxY.get(), point.getY()));
+        });
+        return new Rect(new Point(minX.get(), minY.get()), new Point(maxX.get(), maxY.get()));
     }
 
     public String getName() {
@@ -145,4 +144,41 @@ public final class Segment {
         return transform;
     }
 
+    // TODO replace the segment's transform with the new instance instead of assimilating the params
+
+    public void rotate(float angle) {
+        // Rotate transform may not exist, in which case create identity rotation transform
+        Transform rotate = firstTransformByType(Transform.Type.ROTATE)
+                .orElseGet(() -> addTransform(Transform.Type.ROTATE.id));
+        rotate.setParameters(rotate.addRotateZ(angle).getParameters());
+    }
+
+    public void translateX(int i) {
+        Transform t = firstTransformByType(Transform.Type.TRANSLATE)
+                .orElseGet(() -> addTransform(Transform.translate(0f, 0f)));
+        t.setParameters(t.addTranslateX(i).getParameters());
+    }
+
+    public void translateY(int i) {
+        Transform t = firstTransformByType(Transform.Type.TRANSLATE)
+                .orElseGet(() -> addTransform(Transform.translate(0f, 0f)));
+        t.setParameters(t.addTranslateY(i).getParameters());
+    }
+
+    public void scale(double v) {
+        Transform t = firstTransformByType(Transform.Type.SCALE)
+                .orElseGet(() -> addTransform(Transform.Type.SCALE.id));
+        t.setParameters(t.multiplyScale(v).getParameters());
+    }
+
+    public void resetScale() {
+        Transform t = firstTransformByType(Transform.Type.SCALE)
+                .orElseGet(() -> addTransform(Transform.Type.SCALE.id));
+        t.set("x", 1f);
+        t.set("y", 1f);
+    }
+
+    private Optional<Transform> firstTransformByType(Transform.Type type) {
+        return getTransforms().stream().filter(type::is).findFirst();
+    }
 }

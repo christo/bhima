@@ -4,6 +4,7 @@ import com.chromosundrift.bhima.dragonmind.model.Config;
 import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.chromosundrift.bhima.dragonmind.model.Transform;
 import com.chromosundrift.bhima.geometry.PixelPoint;
+import com.chromosundrift.bhima.geometry.Point;
 import com.chromosundrift.bhima.geometry.Rect;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -16,14 +17,13 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static com.chromosundrift.bhima.dragonmind.model.Transform.Type;
-import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.defaultString;
 
@@ -107,6 +107,7 @@ public class MapEditor extends DragonMind {
             pushMatrix();
             applyGlobalTransforms();
             drawBackground();
+            drawGlobalBoundingBox();
             drawSegments();
 
         } catch (RuntimeException e) {
@@ -115,7 +116,7 @@ public class MapEditor extends DragonMind {
             highlight = 0;
 
         } finally {
-            drawGlobalBoundingBox();
+
             popMatrix();
             drawSegmentInfo();
         }
@@ -217,10 +218,10 @@ public class MapEditor extends DragonMind {
                 }
 
                 // draw it
-                Rect r = modelToScreenSpace(segment.getBoundingBox());
-                if (r.getMaxMax().getY() > height) {
-                    logger.warn("screen y off screen " + r);
-                }
+                Stream<PixelPoint> pixels = segment.getPixels().stream();
+                Stream<Point> points = pixels.map((PixelPoint pp) -> modelToScreen(pp.getPoint()));
+                Rect r = segment.getBoundingBox(points);
+
                 if (segment.getIgnored()) {
                     // ignored stuff is feinter
                     stroke(127, 127, 0);
@@ -303,50 +304,7 @@ public class MapEditor extends DragonMind {
         char k = event.getKey();
         // only Mac standard key binding for now
         if (event.isMetaDown()) {
-            if (k == 's') {
-                try {
-                    saveConfigToFirstArgOrDefault(config);
-                } catch (IOException e) {
-                    logger.error("could not save config", e);
-                }
-                logger.info("config saved");
-            }
-            if (k == 'o') {
-                try {
-                    config = loadConfigFromFirstArgOrDefault();
-                } catch (IOException e) {
-                    logger.error("could not load config", e);
-                }
-
-            }
-
-            // CMD + Arrows translate the whole background
-            if (event.getKeyCode() == RIGHT) {
-                globalTranslateX(dt * -1);
-            }
-            if (event.getKeyCode() == LEFT) {
-                globalTranslateX(dt);
-            }
-            if (event.getKeyCode() == DOWN) {
-                globalTranslateY(dt * -1);
-            }
-            if (event.getKeyCode() == UP) {
-                globalTranslateY(dt);
-            }
-
-            // aka plus key
-            if (k == '=') {
-                // zoom in
-                globalScale(1.01);
-            }
-            if (k == '-') {
-                // zoom out
-                globalScale(0.99);
-            }
-            if (k == '0') {
-                // reset zoom
-                setScaleTransform(1f, 1f);
-            }
+            handleMetaKey(event);
         } else {
             if (!config.getPixelMap().isEmpty()) {
 
@@ -366,61 +324,50 @@ public class MapEditor extends DragonMind {
                 }
 
                 Segment segment = config.getPixelMap().get(selectedSegment);
-                List<Transform> ts = segment.getTransforms();
 
-                if (k == '=' || k == '-' || k == '0') {
-                    // change scale of currently selected segment
-                    Transform t = ts.stream().filter(tt -> tt.is(Type.SCALE)).findFirst()
-                            .orElseGet(() -> segment.addTransform(Transform.scale(1)));
-                    if (k == '=') {
-                        t.set("x", (float) (t.get("x") * 1.03));
-                        t.set("y", (float) (t.get("y") * 1.03));
-                    } else if (k == '-') {
-                        t.set("x", (float) (t.get("x") * 0.97));
-                        t.set("y", (float) (t.get("y") * 0.97));
-                    } else {//noinspection ConstantConditions
-                        if (k == '0') {
-                            t.set("x", 1f);
-                            t.set("y", 1f);
-                        }
-                    }
+
+
+                // handle segment transform manipulations
+                if (k == '=') {
+                    segment.scale(1.03);
+                } else if (k == '-') {
+                    segment.scale(0.97);
+                } else if (k == '0') {
+                    segment.resetScale();
                 }
+
                 int c = event.getKeyCode();
 
                 // handle arrows as segment translations
                 if (k == CODED && isArrow(c)) {
-                    Transform t = ts.stream().filter(tr -> tr.is(Type.TRANSLATE)).findFirst()
-                            .orElseGet(() -> segment.addTransform(Transform.translate(0f, 0f)));
-
                     if (c == RIGHT) {
-                        t.set("x", (t.get("x") + dt));
+                        segment.translateX(dt);
                     } else if (c == DOWN) {
-                        t.set("y", (t.get("y") + dt));
+                        segment.translateY(dt);
                     } else if (c == LEFT) {
-                        t.set("x", (t.get("x") - dt));
+                        segment.translateX(-dt);
                     } else if (c == UP) {
-                        t.set("y", (t.get("y") - dt));
+                        segment.translateY(-dt);
                     }
-
                 }
-                // Rotate transform may not exist, in which case create identity rotation transform
-                Transform rotate = ts.stream().filter(t -> t.is(Type.ROTATE)).findFirst()
-                        .orElseGet(() -> segment.addTransform(Transform.ID_ROTATE));
+
+                // segment rotation
                 if (k == '.') {
-                    rotate.set("z", rotate.get("z") + theta * dt);
+                    segment.rotate(theta * dt);
                 }
                 if (k == ',') {
-                    rotate.set("z", rotate.get("z") - theta * dt);
+                    segment.rotate(-theta * dt);
                 }
+
                 if (k == '\\') {
                     segment.flipEnabled();
                 }
                 if (k == 'i') {
                     segment.flipIgnored();
                 }
+
                 if (k == 'I') {
                     showImage = !showImage;
-                    logger.debug("showImage: " + showImage);
                 }
                 if (k == 'U') {
                     // make lines more opaque
@@ -446,20 +393,18 @@ public class MapEditor extends DragonMind {
                         highlight = segment.getPixels().size() + highlight;
                     }
                 } else if (k == '|') {
-                    // split the segment
-                    Segment second = new Segment();
-                    second.setName("split of " + segment.getName());
-                    second.setDescription("split of " + segment.getDescription());
-                    for (Transform t : ts) {
-                        second.addTransform(new Transform(t));
-                    }
+                    // split the segment into two at the current pixel
+                    Segment split = new Segment();
+                    split.setName("split of " + segment.getName());
+                    split.setDescription("split of " + segment.getDescription());
+                    segment.getTransforms().forEach(split::addTransform);
 
                     // remove pixels from the segment and put them in the second
                     List<PixelPoint> pixels = segment.getPixels();
-                    second.setPixels(pixels.subList(highlight, pixels.size()));
+                    split.setPixels(pixels.subList(highlight, pixels.size()));
                     segment.setPixels(pixels.subList(0, highlight));
 
-                    config.getPixelMap().add(second);
+                    config.getPixelMap().add(split);
                 } else if (k == '?') {
                     // delete pixel
                     segment.getPixels().remove(highlight);
@@ -503,53 +448,58 @@ public class MapEditor extends DragonMind {
         popMatrix();
     }
 
-    private void globalScale(double v) {
-        Map<String, Float> params = globalTransformByType(Type.SCALE).getParameters();
-        float x = (float) (params.get("x") * v);
-        float y = (float) (params.get("y") * v);
-        setScaleTransform(x, y);
-    }
-
-    private void globalTranslateX(int dx) {
-        Map<String, Float> params = globalTransformByType(Type.TRANSLATE).getParameters();
-        setTranslateTransform((params.get("x") + dx), (params.get("y")));
-    }
-
-    private void globalTranslateY(int dy) {
-        Map<String, Float> params = globalTransformByType(Type.TRANSLATE).getParameters();
-        setTranslateTransform((params.get("x")), (params.get("y") + dy));
-    }
-
     /**
-     * Fetches from config, defaulting to identity transform.
+     * Handle key event where the meta key (on mac, command key) is held down, namely global commands as opposed to
+     * segment-specific commands.
      *
-     * @param type
-     * @return
+     * @param event the {@link  KeyEvent}.
      */
-    private Transform globalTransformByType(final Type type) {
-        return config.getBackground().getTransforms().stream().filter(t -> t.is(type)).findFirst().orElse(type.id);
-    }
+    private void handleMetaKey(KeyEvent event) {
+        char k = event.getKey();
+        if (k == 's') {
+            try {
+                saveConfigToFirstArgOrDefault(config);
+            } catch (IOException e) {
+                logger.error("could not save config", e);
+            }
+            logger.info("config saved");
+        }
+        if (k == 'o') {
+            try {
+                config = loadConfigFromFirstArgOrDefault();
+            } catch (IOException e) {
+                logger.error("could not load config", e);
+            }
+        }
 
-    private void setTranslateTransform(float bgX, float bgY) {
-        setTranslateTransform(Transform.translate(bgX, bgY));
-    }
+        // CMD + Arrows translate the whole background
+        if (event.getKeyCode() == RIGHT) {
+            config.addGlobalTranslateX(-dt);
+        }
+        if (event.getKeyCode() == LEFT) {
+            config.addGlobalTranslateX(dt);
+        }
+        if (event.getKeyCode() == DOWN) {
+            config.addGlobalTranslateY(-dt);
+        }
+        if (event.getKeyCode() == UP) {
+            config.addGlobalTranslateY(dt);
+        }
 
-    private void setScaleTransform(float bgScaleX, float bgScaleY) {
-        Transform scale = Transform.scale(bgScaleX, bgScaleY);
-        setScaleTransform(scale);
-    }
-
-    private void setTranslateTransform(Transform translate) {
-        setTransforms(translate, globalTransformByType(Type.SCALE));
-    }
-
-    private void setScaleTransform(Transform scale) {
-        setTransforms(globalTransformByType(Type.TRANSLATE), scale);
-    }
-
-    private void setTransforms(Transform offset, Transform scale) {
-        List<Transform> transforms = asList(offset, scale);
-        config.getBackground().setTransforms(transforms);
+        // aka plus key
+        if (k == '=') {
+            // zoom in
+            config.multiplyGlobalScale(1.01);
+        }
+        if (k == '-') {
+            // zoom out
+            config.multiplyGlobalScale(0.99);
+        }
+        if (k == '0') {
+            // reset zoom to identity transform
+            config.setGlobalScale(Type.SCALE.id);
+        }
+        // TODO fit to screen by scale and translate; use modelX etc.
     }
 
     public static void main(String[] args) {
