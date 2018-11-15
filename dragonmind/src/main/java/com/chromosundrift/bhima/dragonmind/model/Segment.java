@@ -21,7 +21,7 @@ import static java.lang.Math.min;
 
 @SuppressWarnings("WeakerAccess")
 @JsonInclude(NON_NULL)
-@JsonPropertyOrder({"name", "description", "enabled", "ignored", "background", "transforms", "pixels"})
+@JsonPropertyOrder({"name", "description", "stripNumberOverride", "enabled", "ignored", "background", "transforms", "pixels"})
 public final class Segment {
 
     @JsonProperty("segment")

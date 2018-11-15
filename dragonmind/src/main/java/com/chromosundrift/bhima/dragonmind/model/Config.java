@@ -212,18 +212,22 @@ public final class Config {
         getBackground().setTransforms(transforms);
     }
 
+    @JsonIgnore
     public Transform getGlobalScale() {
         return getGlobalTransformByType(Transform.Type.SCALE);
     }
 
+    @JsonIgnore
     public Transform getGlobalTranslate() {
         return getGlobalTransformByType(Transform.Type.TRANSLATE);
     }
 
+    @JsonIgnore
     public void setGlobalTranslate(Transform translate) {
         setGlobalTransforms(translate, getGlobalScale());
     }
 
+    @JsonIgnore
     public void setGlobalScale(Transform scale) {
         setGlobalTransforms(getGlobalTranslate(), scale);
     }
