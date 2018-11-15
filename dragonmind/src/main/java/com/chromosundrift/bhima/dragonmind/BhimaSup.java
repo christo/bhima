@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.core.PImage;
+import processing.event.KeyEvent;
 import processing.event.MouseEvent;
 import processing.video.Movie;
 
@@ -29,7 +30,7 @@ public class BhimaSup extends DragonMind {
     private static long MS_POLLING_INTERVAL = 1000 * 30;
     private Movie movie;
     private Config config;
-    private boolean movieMode = true;
+    private boolean movieMode = false;
     private static int INNER_WIDTH = 400;
     private static int INNER_HEIGHT = 100;
 
@@ -49,9 +50,10 @@ public class BhimaSup extends DragonMind {
         movie = new Movie(this, "video/diagonal-bars.mp4");
         // movie = new Movie(this, "video/fire-ex.m4v");
         // movie = new Movie(this, "video/100x1000 aztec rug.m4v");
+        movie.speed(1f); // TODO build into playback "Program" parameter
         movie.loop();
         try {
-            loadConfigFromFirstArgOrDefault();
+            config = loadConfigFromFirstArgOrDefault();
             ss = new StickSlurper();
             ss.start();
         } catch (IOException e) {
@@ -144,6 +146,15 @@ public class BhimaSup extends DragonMind {
         mouseMode = !mouseMode;
     }
 
+    @Override
+    public void keyPressed(KeyEvent event) {
+        super.keyPressed(event);
+        char key = event.getKey();
+        if (key == ' ') {
+            movieMode = !movieMode;
+        }
+    }
+
     /**
      * Standard shiz.
      *
@@ -156,23 +167,23 @@ public class BhimaSup extends DragonMind {
     }
 
     private static PImage cycleTestPattern(PApplet papp, int width, int height) {
-        long timeUnit = System.currentTimeMillis() / 100;
-        long l1y = timeUnit % height;
-        long l2x = timeUnit % width;
-        return fullCrossHair(papp, l2x, l1y, width, height);
+        long l1y = (System.currentTimeMillis() / 50) % height;
+        long l2x = (System.currentTimeMillis() / 100) % width;
+        return fullCrossHair(papp, width - l2x, l1y, width, height);
     }
 
     private static PImage fullCrossHair(PApplet papp, long l2x, long l1y, int width, int height) {
         PGraphics pg = papp.createGraphics(width, height);
         pg.colorMode(RGB, 255);
         pg.beginDraw();
-        pg.background(100, 50, 50);
+        pg.background(0, 0, 0);
         pg.noStroke();
-        pg.fill(100, 50, 50);
+        pg.fill(0, 0, 0);
         pg.rect(0, 0, width, height);
         pg.strokeWeight(3);
-        pg.stroke(90, 90, 255);
+        pg.stroke(0, 0, 255);
         pg.line(0, l1y, width, l1y);
+        pg.stroke(255, 255, 0);
         pg.line(l2x, 0, l2x, height);
         pg.endDraw();
         return pg;
