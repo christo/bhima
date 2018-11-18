@@ -178,7 +178,7 @@
     {
     "segment" : "Right wing (clean) mapping from Mappings/Mapping22.csv",
     "description" : "probably best",
-    "enabled" : true,
+    "enabled" : false,
     "ignored" : false,
     "transforms" : [ {
       "type" : "translate",
