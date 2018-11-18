@@ -116,6 +116,10 @@ public class ProcessingBase extends PApplet {
         offloader.submit(runnable);
     }
 
+    protected static float dist(Point p1, Point p2) {
+        return dist(p1.getX(), p1.getY(), p2.getX(), p2.getY());
+    }
+
     final boolean isArrow(int keyCode) {
         return keyCode == UP || keyCode == DOWN || keyCode == LEFT || keyCode == RIGHT;
     }

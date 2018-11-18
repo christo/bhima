@@ -2,6 +2,7 @@ package com.chromosundrift.bhima.dragonmind;
 
 import com.chromosundrift.bhima.dragonmind.model.Config;
 import com.chromosundrift.bhima.geometry.PixelPoint;
+import com.chromosundrift.bhima.geometry.Point;
 import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
 import g4p_controls.GAlign;
 import g4p_controls.GLabel;
@@ -33,6 +34,8 @@ public class DragonMind extends ProcessingBase {
     private BallsProgram balls = new BallsProgram();
     private PusherMan pusherMan;
 
+    private PFont defaultFont;
+
     protected static String imageFile(String scanId, String frame, int strip, int pixel) {
         return format("mappings/Mapping-%s-%s-%02d-%04d%s", scanId, frame, strip, pixel, ".png");
     }
@@ -47,6 +50,7 @@ public class DragonMind extends ProcessingBase {
         balls.setup(this);
         pusherMan = new PusherMan(DEBUG_NOISY);
         pusherMan.init();
+        defaultFont = loadFont(getResourceFileOrUrl("HelveticaNeue-BoldItalic-18.vlw"));
     }
 
     protected void drawPattern(PImage img) {
@@ -86,8 +90,7 @@ public class DragonMind extends ProcessingBase {
             System.out.println("Could not load " + PROP_FILE + " because " + e.getMessage());
             //e.printStackTrace();
         }
-        PFont versionFont = loadFont(getResourceFileOrUrl("HelveticaNeue-BoldItalic-18.vlw"));
-        textFont(versionFont, 18);
+        textFont(defaultFont, 18);
         textAlign(RIGHT);
         text("version: " + version, width - 350, height - 100, 280, 80);
     }
@@ -129,52 +132,52 @@ public class DragonMind extends ProcessingBase {
 
     protected void mapSurfaceToPixels(PImage pImage, List<PixelPoint> pixelPoints) {
         if (getPusherMan().isReady()) {
-            List<Strip> strips = getPusherMan().getStrips();
+
             for (PixelPoint pp : pixelPoints) {
-                // TODO fix this HACK, need to edit mapped strip nums in config
-                int mappedStripNum = pp.getStrip();
-                int actualStripNum= mappedStripNum;
-                switch (mappedStripNum) {
-                    case 5:
-                        actualStripNum = 2;
-                        break;
-                    case 6:
-                        actualStripNum = 10;
-                        break;
-                    case 7:
-                        actualStripNum = 1;
-                        break;
-                    case 8:
-                        actualStripNum = 3;
-                        break;
-                    case 9:
-                        actualStripNum = 20;
-                        break;
-                    case 12:
-                        actualStripNum = 8;
-                        break;
-                    case 17:
-                        actualStripNum = 19;
-                        break;
-                }
-
-                if (actualStripNum != mappedStripNum) {
-                    logger.debug(String.format("hackmap: strip %d -> %d", mappedStripNum, actualStripNum));
-                }
-                Strip strip = strips.get(actualStripNum);
-                // translate local strip number into global
-
-                // TODO big fat wrong: check this out - trying to get the screen x,y for the transformed x and y of the model
-                int ppx = (int) screenX(pp.getX(),pp.getY());
+                Strip strip = getActualStrip(pp);
+                int ppx = (int) screenX(pp.getX(), pp.getY());
                 int ppy = (int) screenY(pp.getX(), pp.getY());
                 int targetColour = pImage.get(ppx, ppy);
-                logger.info(String.format("(%d,%d)@s%dp%d: %h", ppx, ppy, pp.getStrip(), pp.getPixel(), targetColour));
+                //logger.info(String.format("(%d,%d)@s%dp%d: %h", ppx, ppy, pp.getActualStrip(), pp.getPixel(), targetColour));
                 if (!(ppx >= 0 && ppx < width) || !(ppy >= 0 && ppy < height)) {
                     logger.error(String.format("out of bounds pixel: %d, %d", ppx, ppy));
                 }
                 strip.setPixel(targetColour, pp.getPixel());
             }
         }
+    }
+
+    private int getActualStripNum(int mappedStripNum) {
+        // TODO fix this HACK, need to edit mapped strip nums in config
+        int actualStripNum = mappedStripNum;
+        switch (mappedStripNum) {
+            case 5:
+                actualStripNum = 2;
+                break;
+            case 6:
+                actualStripNum = 10;
+                break;
+            case 7:
+                actualStripNum = 1;
+                break;
+            case 8:
+                actualStripNum = 3;
+                break;
+            case 9:
+                actualStripNum = 20;
+                break;
+            case 12:
+                actualStripNum = 8;
+                break;
+            case 17:
+                actualStripNum = 19;
+                break;
+        }
+
+        if (actualStripNum != mappedStripNum && logger.isDebugEnabled()) {
+            logger.debug(String.format("hackmap: strip %d -> %d", mappedStripNum, actualStripNum));
+        }
+        return actualStripNum;
     }
 
     /**
@@ -188,6 +191,7 @@ public class DragonMind extends ProcessingBase {
      * @param brightHighlight
      * @param wire
      * @param strongForeground
+     * @param runLights
      */
     protected void drawPoints(List<PixelPoint> pixels,
                               int lineAlpha,
@@ -196,31 +200,36 @@ public class DragonMind extends ProcessingBase {
                               int highlight,
                               int brightHighlight,
                               int wire,
-                              int strongForeground) {
+                              int strongForeground, boolean runLights) {
 
         pushStyle();
         ellipseMode(CENTER);
+        Point prevPoint = null;
         for (int i = 0; i < pixels.size(); i++) {
             PixelPoint pixel = pixels.get(i);
-            if (i > 0) {
+            Point sPoint = modelToScreen(pixel.getPoint());
+            pushMatrix();
+            resetMatrix();
+            if (prevPoint != null) {
                 pushStyle();
-                PixelPoint prev = pixels.get(i - 1);
                 stroke(wire);
-                line(prev.getX(), prev.getY(), pixel.getX(), pixel.getY());
+                line(prevPoint.getX(), prevPoint.getY(), sPoint.getX(), sPoint.getY());
                 popStyle();
             }
             // now draw the actual point
             if (highlight == i) {
+                if (runLights) {
+                    turnOnLed(pixel);
+                }
                 pushStyle();
-
                 stroke(brightHighlight);
                 noFill();
-                ellipse(pixel.getX(), pixel.getY(), 30, 30);
-
-                stroke(brightHighlight);
-                ellipse(pixel.getX(), pixel.getY(), 5, 5);
+                ellipse(sPoint.getX(), sPoint.getY(), 15, 15);
                 popStyle();
             } else {
+                if (runLights) {
+                    turnOffLed(pixel);
+                }
                 noFill();
                 if (rainbow) {
                     NamedColour c = colours.get(pixel.getStrip() % colours.size());
@@ -230,16 +239,83 @@ public class DragonMind extends ProcessingBase {
                     stroke(strongForeground);
                     fill(strongForeground);
                 }
-                ellipse(pixel.getX(), pixel.getY(), 8, 8);
+                ellipse(sPoint.getX(), sPoint.getY(), 4, 4);
             }
+            popMatrix();
+            prevPoint = sPoint;
         }
         popStyle();
     }
 
-    protected Config saveConfigToFirstArgOrDefault(Config config) throws IOException {
-        return (args != null && args.length > 0)? config.save(args[0]): config.save();
+    private void turnOnLed(PixelPoint pp) {
+        setLed(pp, color(255));
     }
+
+    private void turnOffLed(PixelPoint pp) {
+        setLed(pp, color(0));
+    }
+
+    private void setLed(PixelPoint pp, int colour) {
+        PusherMan pusherMan = getPusherMan();
+        pusherMan.ensureReady();
+        if (pusherMan.isReady()) {
+            Strip strip = getActualStrip(pp);
+            if (strip != null && pp.getPixel() >= 0) {
+                strip.setPixel(colour, pp.getPixel());
+            }
+        }
+    }
+
+    private Strip getActualStrip(PixelPoint pp) {
+        List<Strip> strips = pusherMan.getStrips();
+        int actualStripNum = getActualStripNum(pp.getStrip());
+        if (strips.size() > actualStripNum && actualStripNum >= 0) {
+            Strip strip = strips.get(actualStripNum);
+            return strip;
+        } else {
+            return null;
+        }
+    }
+
+    protected Config saveConfigToFirstArgOrDefault(Config config) throws IOException {
+        return (args != null && args.length > 0) ? config.save(args[0]) : config.save();
+    }
+
     protected Config loadConfigFromFirstArgOrDefault() throws IOException {
-        return (args != null && args.length > 0)? Config.load(args[0]): Config.load();
+        return (args != null && args.length > 0) ? Config.load(args[0]) : Config.load();
+    }
+
+    protected PFont getDefaultFont() {
+        return defaultFont;
+    }
+
+    @Override
+    public void pushMatrix() {
+        debugIfNotAnimationThread("pushing matrix");
+        super.pushMatrix();
+    }
+
+    @Override
+    public void popMatrix() {
+        debugIfNotAnimationThread("popping matrix");
+        super.popMatrix();
+    }
+
+    @Override
+    public void pushStyle() {
+        debugIfNotAnimationThread("pushing style");
+        super.pushStyle();
+    }
+
+    @Override
+    public void popStyle() {
+        debugIfNotAnimationThread("popping style");
+        super.popStyle();
+    }
+
+    private void debugIfNotAnimationThread(final String mesg) {
+        if (!Thread.currentThread().getName().equals("main-FPSAWTAnimator#00-Timer0")) {
+            logger.debug(mesg);
+        }
     }
 }
