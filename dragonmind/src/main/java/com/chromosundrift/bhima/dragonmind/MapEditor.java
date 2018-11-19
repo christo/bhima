@@ -1,5 +1,6 @@
 package com.chromosundrift.bhima.dragonmind;
 
+import com.chromosundrift.bhima.dragonmind.model.Background;
 import com.chromosundrift.bhima.dragonmind.model.Config;
 import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.chromosundrift.bhima.dragonmind.model.Transform;
@@ -11,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
 import processing.core.PImage;
+import processing.core.PMatrix;
 import processing.event.KeyEvent;
 import processing.event.MouseEvent;
 
@@ -20,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -36,6 +39,9 @@ import static org.apache.commons.lang3.StringUtils.defaultString;
 public class MapEditor extends DragonMind {
 
     // TODO: robustness; strip operations can cause RTEs if pixelpushers are shut down
+    // TODO add back wing
+    // TODO LHS manual mirroring
+    // TODO head
 
     private static Logger logger = LoggerFactory.getLogger(MapEditor.class);
     private static final float MOUSE_ZOOM_SPEED = 0.001f;
@@ -82,8 +88,8 @@ public class MapEditor extends DragonMind {
     private float viewShiftX = 0;
     private float viewShiftY = 0;
     private float viewZoom = 1;
-
-    private boolean shifting = false;
+    private PixelPoint draggingPixelPoint = null;
+    private Config generatedDragon;
 
     public void settings() {
         // TODO application preferences
@@ -96,6 +102,8 @@ public class MapEditor extends DragonMind {
         } catch (IOException e) {
             logger.error("Could not load config", e);
         }
+        DragonGenerator dragonGenerator = new DragonGenerator(1200, 300, 200, 200, 5);
+        generatedDragon = dragonGenerator.generateDragon();
     }
 
     public void setup() {
@@ -122,6 +130,7 @@ public class MapEditor extends DragonMind {
             rect(0, 0, width, height);
             pushMatrix();
             applyZoom();
+
             // draw model viewport
             fill(190);
             // draw line from centre of screen to centre of model viewport to help locate scrolled-off shiz
@@ -131,7 +140,7 @@ public class MapEditor extends DragonMind {
             applyGlobalTransforms();
             drawBackground();
             drawGlobalBoundingBox();
-            drawSegments();
+            drawSegments(config);
 
         } catch (RuntimeException e) {
             // TODO fix hack; split causes modification under iteration
@@ -141,9 +150,14 @@ public class MapEditor extends DragonMind {
         } finally {
 
             popMatrix();
+            drawGeneratedDragon();
             popMatrix();
             drawUi();
         }
+    }
+
+    private void drawGeneratedDragon() {
+        drawSegments(generatedDragon);
     }
 
     private void drawLineFromViewToModel() {
@@ -224,13 +238,10 @@ public class MapEditor extends DragonMind {
             Segment segment = config.getPixelMap().get(selectedSegment);
             int margin = 20;
             pushStyle();
-            // draw a callout box with the info in the top right, TODO connect to the segment with a line
             float w = 320;
             float h = 300;
             float screenX = width - w;
             float screenY = 50;
-
-            // TODO reproduce background + segment transform arithmetically to get screen coord of bounding box
 
             noStroke();
             if (segment.getEnabled()) {
@@ -261,9 +272,10 @@ public class MapEditor extends DragonMind {
 
             PixelPoint thisPixel = pixels.get(pixelIndex);
             text.append("Strip: ").append(thisPixel.getStrip())
-                    .append(" Pixel number: ").append(thisPixel.getPixel())
+                    .append(" Pixel number: ").append(thisPixel.getPixel() - segment.getPixelIndexBase())
                     .append(" x,y: ").append(thisPixel.getPoint().toString()).append("\n");
-            text.append("pixelIndex: ").append(pixelIndex).append("\n\n");
+            text.append("pixelIndex: ").append(pixelIndex).append("\n");
+            text.append("pixel index base: ").append(segment.getPixelIndexBase()).append("\n\n");
             text.append("step size: ").append(dt).append("\n");
             text.append("strip num override: ").append(segment.getStripNumberOverride()).append("\n\n");
             text.append("seg xform: ").append(segment.getTransforms().toString());
@@ -276,8 +288,9 @@ public class MapEditor extends DragonMind {
 
     /**
      * Draw only enabled segments, ignored segments are more transparent.
+     * @param config
      */
-    private void drawSegments() {
+    private void drawSegments(Config config) {
         List<Segment> pixelMap = config.getPixelMap();
         for (int i = 0; i < pixelMap.size(); i++) {
             Segment segment = pixelMap.get(i);
@@ -289,8 +302,6 @@ public class MapEditor extends DragonMind {
                     // restore the segment in its location by applying the transforms to the points
                     List<Transform> transforms = segment.getTransforms();
                     applyTransforms(transforms);
-                } else {
-                    logger.warn("No transforms for segment " + i + ": " + segment.getName());
                 }
 
                 // draw it
@@ -337,7 +348,7 @@ public class MapEditor extends DragonMind {
                 int wire = color(120, 70, 120, lineAlpha);
                 int brightHighlight = color(255, 0, 0, lineAlpha);
                 int fg = color(0, 255);
-                drawPoints(segment.getPixels(), lineAlpha, rainbow, colours, highlightedPixel, brightHighlight, wire, fg, true);
+                drawPoints(segment.getPixels(), lineAlpha, rainbow, colours, highlightedPixel, brightHighlight, wire, fg, true, segment.getPixelIndexBase());
                 popStyle();
                 popMatrix();
             }
@@ -359,6 +370,7 @@ public class MapEditor extends DragonMind {
             // image files look like this:
             // Mapping-1537359798903-lightframe-00-0000.png
             PixelPoint p = segment.getPixels().get(pixelIndex);
+            // the file does not use the segment's pixelIndexBase
             String file = imageFile(scanId, "lightframe", p.getStrip(), p.getPixel());
             try {
                 PImage image = loader.loadPimage(file);
@@ -406,29 +418,32 @@ public class MapEditor extends DragonMind {
 
     @Override
     public void mouseWheel(MouseEvent event) {
-        float zoomStep = (float) event.getCount() * MOUSE_ZOOM_SPEED;
-        float newShiftX = viewShiftX - mouseX * zoomStep;
-        float newShiftY = viewShiftY - mouseY * zoomStep;
-        float newZoom = viewZoom + zoomStep;
-        float scaledModelSize = width * viewZoom;
-        // attempt to decide if the zoom level is too extreme relative to screen size
-        boolean zoomInRange = scaledModelSize > 5 && scaledModelSize < (width * 100);
-        // TODO fix range checking for zoom and shift
-        if (scaledModelSize > 10 || zoomInRange && shiftInRange(newShiftX, newShiftY)) {
-            viewShiftX = newShiftX;
-            viewShiftY = newShiftY;
-            viewZoom = newZoom;
-        } else {
-            viewZoom += 0.001; // TODO fix this hack, sometimes gets stuck at minimum zoom edge
-            String explain = (!zoomInRange ? "zoom" : "") + (!shiftInRange(newShiftX, newShiftY) ? "shift" : "");
-            String more = format("zoomstep %.2f newzoom %.2f scaledModelSize %.2f", zoomStep, newZoom, scaledModelSize);
-            logger.info("not zooming because " + explain + " out of range " + more);
+        if (event.isShiftDown()) {
+            // change view zoom
+            float zoomStep = (float) event.getCount() * MOUSE_ZOOM_SPEED;
+            float newShiftX = viewShiftX - mouseX * zoomStep;
+            float newShiftY = viewShiftY - mouseY * zoomStep;
+            float newZoom = viewZoom + zoomStep;
+            float scaledModelSize = width * viewZoom;
+            // attempt to decide if the zoom level is too extreme relative to screen size
+            boolean zoomInRange = scaledModelSize > 5 && scaledModelSize < (width * 100);
+            // TODO fix range checking for zoom and shift
+            if (scaledModelSize > 10 || zoomInRange && shiftInRange(newShiftX, newShiftY)) {
+                viewShiftX = newShiftX;
+                viewShiftY = newShiftY;
+                viewZoom = newZoom;
+            } else {
+                viewZoom += 0.001; // TODO fix this hack, sometimes gets stuck at minimum zoom edge
+                String explain = (!zoomInRange ? "zoom" : "") + (!shiftInRange(newShiftX, newShiftY) ? "shift" : "");
+                String more = format("zoomstep %.2f newzoom %.2f scaledModelSize %.2f", zoomStep, newZoom, scaledModelSize);
+                logger.info("not zooming because " + explain + " out of range " + more);
+            }
         }
     }
 
     @Override
     public void mouseDragged(MouseEvent event) {
-        if (shifting) {
+        if (event.isShiftDown()) {
             float newViewShiftX = viewShiftX + mouseX - pmouseX;
             float newViewShiftY = viewShiftY + mouseY - pmouseY;
             // TODO fix range checking for zoom and shift
@@ -436,38 +451,79 @@ public class MapEditor extends DragonMind {
                 viewShiftX = newViewShiftX;
                 viewShiftY = newViewShiftY;
             }
+        } else if (event.isControlDown()) {
+            // maybe dragging a pixel
+            if (draggingPixelPoint == null) {
+                // we have started shiffting a point
+                logger.info("started dragging a point");
+                handlePointAt(mouseX, mouseY, pp -> draggingPixelPoint = pp);
+            } else {
+                logger.debug("continuing to drag a pixelPoint " + draggingPixelPoint);
+                // note we assume the draggingPixelPoint is in the selected segment (upheld elsewhere)
+                withAllTransforms(getSelectedSegment(), s -> {
+                    // invert the matrix so we can apply it to the mouse position and get target in-model points
+                    PMatrix m = getMatrix().get();
+                    if (!m.invert()) {
+                        logger.warn("couldn't invert the matrix");
+                    }
+                    setMatrix(m);
+                    draggingPixelPoint.getPoint().moveTo((int) screenX(mouseX, mouseY), (int) screenY(mouseX, mouseY));
+                    resetMatrix();
+                });
+
+            }
         }
+    }
+
+    /**
+     * Performs the given work on the given segment after view, global and segment transforms have all been done. This
+     * means the points in the segment are renderable from a reset matrix starting point or their model and screen
+     * space coordinates can be meaningfully interacted with.
+     */
+    private void withAllTransforms(Segment segment, Consumer<Segment> go) {
+        applyZoom();
+        applyGlobalTransforms();
+        applyTransforms(segment.getTransforms()); // assuming draggingPixelPoint is in selected segment
+        go.accept(segment);
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent event) {
+        logger.info("not dragging a pixelPoint");
+        draggingPixelPoint = null;
     }
 
     @Override
     public void mouseMoved(MouseEvent event) {
-        // if there is a close enough point in the selected segment, highlight the point
-        // first check if we are over the selected segment to reduce the number of points to cheeck
-        Segment selectedSegment = getSelectedSegment();
-
-        // execute all the transforms that affect point position relative to mouse
-        pushMatrix();
-        applyZoom();
-        applyGlobalTransforms();
-        applyTransforms(selectedSegment.getTransforms());
-
-        // now only calculate pointer distances for current segment points if the pointer is in the bounding box
-        Rect rect = calculateScreenBox(selectedSegment);
-        if (rect.contains(mouseX, mouseY)) {
-            final Point mousePoint = new Point(event.getX(), event.getY());
-            final Comparator<PixelPoint> distanceToMouse = (o1, o2) ->
-                    Float.compare(dist(modelToScreen(o1.getPoint()), mousePoint), dist(modelToScreen(o2.getPoint()), mousePoint));
-
-            selectedSegment.getPixels().stream()
-                    .min(distanceToMouse)
-                    .filter(pp -> dist(modelToScreen(pp.getPoint()), mousePoint) < SELECT_DIST)
-                    .ifPresent(pp -> pixelIndex = getIndexFor(selectedSegment, pp));
+        // don't change the selected point if the control key is down, we might be moving a point
+        if (!event.isControlDown()) {
+            handlePointAt(event.getX(), event.getY(), pp -> pixelIndex = getIndexFor(getSelectedSegment(), pp));
         }
-        popMatrix();
+    }
+
+    private void handlePointAt(int sx, int sy, Consumer<PixelPoint> pointConsumer) {
+
+        withAllTransforms(getSelectedSegment(), s -> {
+            // now only calculate pointer distances for current segment points if the pointer is in the bounding box
+            Rect rect = calculateScreenBox(s);
+            if (rect.contains(sx, sy)) {
+                final Point sPoint = new Point(sx, sy);
+                final Comparator<PixelPoint> distanceToMouse = (o1, o2) ->
+                        Float.compare(
+                                dist(modelToScreen(o1.getPoint()), sPoint),
+                                dist(modelToScreen(o2.getPoint()), sPoint));
+
+                s.getPixels().stream()
+                        .min(distanceToMouse)
+                        .filter(pp -> dist(modelToScreen(pp.getPoint()), sPoint) < SELECT_DIST)
+                        .ifPresent(pointConsumer);
+            }
+        });
     }
 
     /**
      * Finds the pixelIndex for the given segment-pixelpoint pair
+     *
      * @param segment
      * @param pp
      */
@@ -502,10 +558,7 @@ public class MapEditor extends DragonMind {
             if (k == 'r') {
                 rainbow = !rainbow;
             }
-            // only enable dragging the whole view with the mouse when shift is down
-            shifting = event.isShiftDown();
-
-            if (k == ' ' && shifting) {
+            if (k == ' ' && event.isShiftDown()) {
                 resetView();
             }
 
@@ -595,6 +648,12 @@ public class MapEditor extends DragonMind {
         if (k == ',') {
             segment.rotate(-theta * dt);
         }
+        if (k == ')') {
+            segment.setPixelIndexBase(segment.getPixelIndexBase() + 1);
+        }
+        if (k == '(') {
+            segment.setPixelIndexBase(segment.getPixelIndexBase() - 1);
+        }
 
         if (k == '\\') {
             segment.flipEnabled();
@@ -668,6 +727,7 @@ public class MapEditor extends DragonMind {
         if (k == 'o') {
             try {
                 config = loadConfigFromFirstArgOrDefault();
+
             } catch (IOException e) {
                 logger.error("could not load config", e);
             }

@@ -34,9 +34,9 @@ public final class Point {
         return sumD2 / points.size();
     }
 
-    private final int x;
+    private int x;
 
-    private final int y;
+    private int y;
 
     public Point(int ix, int iy) {
         this.x = ix;
@@ -71,5 +71,10 @@ public final class Point {
 
     public int getY() {
         return y;
+    }
+
+    public void moveTo(int x, int y) {
+        this.x = x;
+        this.y = y;
     }
 }

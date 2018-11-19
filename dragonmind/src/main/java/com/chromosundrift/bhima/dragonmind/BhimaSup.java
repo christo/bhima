@@ -17,6 +17,7 @@ import java.util.List;
 import static java.util.Collections.emptyList;
 
 // TODO fix filesystem monitoring and movie cycling
+// TODO receive NDI stream for display
 
 /**
  * Loads and plays video on Bhima configured by file.
@@ -24,7 +25,7 @@ import static java.util.Collections.emptyList;
 public class BhimaSup extends DragonMind {
 
     private static final Logger logger = LoggerFactory.getLogger(BhimaSup.class);
-    public static final String DEFAULT_MOVIE = "video/laser-mountain.m4v";
+    private static final String DEFAULT_MOVIE = "video/laser-mountain.m4v";
 
     private static long MS_POLLING_INTERVAL = 1000 * 30;
     private static int INNER_WIDTH = 400;
@@ -50,12 +51,20 @@ public class BhimaSup extends DragonMind {
     public void setup() {
         super.setup();
         background(0);
+//        movie = new Movie(this, "video/golden-cave.m4v");
+//        movie = new Movie(this, "video/quick-threads.m4v");
+//        movie = new Movie(this, "video/dots-waves.m4v");
 //        movie = new Movie(this, "video/diagonal-bars.mp4");
-        // movie = new Movie(this, "video/fire-ex.m4v");
+//         movie = new Movie(this, "video/fire-low.m4v");
+//         movie = new Movie(this, "video/diamonds.m4v");
+//         movie = new Movie(this, "video/Star Pink Vj ANIMATION FREE FOOTAGE HD-oMM1wsQEU-M.mp4");
+//         movie = new Movie(this, "video/50x1000 red scales.mov");
 //         movie = new Movie(this, "video/100x1000 aztec rug.m4v");
+//         movie = new Movie(this, "video/slomo-ink.m4v");
+//         movie = new Movie(this, "video/colour-ink.m4v");
 //         movie = new Movie(this, "video/clouds.m4v");
          movie = new Movie(this, DEFAULT_MOVIE);
-        movie.speed(1f); // TODO build into playback "Program" parameter
+        movie.speed(1f);
         movie.loop();
         try {
             config = loadConfigFromFirstArgOrDefault();
@@ -79,8 +88,9 @@ public class BhimaSup extends DragonMind {
             pushMatrix();
             applyTransforms(config.getBackground().getTransforms());
             // TODO: dynamically perform this scaling function into the video frame (full width, vertically centred)
+
             // manual trasform fixup for getting the whole dragon in-frame with the video panel
-            translate(-2.38f * width, -0.70f * height);
+            translate(-2.45f * width, -0.96f * height);
             scale((float) width / 1920);
 
             getPusherMan().ensureReady();
@@ -88,13 +98,13 @@ public class BhimaSup extends DragonMind {
                 if (segment.getEnabled() && !segment.getIgnored()) {
                     pushMatrix();
                     applyTransforms(segment.getTransforms());
-                    mapSurfaceToPixels(pImage, segment.getPixels());
+                    mapSurfaceToPixels(pImage, segment);
 
-                    int bright = color(255, 0, 0, 128);
-                    int color = color(170, 170, 170, 128);
-                    int strongFg = color(255, 128);
+                    int bright = color(255, 0, 0, 90);
+                    int color = color(170, 170, 170, 90);
+                    int strongFg = color(255, 90);
                     // draw the pixelpoints into the current view
-                    drawPoints(segment.getPixels(), 255, false, emptyList(), -1, bright, color, strongFg, false);
+                    drawPoints(segment.getPixels(), 255, false, emptyList(), -1, bright, color, strongFg, false, segment.getPixelIndexBase());
                     popMatrix();
                 }
             });
@@ -170,8 +180,8 @@ public class BhimaSup extends DragonMind {
     }
 
     private static PImage cycleTestPattern(PApplet papp, int width, int height) {
-        long l1y = (System.currentTimeMillis() / 20) % height;
-        long l2x = (System.currentTimeMillis() / 50) % width;
+        long l1y = (System.currentTimeMillis() / 30) % height;
+        long l2x = (System.currentTimeMillis() / 100) % width;
         return fullCrossHair(papp, width - l2x, l1y, width, height);
     }
 
@@ -183,11 +193,14 @@ public class BhimaSup extends DragonMind {
         pg.noStroke();
         pg.fill(0, 0, 0);
         pg.rect(0, 0, width, height);
-        pg.strokeWeight(3);
+        pg.strokeWeight(2);
         pg.stroke(0, 0, 255);
         pg.line(0, l1y, width, l1y);
-        pg.strokeWeight(5);
+        pg.strokeWeight(6);
         pg.stroke(255, 255, 0);
+        pg.line(l2x, 0, l2x, height);
+        pg.strokeWeight(2);
+        pg.stroke(255, 0, 0);
         pg.line(l2x, 0, l2x, height);
         pg.endDraw();
         return pg;

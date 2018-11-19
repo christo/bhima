@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -21,14 +22,18 @@ import static java.lang.Math.min;
 
 @SuppressWarnings("WeakerAccess")
 @JsonInclude(NON_NULL)
-@JsonPropertyOrder({"name", "description", "stripNumberOverride", "enabled", "ignored", "background", "transforms", "pixels"})
+@JsonPropertyOrder({"name", "description", "stripNumberOverride", "enabled", "ignored", "background", "pixelIndexBase", "transforms", "pixels"})
 public final class Segment {
 
     @JsonProperty("segment")
     private String name;
+
     private String description;
+
     private Background background;
-    private int stripNumberOverride = -1; // TODO delete or this should be a map since we contain arbitrary strip numbers
+
+    @JsonInclude(NON_NULL)
+    private Integer stripNumberOverride = null; // TODO delete or this should be a map since we contain arbitrary strip numbers
 
     /**
      * Does not light up nor display in the editor.
@@ -39,8 +44,12 @@ public final class Segment {
      * Does not light up, usually because hardware mirroring is on.
      */
     private boolean ignored = false;
+
+    private int pixelIndexBase = 0;
+
     @JsonInclude(NON_NULL)
     private List<Transform> transforms = new ArrayList<>();
+
     private List<PixelPoint> pixels = new CopyOnWriteArrayList<>();
 
     /**
@@ -122,12 +131,20 @@ public final class Segment {
         this.ignored = ignored;
     }
 
-    public int getStripNumberOverride() {
+    public Integer getStripNumberOverride() {
         return stripNumberOverride;
     }
 
-    public void setStripNumberOverride(int stripNumberOverride) {
+    public void setStripNumberOverride(Integer stripNumberOverride) {
         this.stripNumberOverride = stripNumberOverride;
+    }
+
+    public int getPixelIndexBase() {
+        return pixelIndexBase;
+    }
+
+    public void setPixelIndexBase(int pixelIndexBase) {
+        this.pixelIndexBase = pixelIndexBase;
     }
 
     public void flipIgnored() {
@@ -192,5 +209,13 @@ public final class Segment {
                 ", ignored=" + ignored +
                 ", pixelcount=" + pixels.size() +
                 '}';
+    }
+
+    public void addPixelPoint(PixelPoint pp) {
+        pixels.add(pp);
+    }
+
+    public void addPixelPoints(Collection<PixelPoint> pps) {
+        pixels.addAll(pps);
     }
 }

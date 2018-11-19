@@ -43,7 +43,7 @@ import static java.lang.Thread.currentThread;
 @SuppressWarnings("unused")
 public class ArrayScanner2 extends DragonMind {
 
-    final static Logger logger = LoggerFactory.getLogger(ArrayScanner2.class);
+    private final static Logger logger = LoggerFactory.getLogger(ArrayScanner2.class);
     private static final boolean ENABLE_CAMERA = false;
     private int startStrip = 0;
     private int startPixel = 0;
@@ -181,8 +181,6 @@ public class ArrayScanner2 extends DragonMind {
         getPusherMan().ensureReady();
         if (mode == Mapper.Mode.EDIT) {
             if (config.getBackgroundImage() != null) {
-                // TODO config transform
-                // TODO local zoom
                 bgImage.set(0, 0, new PImage(config.getBackgroundImage()));
             }
         } else {
@@ -197,7 +195,7 @@ public class ArrayScanner2 extends DragonMind {
                 drawPattern(bgImage);
                 renderMainImage();
                 if (displayMap.size() > 0) {
-                    mapSurfaceToPixels(bgImage, displayMap);
+                    mapSurfaceToPixels(bgImage, displayMap, 0);
                     return;
                 }
             } else {

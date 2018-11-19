@@ -1,6 +1,7 @@
 package com.chromosundrift.bhima.dragonmind;
 
 import com.chromosundrift.bhima.dragonmind.model.Config;
+import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.chromosundrift.bhima.geometry.PixelPoint;
 import com.chromosundrift.bhima.geometry.Point;
 import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
@@ -104,7 +105,7 @@ public class DragonMind extends ProcessingBase {
         return extUrl;
     }
 
-    public PusherMan getPusherMan() {
+    protected PusherMan getPusherMan() {
         return pusherMan;
     }
 
@@ -130,7 +131,7 @@ public class DragonMind extends ProcessingBase {
         return glabel;
     }
 
-    protected void mapSurfaceToPixels(PImage pImage, List<PixelPoint> pixelPoints) {
+    protected void mapSurfaceToPixels(PImage pImage, List<PixelPoint> pixelPoints, int pixelIndexBase) {
         if (getPusherMan().isReady()) {
 
             for (PixelPoint pp : pixelPoints) {
@@ -142,9 +143,15 @@ public class DragonMind extends ProcessingBase {
                 if (!(ppx >= 0 && ppx < width) || !(ppy >= 0 && ppy < height)) {
                     logger.error(String.format("out of bounds pixel: %d, %d", ppx, ppy));
                 }
-                strip.setPixel(targetColour, pp.getPixel());
+                int position = pp.getPixel() - pixelIndexBase;
+                strip.setPixel(targetColour, position);
+
             }
         }
+    }
+
+    protected void mapSurfaceToPixels(PImage pImage, Segment segment) {
+        mapSurfaceToPixels(pImage, segment.getPixels(), segment.getPixelIndexBase());
     }
 
     private int getActualStripNum(int mappedStripNum) {
@@ -200,7 +207,7 @@ public class DragonMind extends ProcessingBase {
                               int highlight,
                               int brightHighlight,
                               int wire,
-                              int strongForeground, boolean runLights) {
+                              int strongForeground, boolean runLights, int indexBase) {
 
         pushStyle();
         ellipseMode(CENTER);
@@ -219,7 +226,7 @@ public class DragonMind extends ProcessingBase {
             // now draw the actual point
             if (highlight == i) {
                 if (runLights) {
-                    turnOnLed(pixel);
+                    turnOnLed(pixel, indexBase);
                 }
                 pushStyle();
                 stroke(brightHighlight);
@@ -228,7 +235,7 @@ public class DragonMind extends ProcessingBase {
                 popStyle();
             } else {
                 if (runLights) {
-                    turnOffLed(pixel);
+                    turnOffLed(pixel, indexBase);
                 }
                 noFill();
                 if (rainbow) {
@@ -247,21 +254,22 @@ public class DragonMind extends ProcessingBase {
         popStyle();
     }
 
-    private void turnOnLed(PixelPoint pp) {
-        setLed(pp, color(255));
+    private void turnOnLed(PixelPoint pp, int indexBase) {
+        setLed(pp, color(255), indexBase);
     }
 
-    private void turnOffLed(PixelPoint pp) {
-        setLed(pp, color(0));
+    private void turnOffLed(PixelPoint pp, int indexBase) {
+        setLed(pp, color(0), indexBase);
     }
 
-    private void setLed(PixelPoint pp, int colour) {
+    private void setLed(PixelPoint pp, int colour, int indexBase) {
         PusherMan pusherMan = getPusherMan();
         pusherMan.ensureReady();
         if (pusherMan.isReady()) {
             Strip strip = getActualStrip(pp);
-            if (strip != null && pp.getPixel() >= 0) {
-                strip.setPixel(colour, pp.getPixel());
+            int pixNum = pp.getPixel() - indexBase;
+            if (strip != null && pixNum >= 0) {
+                strip.setPixel(colour, pixNum);
             }
         }
     }
