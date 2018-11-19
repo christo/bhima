@@ -184,7 +184,7 @@ public class ProcessingBase extends PApplet {
         }
     }
 
-    protected Rect modelToScreenSpace(Rect r) {
+    protected Rect modelToScreen(Rect r) {
         return new Rect(modelToScreen(r.getMinMin()), modelToScreen(r.getMaxMax()));
     }
 

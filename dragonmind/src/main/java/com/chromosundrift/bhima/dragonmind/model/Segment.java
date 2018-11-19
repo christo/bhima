@@ -181,4 +181,16 @@ public final class Segment {
     private Optional<Transform> firstTransformByType(Transform.Type type) {
         return getTransforms().stream().filter(type::is).findFirst();
     }
+
+    @Override
+    public String toString() {
+        return "Segment{" +
+                "name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", background=" + background +
+                ", enabled=" + enabled +
+                ", ignored=" + ignored +
+                ", pixelcount=" + pixels.size() +
+                '}';
+    }
 }

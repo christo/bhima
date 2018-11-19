@@ -444,21 +444,42 @@ public class MapEditor extends DragonMind {
         // if there is a close enough point in the selected segment, highlight the point
         // first check if we are over the selected segment to reduce the number of points to cheeck
         Segment selectedSegment = getSelectedSegment();
-        Rect rect = calculateScreenBox(selectedSegment);
 
+        // execute all the transforms that affect point position relative to mouse
+        pushMatrix();
+        applyZoom();
+        applyGlobalTransforms();
+        applyTransforms(selectedSegment.getTransforms());
+
+        // now only calculate pointer distances for current segment points if the pointer is in the bounding box
+        Rect rect = calculateScreenBox(selectedSegment);
         if (rect.contains(mouseX, mouseY)) {
             final Point mousePoint = new Point(event.getX(), event.getY());
             final Comparator<PixelPoint> distanceToMouse = (o1, o2) ->
-                    Float.compare(dist(o1.getPoint(), mousePoint), dist(o2.getPoint(), mousePoint));
+                    Float.compare(dist(modelToScreen(o1.getPoint()), mousePoint), dist(modelToScreen(o2.getPoint()), mousePoint));
 
             selectedSegment.getPixels().stream()
                     .min(distanceToMouse)
-                    .filter(pp -> dist(pp.getPoint(), mousePoint) < SELECT_DIST)
-                    .ifPresent(pp ->
-                    /*pixelIndex =*/ pp.getPixel() // TODO need to get positional index of this PixelPoint
-            );
+                    .filter(pp -> dist(modelToScreen(pp.getPoint()), mousePoint) < SELECT_DIST)
+                    .ifPresent(pp -> pixelIndex = getIndexFor(selectedSegment, pp));
         }
+        popMatrix();
+    }
 
+    /**
+     * Finds the pixelIndex for the given segment-pixelpoint pair
+     * @param segment
+     * @param pp
+     */
+    private int getIndexFor(Segment segment, PixelPoint pp) {
+        int index = 0;
+        for (PixelPoint pixel : segment.getPixels()) {
+            if (pixel.equals(pp)) {
+                return index;
+            }
+            index++;
+        }
+        return -1;
     }
 
     private Segment getSelectedSegment() {
