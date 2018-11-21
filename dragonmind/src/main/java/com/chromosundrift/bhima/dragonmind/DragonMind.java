@@ -139,9 +139,8 @@ public class DragonMind extends ProcessingBase {
                 int ppx = (int) screenX(pp.getX(), pp.getY());
                 int ppy = (int) screenY(pp.getX(), pp.getY());
                 int targetColour = pImage.get(ppx, ppy);
-                //logger.info(String.format("(%d,%d)@s%dp%d: %h", ppx, ppy, pp.getActualStrip(), pp.getPixel(), targetColour));
                 if (!(ppx >= 0 && ppx < width) || !(ppy >= 0 && ppy < height)) {
-                    logger.error(String.format("out of bounds pixel: %d, %d", ppx, ppy));
+                    logger.error("out of bounds pixel: {}, {}", ppx, ppy);
                 }
                 int position = pp.getPixel() - pixelIndexBase;
                 strip.setPixel(targetColour, position);
@@ -182,7 +181,7 @@ public class DragonMind extends ProcessingBase {
         }
 
         if (actualStripNum != mappedStripNum && logger.isDebugEnabled()) {
-            logger.debug(String.format("hackmap: strip %d -> %d", mappedStripNum, actualStripNum));
+            logger.debug("hackmap: strip {} -> {}", mappedStripNum, actualStripNum);
         }
         return actualStripNum;
     }
@@ -254,11 +253,11 @@ public class DragonMind extends ProcessingBase {
         popStyle();
     }
 
-    private void turnOnLed(PixelPoint pp, int indexBase) {
+    protected void turnOnLed(PixelPoint pp, int indexBase) {
         setLed(pp, color(255), indexBase);
     }
 
-    private void turnOffLed(PixelPoint pp, int indexBase) {
+    protected void turnOffLed(PixelPoint pp, int indexBase) {
         setLed(pp, color(0), indexBase);
     }
 

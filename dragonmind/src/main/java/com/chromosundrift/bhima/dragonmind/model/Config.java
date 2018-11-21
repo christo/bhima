@@ -10,6 +10,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import org.apache.commons.collections4.MultiMap;
+import org.apache.commons.collections4.map.MultiValueMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +20,8 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
@@ -97,7 +101,10 @@ public final class Config {
         for (Segment segment : config.getPixelMap()) {
             logger.debug("Sanity checking segment: {}", segment);
             PixelPoint prev = null;
+
             for (PixelPoint pixel : segment.getPixels()) {
+                // TODO no two segments should contain pixels on the same strips
+
                 // each pixelIndexBase-adjusted pixel number must be non-negative
                 boolean negativePixelNum = pixel.getPixel() - segment.getPixelIndexBase() < 0;
                 if (negativePixelNum) {

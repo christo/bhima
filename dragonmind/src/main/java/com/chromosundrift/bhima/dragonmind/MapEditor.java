@@ -1,6 +1,5 @@
 package com.chromosundrift.bhima.dragonmind;
 
-import com.chromosundrift.bhima.dragonmind.model.Background;
 import com.chromosundrift.bhima.dragonmind.model.Config;
 import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.chromosundrift.bhima.dragonmind.model.Transform;
@@ -38,8 +37,36 @@ import static org.apache.commons.lang3.StringUtils.defaultString;
  */
 public class MapEditor extends DragonMind {
 
+    private static final char ADD_POINT = '`';
+    private static final char DELETE_POINT = '!';
+    private static final char SPLIT_SEGMENT = '|';
+    private static final char PREVIOUS_DT_PIXELS = ';';
+    private static final char NEXT_DT_PIXELS = '\'';
+    private static final char INCREASE_LINE_TRANSPARENCY = 'u';
+    private static final char DECREASE_LINE_TRANSPARENCY = 'U';
+    private static final char TOGGLE_SHOW_SEGMENT_SCAN_IMAGE = 'I';
+    private static final char TOGGLE_IGNORE_SEGMENT = 'i';
+    private static final char TOGGLE_DISABLE_SEGMENT = '\\';
+    private static final char SHIFT_PIXEL_NUMBERING_DOWN = '(';
+    private static final char SHIFT_PIXEL_NUMBERING_UP = ')';
+    private static final char ROTATE_SEGMENT_CCW = ',';
+    private static final char ROTATE_SEGMENT_CW = '.';
+    private static final char RESET_SEGMENT_SCALE = '0';
+    private static final char SEGMENT_SCALE_DOWN = '-';
+    private static final char SEGMENT_SCALE_UP = '=';
+    private static final char PREVIOUS_SEGMENT = '[';
+    private static final char NEXT_SEGMENT = ']';
+    private static final char TOGGLE_RAINBOW_MODE = 'r';
+    private static final char META_SAVE = 's';
+    private static final char META_LOAD = 'o';
+    private static final char META_GLOBAL_SCALE_UP = '=';
+    private static final char META_GLOBAL_SCALE_DOWN = '-';
+    private static final char META_GLOBAL_SCALE_RESET = '0';
+    private static final char SHIFT_RESET_VIEW = ' ';
+    private static final int MAX_PIXELS_PER_STRIP = 600; // TODO get from config?
+
     // TODO: robustness; strip operations can cause RTEs if pixelpushers are shut down
-    // TODO add back wing
+    // TODO add right wing back
     // TODO LHS manual mirroring
     // TODO head
 
@@ -102,8 +129,16 @@ public class MapEditor extends DragonMind {
         } catch (IOException e) {
             logger.error("Could not load config", e);
         }
-        DragonGenerator dragonGenerator = new DragonGenerator(1200, 300, 200, 200, 5);
-        generatedDragon = dragonGenerator.generateDragon();
+        DragonBuilder dragonBuilder = new DragonBuilder(1730, 800, 4);
+        int ph = 80 - dragonBuilder.margin;
+        int pw = 80 - dragonBuilder.margin;
+        dragonBuilder.addSegment(3, pw, ph)
+                .addSegment(3, pw, ph)
+                .addSegment(3, pw, ph)
+                .addSegment(1, pw, ph)
+                    //.addPanel()
+                .build(); // TODO finish the 3 panel segment with a panelpoint function
+        generatedDragon = dragonBuilder.build();
     }
 
     public void setup() {
@@ -447,30 +482,39 @@ public class MapEditor extends DragonMind {
             float newViewShiftX = viewShiftX + mouseX - pmouseX;
             float newViewShiftY = viewShiftY + mouseY - pmouseY;
             // TODO fix range checking for zoom and shift
-            if (true || shiftInRange(newViewShiftX, newViewShiftY)) {
+//            boolean shiftInRange = shiftInRange(newViewShiftX, newViewShiftY);
+            boolean shiftInRange = true;
+            if (shiftInRange) {
                 viewShiftX = newViewShiftX;
                 viewShiftY = newViewShiftY;
             }
         } else if (event.isControlDown()) {
             // maybe dragging a pixel
-            if (draggingPixelPoint == null) {
-                // we have started shiffting a point
-                logger.info("started dragging a point");
-                handlePointAt(mouseX, mouseY, pp -> draggingPixelPoint = pp);
-            } else {
+            if (draggingPixelPoint != null) {
                 logger.debug("continuing to drag a pixelPoint " + draggingPixelPoint);
                 // note we assume the draggingPixelPoint is in the selected segment (upheld elsewhere)
                 withAllTransforms(getSelectedSegment(), s -> {
+                    // FIXME this is still not tracking the mouse correctly
+                    // (word on the street is that getMatrix() only grabs the top of the matrix stack)
+
                     // invert the matrix so we can apply it to the mouse position and get target in-model points
                     PMatrix m = getMatrix().get();
                     if (!m.invert()) {
+                        // allegedly matrix transforms can fail to invert due to being "non-injective"
+                        // see https://en.wikipedia.org/wiki/Bijection,_injection_and_surjection
                         logger.warn("couldn't invert the matrix");
                     }
                     setMatrix(m);
-                    draggingPixelPoint.getPoint().moveTo((int) screenX(mouseX, mouseY), (int) screenY(mouseX, mouseY));
+                    int modelX = (int) screenX(mouseX, mouseY);
+                    int modelY = (int) screenY(mouseX, mouseY);
+                    draggingPixelPoint.getPoint().moveTo(modelX, modelY);
                     resetMatrix();
                 });
 
+            } else {
+                // we have started shiffting a point
+                logger.info("started dragging a point");
+                handlePointAt(mouseX, mouseY, pp -> draggingPixelPoint = pp);
             }
         }
     }
@@ -555,10 +599,10 @@ public class MapEditor extends DragonMind {
                 handleSegmentKey(event);
             }
 
-            if (k == 'r') {
+            if (k == TOGGLE_RAINBOW_MODE) {
                 rainbow = !rainbow;
             }
-            if (k == ' ' && event.isShiftDown()) {
+            if (k == SHIFT_RESET_VIEW && event.isShiftDown()) {
                 resetView();
             }
 
@@ -601,11 +645,11 @@ public class MapEditor extends DragonMind {
     private void handleSegmentKey(KeyEvent event) {
         // NO META KEY DOWN; segment operations
         char k = event.getKey();
-        if (k == ']') {
+        if (k == NEXT_SEGMENT) {
             selectedSegment++;
             selectedSegment %= config.getPixelMap().size();
             pixelIndex = 0;
-        } else if (k == '[') {
+        } else if (k == PREVIOUS_SEGMENT) {
             if (selectedSegment <= 0) {
                 selectedSegment = config.getPixelMap().size() - 1;
             } else {
@@ -618,11 +662,11 @@ public class MapEditor extends DragonMind {
 
 
         // handle segment transform manipulations
-        if (k == '=') {
+        if (k == SEGMENT_SCALE_UP) {
             segment.scale(1.03);
-        } else if (k == '-') {
+        } else if (k == SEGMENT_SCALE_DOWN) {
             segment.scale(0.97);
-        } else if (k == '0') {
+        } else if (k == RESET_SEGMENT_SCALE) {
             segment.resetScale();
         }
 
@@ -642,34 +686,34 @@ public class MapEditor extends DragonMind {
         }
 
         // segment rotation
-        if (k == '.') {
+        if (k == ROTATE_SEGMENT_CW) {
             segment.rotate(theta * dt);
         }
-        if (k == ',') {
+        if (k == ROTATE_SEGMENT_CCW) {
             segment.rotate(-theta * dt);
         }
-        if (k == ')') {
+        if (k == SHIFT_PIXEL_NUMBERING_UP) {
             segment.setPixelIndexBase(segment.getPixelIndexBase() + 1);
         }
-        if (k == '(') {
+        if (k == SHIFT_PIXEL_NUMBERING_DOWN) {
             segment.setPixelIndexBase(segment.getPixelIndexBase() - 1);
         }
 
-        if (k == '\\') {
+        if (k == TOGGLE_DISABLE_SEGMENT) {
             segment.flipEnabled();
         }
-        if (k == 'i') {
+        if (k == TOGGLE_IGNORE_SEGMENT) {
             segment.flipIgnored();
         }
 
-        if (k == 'I') {
+        if (k == TOGGLE_SHOW_SEGMENT_SCAN_IMAGE) {
             showImage = !showImage;
         }
-        if (k == 'U') {
+        if (k == DECREASE_LINE_TRANSPARENCY) {
             // make lines more opaque
             lineAlpha = min(255, lineAlpha + 16);
         }
-        if (k == 'u') {
+        if (k == INCREASE_LINE_TRANSPARENCY) {
             // make lines more transparent
             lineAlpha = max(0, lineAlpha - 16);
         }
@@ -677,18 +721,18 @@ public class MapEditor extends DragonMind {
         // point operations
 
         // highlight
-        if (k == '\'') {
+        if (k == NEXT_DT_PIXELS) {
             // next (dt) pixel(s)
             pixelIndex += dt;
             pixelIndex %= segment.getPixels().size();
-        } else if (k == ';') {
+        } else if (k == PREVIOUS_DT_PIXELS) {
             // previous (dt) pixel(s)
             pixelIndex -= dt;
             if (pixelIndex < 0) {
                 // wrap around at bottom
                 pixelIndex = segment.getPixels().size() + pixelIndex;
             }
-        } else if (k == '|') {
+        } else if (k == SPLIT_SEGMENT) {
             // split the segment into two at the current pixel
             Segment split = new Segment();
             split.setName("split of " + segment.getName());
@@ -701,10 +745,33 @@ public class MapEditor extends DragonMind {
             segment.setPixels(pixels.subList(0, pixelIndex));
 
             config.getPixelMap().add(split);
-        } else if (k == '?') {
+        } else if (k == DELETE_POINT) {
             // delete pixel
-            segment.getPixels().remove(pixelIndex);
+            PixelPoint deleted = segment.getPixels().remove(pixelIndex);
+            turnOffLed(deleted, segment.getPixelIndexBase());
             pixelIndex %= segment.getPixels().size();
+        } else if (k == ADD_POINT) {
+            List<PixelPoint> pixels = segment.getPixels();
+            int i = pixelIndex;
+            PixelPoint thisPixel = pixels.get(i);
+            // is there a next pixel?
+            if (i + 1 < pixels.size()) {
+                PixelPoint nextPixel = pixels.get(i + 1);
+                int nextPixelNumber = thisPixel.getPixel() + 1;
+                // TODO this assumes pixels are in order! enforce this invariant in Segment
+                boolean nextPixelLeavesNumberSpace = nextPixel.getPixel() != nextPixelNumber;
+                boolean nextPixelDifferentStrip = nextPixel.getStrip() != thisPixel.getStrip();
+                if (nextPixelLeavesNumberSpace || nextPixelDifferentStrip){
+                    // put the new pixel at the midpoint between this pixel and next pixel
+                    int newX = thisPixel.getX() + (thisPixel.getX() - nextPixel.getX()) / 2;
+                    int newY = thisPixel.getY() + (thisPixel.getY() - nextPixel.getY()) / 2;
+                    PixelPoint newPixel = new PixelPoint(thisPixel.getStrip(), nextPixelNumber, newX, newY);
+                    pixels.add(i+1, newPixel);
+                } else {
+                    logger.warn("can't create pixel at this point because no spare pixel number");
+                }
+            }
+            // search forward for an unused pixel number
         }
     }
 
@@ -716,7 +783,7 @@ public class MapEditor extends DragonMind {
      */
     private void handleMetaKey(KeyEvent event) {
         char k = event.getKey();
-        if (k == 's') {
+        if (k == META_SAVE) {
             try {
                 saveConfigToFirstArgOrDefault(config);
             } catch (IOException e) {
@@ -724,7 +791,7 @@ public class MapEditor extends DragonMind {
             }
             logger.info("config saved");
         }
-        if (k == 'o') {
+        if (k == META_LOAD) {
             try {
                 config = loadConfigFromFirstArgOrDefault();
 
@@ -748,13 +815,13 @@ public class MapEditor extends DragonMind {
         }
 
         // aka plus key
-        if (k == '=') {
+        if (k == META_GLOBAL_SCALE_UP) {
             config.multiplyGlobalScale(1.01);
         }
-        if (k == '-') {
+        if (k == META_GLOBAL_SCALE_DOWN) {
             config.multiplyGlobalScale(0.99);
         }
-        if (k == '0') {
+        if (k == META_GLOBAL_SCALE_RESET) {
             config.setGlobalScale(Type.SCALE.id);
         }
         // TODO fit to screen by scale and translate; use modelX etc.

@@ -29,7 +29,7 @@ dependencies {
     //compile ':video:'
 //    runtime files('lib/jna.jar')
 //    runtime files('lib/glvideo.jar')
-    runtime ':gstreamer-java:'
+    compile ':gstreamer-java:'
     runtime ':jna:'
     runtime files('../../processing/libraries/video/library/macosx64/libgstreamer-0.10.dylib')
 
