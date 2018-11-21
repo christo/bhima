@@ -156,6 +156,11 @@ public final class Segment {
     }
 
     @JsonIgnore
+    public boolean isActive() {
+        return getEnabled() && !getIgnored();
+    }
+
+    @JsonIgnore
     public Transform addTransform(Transform transform) {
         transforms.add(transform);
         return transform;
@@ -203,10 +208,10 @@ public final class Segment {
     public String toString() {
         return "Segment{" +
                 "name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", background=" + background +
-                ", enabled=" + enabled +
-                ", ignored=" + ignored +
+                (background != null ? ", background=" + background : "") +
+                ", pixelIndexBase=" + pixelIndexBase +
+                (enabled ? ", enabled" : ", DISABLED") +
+                (ignored ? ", IGNORED" : ", nonignored") +
                 ", pixelcount=" + pixels.size() +
                 '}';
     }

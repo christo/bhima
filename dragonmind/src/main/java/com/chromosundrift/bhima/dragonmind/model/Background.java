@@ -53,4 +53,12 @@ public class Background {
     public void setTransforms(List<Transform> transforms) {
         this.transforms = transforms;
     }
+
+    @Override
+    public String toString() {
+        return "Background{" +
+                (filename != null ? "filename='" + filename + '\'' : "") +
+                ", transforms=" + transforms +
+                '}';
+    }
 }

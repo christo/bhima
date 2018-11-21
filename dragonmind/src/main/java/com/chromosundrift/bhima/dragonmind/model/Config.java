@@ -53,7 +53,8 @@ public final class Config {
 
     private List<PixelPusherInfo> pixelPushers;
 
-    private int brightnessThreshold;
+    private float brightnessThreshold;
+
     private BufferedImage bgImage;
 
     public Config() {
@@ -78,8 +79,49 @@ public final class Config {
         logger.info("will try to load config file " + filename);
         ObjectMapper objectMapper = getObjectMapper();
         Config config = objectMapper.readValue(new File(filename), Config.class);
-        logger.info("config loaded: " + config.project);
+        int nPixels = config.getPixelMap().stream().filter(Segment::isActive).mapToInt(s -> s.getPixels().size()).sum();
+        logger.info("config loaded: {} with {} pixels", config.project, nPixels);
+
+        sanityCheck(config);
         return config;
+    }
+
+    /**
+     * Check a few invariants about the config.
+     *
+     * @param config the config to check.
+     * @throws IllegalStateException when insanity is found.
+     */
+    private static void sanityCheck(Config config) throws IllegalStateException {
+        boolean ok = true; // until proven otherwise
+        for (Segment segment : config.getPixelMap()) {
+            logger.debug("Sanity checking segment: {}", segment);
+            PixelPoint prev = null;
+            for (PixelPoint pixel : segment.getPixels()) {
+                // each pixelIndexBase-adjusted pixel number must be non-negative
+                boolean negativePixelNum = pixel.getPixel() - segment.getPixelIndexBase() < 0;
+                if (negativePixelNum) {
+                    logger.error("Negative pixel number: segment: {} pixel: {}", segment, pixel);
+                    ok = false;
+                }
+                if (prev != null) {
+                    if (prev.equals(pixel)) {
+                        // pixels should be unique
+                        logger.warn("two pixels identical, you should remove one: {} prev: {} pixel: {}",
+                                segment.getName(), prev,  pixel);
+                        // TODO for enabled and not ignored segments, strip/pixelNum pairs should be globally unique
+                    } else if (prev.getStrip() == pixel.getStrip() && prev.getPixel() >= pixel.getPixel()) {
+                        // pixels in each strip must be sorted by pixel number
+                        logger.error("pixel out of order: {} prev: {} pixel: {}", segment.getName(), prev,  pixel);
+                    }
+                }
+                prev = pixel;
+            }
+
+        }
+        if (!ok) {
+            throw new IllegalStateException("insanity (check logs)");
+        }
     }
 
     public static Config load() throws IOException {
@@ -160,11 +202,11 @@ public final class Config {
         this.pixelPushers = pixelPushers;
     }
 
-    public int getBrightnessThreshold() {
+    public float getBrightnessThreshold() {
         return brightnessThreshold;
     }
 
-    public void setBrightnessThreshold(int brightnessThreshold) {
+    public void setBrightnessThreshold(float brightnessThreshold) {
         this.brightnessThreshold = brightnessThreshold;
     }
 
