@@ -1,7 +1,6 @@
 package com.chromosundrift.bhima.dragonmind.model;
 
 
-import com.chromosundrift.bhima.geometry.PixelPoint;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -10,8 +9,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import org.apache.commons.collections4.MultiMap;
-import org.apache.commons.collections4.map.MultiValueMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,8 +17,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
@@ -115,11 +110,11 @@ public final class Config {
                     if (prev.equals(pixel)) {
                         // pixels should be unique
                         logger.warn("two pixels identical, you should remove one: {} prev: {} pixel: {}",
-                                segment.getName(), prev,  pixel);
+                                segment.getName(), prev, pixel);
                         // TODO for enabled and not ignored segments, strip/pixelNum pairs should be globally unique
                     } else if (prev.getStrip() == pixel.getStrip() && prev.getPixel() >= pixel.getPixel()) {
                         // pixels in each strip must be sorted by pixel number
-                        logger.error("pixel out of order: {} prev: {} pixel: {}", segment.getName(), prev,  pixel);
+                        logger.error("pixel out of order: {} prev: {} pixel: {}", segment.getName(), prev, pixel);
                     }
                 }
                 prev = pixel;

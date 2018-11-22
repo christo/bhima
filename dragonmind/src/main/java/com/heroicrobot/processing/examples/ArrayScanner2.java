@@ -7,7 +7,7 @@ import com.chromosundrift.bhima.dragonmind.Mapper;
 import com.chromosundrift.bhima.dragonmind.Palette;
 import com.chromosundrift.bhima.dragonmind.ProcessingBase;
 import com.chromosundrift.bhima.dragonmind.model.Config;
-import com.chromosundrift.bhima.geometry.PixelPoint;
+import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
 import com.chromosundrift.bhima.geometry.Point;
 import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
@@ -24,9 +24,10 @@ import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
 import processing.core.PFont;
 import processing.core.PImage;
+import processing.event.KeyEvent;
+import processing.event.MouseEvent;
 import processing.video.Capture;
 
-import java.awt.*;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -44,7 +45,9 @@ import static java.lang.Thread.currentThread;
 public class ArrayScanner2 extends DragonMind {
 
     private final static Logger logger = LoggerFactory.getLogger(ArrayScanner2.class);
-    private static final boolean ENABLE_CAMERA = false;
+    private static final boolean ENABLE_CAMERA = true;
+    public static final int PIXEL_UPDATE_WAIT = 50;
+    public static final int SCAN_WAIT = 50;
     private int startStrip = 0;
     private int startPixel = 0;
     private int stopStrip = 0;
@@ -101,6 +104,7 @@ public class ArrayScanner2 extends DragonMind {
     private GButton nextStripButton;
     private float smallImageHeight;
     private float smallImageWidth;
+    private long lastScanTime = 0;
 
     private ArrayList<Point> scanForLights(PImage deltaImage, float brightnessThreshold) {
         ArrayList<Point> hits = new ArrayList<>();
@@ -190,6 +194,7 @@ public class ArrayScanner2 extends DragonMind {
             if (ENABLE_CAMERA && !camReady) {
                 camInit();
             } else if (mode == Mapper.Mode.CAM_SCAN) {
+                if (timeSinceLastScan() > SCAN_WAIT)
                 doCamScan();
             } else if (mode == Mapper.Mode.PATTERN) {
                 drawPattern(bgImage);
@@ -220,12 +225,16 @@ public class ArrayScanner2 extends DragonMind {
             renderAllImges();
         }
         if (mode == CAM_SCAN) {
-            if (getPusherMan().isReady() && getPusherMan().getStrips().size() > nStrip) {
+            if (getPusherMan().isReady() && stopStrip >= nStrip) {
                 drawProgressBar();
             }
         }
 
         updateGui();
+    }
+
+    private long timeSinceLastScan() {
+        return System.currentTimeMillis() - lastScanTime;
     }
 
     private void renderMap() {
@@ -333,8 +342,7 @@ public class ArrayScanner2 extends DragonMind {
 
             List<Strip> strips = getPusherMan().getStrips();
             // TODO allow to use strips.size() again
-            int finishStrip = stopStrip;
-            if (nStrip > finishStrip) {
+            if (nStrip > stopStrip) {
                 nStrip = startStrip;
                 log("Done last strip.");
             }
@@ -375,7 +383,7 @@ public class ArrayScanner2 extends DragonMind {
                 nPixel = 0;
                 nStrip++;
 
-                if (nStrip > finishStrip) {
+                if (nStrip > stopStrip) {
                     boolean wrote = writeMapping();
                     if (wrote) {
                         // doneski now show something pretty
@@ -383,6 +391,7 @@ public class ArrayScanner2 extends DragonMind {
                     }
                 }
             }
+            lastScanTime = System.currentTimeMillis();
         } else {
             log("pusherman not ready");
         }
@@ -392,7 +401,7 @@ public class ArrayScanner2 extends DragonMind {
     private void waitForPixelUpdate() {
         // NASTY HACK TODO FIX
         long bedTime = System.currentTimeMillis();
-        while ((System.currentTimeMillis() - bedTime) < 45) {
+        while ((System.currentTimeMillis() - bedTime) < PIXEL_UPDATE_WAIT) {
             Thread.yield();
         }
     }
@@ -420,7 +429,7 @@ public class ArrayScanner2 extends DragonMind {
     private void saveScanImage(PImage image, String frameName, int strip, int pixel) {
         offload(() -> {
             try {
-                image.save(imageFile(Long.toString(scanId), frameName, strip, pixel));
+                image.save(Segment.mappedImageFile(Long.toString(scanId), frameName, strip, pixel));
             } catch (RuntimeException e) {
                 log(format("thread %s error %s", currentThread().getName(), e.getMessage()));
                 e.printStackTrace();
@@ -533,12 +542,12 @@ public class ArrayScanner2 extends DragonMind {
         float halfWit = (w - margin) / 2;
 
         startStripField = new GTextField(this, x, y + sh * pos, halfWit, lh);
-        startStripField.setPromptText("start #");
+        startStripField.setPromptText("start strip #");
         startStripField.setOpaque(true);
         startStripField.setAlpha(guiAlpha);
 
         stopStripField = new GTextField(this, x + halfWit, y + sh * pos, halfWit, lh);
-        stopStripField.setPromptText("stop #");
+        stopStripField.setPromptText("stop strip #");
         stopStripField.setOpaque(true);
         stopStripField.setAlpha(guiAlpha);
 
@@ -642,7 +651,7 @@ public class ArrayScanner2 extends DragonMind {
             startAndStopGood = checkStripStartStopFields();
         }
 
-        newScanButton.setEnabled(scanNameGood && startAndStopGood);
+        newScanButton.setEnabled(scanNameGood && startAndStopGood && ENABLE_CAMERA);
         log("finished handle text events");
     }
 
@@ -685,10 +694,14 @@ public class ArrayScanner2 extends DragonMind {
     }
 
     private void startNewScan() {
-        // show scan name request
-        log("start new scan");
-        restart();
-        mode = CAM_SCAN;
+        if (ENABLE_CAMERA) {
+            // show scan name request
+            log("start new scan");
+            restart();
+            mode = CAM_SCAN;
+        } else {
+            log("new scan requested but camera is disabled");
+        }
     }
 
     private void drawProgressBar() {
@@ -707,8 +720,8 @@ public class ArrayScanner2 extends DragonMind {
         List<Strip> strips = getPusherMan().getStrips();
 
         int pixelsPerStrip = strips.get(nStrip).getLength();
-        float pixelsDone = (nStrip * pixelsPerStrip) + nPixel + 1;
-        int totalPixels = 1 + startStrip - stopStrip * pixelsPerStrip;
+        float pixelsDone = (startStrip - nStrip * pixelsPerStrip) + nPixel + 1;
+        int totalPixels = 1 + (startStrip - stopStrip) * pixelsPerStrip;
         float completion = pixelsDone / totalPixels;
         fill(c);
         noStroke();
@@ -735,37 +748,37 @@ public class ArrayScanner2 extends DragonMind {
     }
 
     @Override
-    public void mouseClicked() {
+    public void mouseClicked(MouseEvent event) {
         // if the mouse pointe is inside the small image, switch to that image for the main image
         if (drawAllImages) {
             // only if they're visible
             if (mouseY < smallImageHeight) {
+                String f = "";
                 if (mouseX < smallImageWidth) {
-                    setMainImage(currentFrame, "current frame");
+                    f = "current frame";
+                    setMainImage(currentFrame, f);
                 } else if (mouseX < smallImageWidth * 2) {
-                    setMainImage(lightframe, "lightframe");
+                    f = "lightframe";
+                    setMainImage(this.lightframe, f);
                 } else if (mouseX < smallImageWidth * 3) {
-                    setMainImage(difference, "difference");
+                    f = "difference";
+                    setMainImage(this.difference, f);
                 } else if (mouseX < smallImageWidth * 4) {
-                    setMainImage(darkframe, "darkframe");
+                    f = "darkframe";
+                    setMainImage(this.darkframe, f);
                 } else {
-                    setMainImage(cumulative, "cumulative");
+                    f = "cumulative";
+                    setMainImage(this.cumulative, f);
                 }
+                logger.debug("set main image to {}", f);
+            } else {
+                logger.debug("Mouse was clicked but not in a small image");;
             }
         }
     }
 
     @Override
-    public void mouseMoved() {
-        if (drawAllImages && mouseY < smallImageHeight) {
-            cursor(HAND);
-        } else {
-            cursor(Cursor.DEFAULT_CURSOR);
-        }
-
-    }
-
-    public void keyPressed() {
+    public void keyPressed(KeyEvent event) {
         // TODO make collapsible small images
         //        if (key == 'z') {
         //            drawAllImages = !drawAllImages;
