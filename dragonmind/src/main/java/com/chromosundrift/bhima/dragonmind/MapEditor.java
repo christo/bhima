@@ -3,7 +3,7 @@ package com.chromosundrift.bhima.dragonmind;
 import com.chromosundrift.bhima.dragonmind.model.Config;
 import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.chromosundrift.bhima.dragonmind.model.Transform;
-import com.chromosundrift.bhima.geometry.PixelPoint;
+import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
 import com.chromosundrift.bhima.geometry.Point;
 import com.chromosundrift.bhima.geometry.Rect;
 import org.apache.commons.lang3.StringUtils;
@@ -20,10 +20,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -397,16 +396,11 @@ public class MapEditor extends DragonMind {
     }
 
     private void drawSegmentImage(Segment segment) {
-        // TODO add proper metadata for scan id
-        Pattern scanIdRx = Pattern.compile("mapping file is mappings/Mapping(\\d+)\\.csv");
-        Matcher m = scanIdRx.matcher(segment.getDescription());
-        if (m.find()) {
-            String scanId = m.group(1);
-            // image files look like this:
-            // Mapping-1537359798903-lightframe-00-0000.png
+        Optional<String> scanId = segment.getMappingId();
+        scanId.ifPresent(sId -> {
             PixelPoint p = segment.getPixels().get(pixelIndex);
-            // the file does not use the segment's pixelIndexBase
-            String file = imageFile(scanId, "lightframe", p.getStrip(), p.getPixel());
+            // the file uses the segment's nominal pixel index (not pixelIndexBase)
+            String file = Segment.mappedImageFile(sId, "lightframe", p.getStrip(), p.getPixel());
             try {
                 PImage image = loader.loadPimage(file);
                 image(image, 0, 0); // should be in transform matrix here
@@ -415,7 +409,7 @@ public class MapEditor extends DragonMind {
                 logger.warn("turning off image loading");
                 showImage = false;
             }
-        }
+        });
     }
 
     private void drawBackground() {
