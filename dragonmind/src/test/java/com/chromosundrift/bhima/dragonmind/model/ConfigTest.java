@@ -23,7 +23,7 @@ public class ConfigTest {
         PixelPusherInfo ppi = new PixelPusherInfo("12:34:56:78:90", "PP1", "black, rectangular");
         c.setPixelPushers(singletonList(ppi));
         String config = c.unParse(false);
-        String expected = "{\"project\":\"test proj\",\"version\":\"123\",\"brightnessThreshold\":160," +
+        String expected = "{\"project\":\"test proj\",\"version\":\"123\",\"brightnessThreshold\":160.0," +
                 "\"pixelPushers\":[{\"macAddress\":\"12:34:56:78:90\"," +
                 "\"name\":\"PP1\",\"description\":\"black, rectangular\"}]}";
         Assert.assertEquals(expected, config);
@@ -68,6 +68,6 @@ public class ConfigTest {
 
     @Test
     public void testLoadNotAsplode() throws IOException {
-        Config config = Config.load();
+        Config.load();
     }
 }

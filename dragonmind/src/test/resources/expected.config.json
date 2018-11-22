@@ -1,7 +1,7 @@
 {
   "project" : "Bhima 2018",
   "version" : "1.0",
-  "brightnessThreshold" : 150,
+  "brightnessThreshold" : 150.0,
   "pixelPushers" : [ {
     "macAddress" : "12:34:56:78:90",
     "name" : "PP1",
@@ -9,12 +9,14 @@
   } ],
   "pixelMap" : [ {
     "segment" : "butthole",
+    "enabled" : true,
+    "ignored" : false,
     "background" : {
       "filename" : "bgImage.png",
       "opacity" : 1.0
     },
+    "pixelIndexBase" : 0,
     "transforms" : [ ],
-    "pixels" : [ [ 0, 0, 500, 500 ], [ 0, 1, 510, 500 ], [ 0, 2, 520, 500 ], [ 0, 3, 530, 500 ], [ 0, 4, 500, 510 ], [ 0, 5, 510, 510 ] ],
-    "enabled" : true
+    "pixels" : [ [ 0, 0, 500, 500 ], [ 0, 1, 510, 500 ], [ 0, 2, 520, 500 ], [ 0, 3, 530, 500 ], [ 0, 4, 500, 510 ], [ 0, 5, 510, 510 ] ]
   } ]
 }
