@@ -1,6 +1,5 @@
 package com.chromosundrift.bhima.dragonmind.model;
 
-import com.chromosundrift.bhima.geometry.PixelPoint;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;

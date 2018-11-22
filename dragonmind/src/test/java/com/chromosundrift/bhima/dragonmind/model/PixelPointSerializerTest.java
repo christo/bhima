@@ -1,6 +1,5 @@
 package com.chromosundrift.bhima.dragonmind.model;
 
-import com.chromosundrift.bhima.geometry.PixelPoint;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
