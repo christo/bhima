@@ -1,4 +1,6 @@
-package com.chromosundrift.bhima.geometry;
+package com.chromosundrift.bhima.dragonmind.model;
+
+import com.chromosundrift.bhima.geometry.Point;
 
 import java.util.Objects;
 
