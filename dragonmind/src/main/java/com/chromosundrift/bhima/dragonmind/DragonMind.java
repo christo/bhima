@@ -2,7 +2,7 @@ package com.chromosundrift.bhima.dragonmind;
 
 import com.chromosundrift.bhima.dragonmind.model.Config;
 import com.chromosundrift.bhima.dragonmind.model.Segment;
-import com.chromosundrift.bhima.geometry.PixelPoint;
+import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
 import com.chromosundrift.bhima.geometry.Point;
 import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
 import g4p_controls.GAlign;
@@ -36,10 +36,6 @@ public class DragonMind extends ProcessingBase {
     private PusherMan pusherMan;
 
     private PFont defaultFont;
-
-    protected static String imageFile(String scanId, String frame, int strip, int pixel) {
-        return format("mappings/Mapping-%s-%s-%02d-%04d%s", scanId, frame, strip, pixel, ".png");
-    }
 
     public void settings() {
         size(1920, 1080);

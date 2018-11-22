@@ -2,7 +2,7 @@ package com.chromosundrift.bhima.dragonmind;
 
 import com.chromosundrift.bhima.dragonmind.model.Config;
 import com.chromosundrift.bhima.dragonmind.model.Segment;
-import com.chromosundrift.bhima.geometry.PixelPoint;
+import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

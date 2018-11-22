@@ -1,6 +1,5 @@
 package com.chromosundrift.bhima.dragonmind.model;
 
-import com.chromosundrift.bhima.geometry.PixelPoint;
 import com.chromosundrift.bhima.geometry.Point;
 import com.chromosundrift.bhima.geometry.Rect;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -14,17 +13,21 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
 import static java.lang.Math.max;
 import static java.lang.Math.min;
+import static java.lang.String.format;
 
 @SuppressWarnings("WeakerAccess")
 @JsonInclude(NON_NULL)
 @JsonPropertyOrder({"name", "description", "stripNumberOverride", "enabled", "ignored", "background", "pixelIndexBase", "transforms", "pixels"})
 public final class Segment {
 
+    private static final Pattern SCAN_ID_RX = Pattern.compile("mapping file is mappings/Mapping(\\d+)\\.csv");
     @JsonProperty("segment")
     private String name;
 
@@ -53,10 +56,25 @@ public final class Segment {
     private List<PixelPoint> pixels = new CopyOnWriteArrayList<>();
 
     /**
+     * Constructs the expected mapped image file name for the given details.
+     *
+     * @param scanId the id of the scan, typically a unix timestamp.
+     * @param frame  normally "lightframe" or "darkframe".
+     * @param strip  the strip number as scanned.
+     * @param pixel  the pixel number as scanned.
+     * @return the expected name of the file from the scanning session.
+     */
+    public static String mappedImageFile(String scanId, String frame, int strip, int pixel) {
+        // image files look like this:
+        // Mapping-1537359798903-lightframe-00-0000.png
+        return format("mappings/Mapping-%s-%s-%02d-%04d%s", scanId, frame, strip, pixel, ".png");
+    }
+
+    /**
      * Get the smallest rectangle that contains all the points.
      *
-     * @return a rectangle snugly containing all points (including on the line).
      * @param points
+     * @return a rectangle snugly containing all points (including on the line).
      */
     @JsonIgnore
     public Rect getBoundingBox(Stream<Point> points) {
@@ -222,5 +240,16 @@ public final class Segment {
 
     public void addPixelPoints(Collection<PixelPoint> pps) {
         pixels.addAll(pps);
+    }
+
+    @JsonIgnore
+    public Optional<String> getMappingId() {
+        Matcher m = SCAN_ID_RX.matcher(getDescription());
+        if (m.find()) {
+            return Optional.of(m.group(1));
+
+        } else {
+            return Optional.empty();
+        }
     }
 }
