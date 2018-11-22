@@ -1,6 +1,5 @@
 package com.chromosundrift.bhima.dragonmind.model;
 
-import com.chromosundrift.bhima.geometry.PixelPoint;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.LineIterator;
 
@@ -12,7 +11,7 @@ import java.util.List;
 import static java.lang.Integer.parseInt;
 
 /**
- * Round trips serialisation of the config model, of periodic benefit for upgrading the config file format.
+ * Reads the csv file produced by the scanner and adds it to the model in the config file.
  */
 public class LegacyMappingSlurper {
 
@@ -24,7 +23,7 @@ public class LegacyMappingSlurper {
             for (String file : args) {
                 String path = "Mappings/" + file;
                 Segment segment = new Segment();
-                segment.setName("wings mapping from " + path);
+                segment.setName("mapping from " + path);
                 List<PixelPoint> pixelPoints = readPointsFromMappingFile(path);
                 segment.setPixels(pixelPoints);
                 config.addSegment(segment);
