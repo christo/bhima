@@ -16,7 +16,7 @@ public class SegmentTest {
         s.addPixelPoint(new PixelPoint(2, 1, 2, 0));
         s.addPixelPoint(new PixelPoint(2, 2, 3, 0));
 
-        Set<Integer> stripNumbers = s.getStripNumbers();
+        Set<Integer> stripNumbers = s.getEffectiveStripNumbers();
         HashSet<Integer> expected = new HashSet<>(Arrays.asList(1, 2));
         Assert.assertEquals(expected, stripNumbers);
 

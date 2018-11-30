@@ -232,18 +232,25 @@ public class MapEditor extends DragonMind {
         image(viewInfo, 0, 0);
     }
 
+    /**
+     * Summary of important mapping info across the segments, e.g. strip number clashes
+     * @return
+     */
     private PGraphics drawSegmentSummary() {
         PGraphics graphics = createGraphics(width, height);
         graphics.beginDraw();
-        // Draw summary of clashing segments
-        Map<ImmutablePair<String, String>, Set<Integer>> clashes = config.checkForSegmentNumberClashes(s -> !s.getIgnored());
+
+        // Draw summary of clashing segments, but only non-ignored ones which have no stripNumberOverride which we use
+        // to indicate that the strip number is to be used as written regardless of a "clash". e.g. the strip for the
+        // tail is broken into two segments which must have the same strip number as each other.
+        Map<ImmutablePair<String, String>, Set<Integer>> clashes = config.calculateClashes(s ->
+                !s.getIgnored() && s.getStripNumberOverride() == null);
+
         if (!clashes.isEmpty()) {
             graphics.fill(0);
-            StringBuilder clashMessage = new StringBuilder("Strip Number Clashes:\n");
-            for (ImmutablePair<String, String> pair : clashes.keySet()) {
-                clashMessage.append(pair).append(": ").append(clashes.get(pair)).append("\n");
-            }
-            graphics.text(clashMessage.toString(), 20, 20);
+            String clashesDesc = Config.describeClashes(clashes);
+            String unusedStripNums = config.getUnusedStripNumbers(0, 23).toString(); // TODO are strip nums zero-based?
+            graphics.text(clashesDesc + "\n\nunused strip nums:\n" + unusedStripNums, 20, 20);
         }
 
         graphics.endDraw();

@@ -17,7 +17,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
@@ -39,7 +38,7 @@ public final class Segment {
     private Background background;
 
     @JsonInclude(NON_NULL)
-    private Integer stripNumberOverride = null; // TODO delete or this should be a map since we contain arbitrary strip numbers
+    private Integer stripNumberOverride = null;
 
     /**
      * Does not light up nor display in the editor.
@@ -265,9 +264,13 @@ public final class Segment {
     }
 
     @JsonIgnore
-    public Set<Integer> getStripNumbers() {
+    public Set<Integer> getEffectiveStripNumbers() {
         HashSet<Integer> stripNums = new HashSet<>();
-        getPixels().forEach(s -> stripNums.add(s.getStrip()));
+        if (getStripNumberOverride() != null) {
+            stripNums.add(getStripNumberOverride());
+        } else {
+            getPixels().forEach(pp -> stripNums.add(pp.getStrip()));
+        }
         return stripNums;
     }
 }

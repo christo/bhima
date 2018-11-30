@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -82,7 +81,7 @@ public class ConfigTest {
                 new Segment("one", asList(new PixelPoint(1, 1, 0, 0), new PixelPoint(2, 1, 0, 1))),
                 new Segment("two", asList(new PixelPoint(2, 2, 0, 2), new PixelPoint(3, 3, 0, 3))));
 
-        Map<ImmutablePair<String, String>, Set<Integer>> clashes = c.checkForSegmentNumberClashes();
+        Map<ImmutablePair<String, String>, Set<Integer>> clashes = c.calculateClashes();
         assertTrue("expected clash detection", !clashes.isEmpty());
 
         for (ImmutablePair<String, String> pair : clashes.keySet()) {

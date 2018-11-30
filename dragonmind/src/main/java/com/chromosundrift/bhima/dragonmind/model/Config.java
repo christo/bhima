@@ -9,7 +9,9 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import org.apache.commons.lang3.Range;
 import org.apache.commons.lang3.tuple.ImmutablePair;
+import org.omg.PortableInterceptor.INACTIVE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,13 +20,14 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
@@ -72,6 +75,14 @@ public final class Config {
         this.version = version;
     }
 
+    public static String describeClashes(Map<ImmutablePair<String, String>, Set<Integer>> clashes) {
+        StringBuilder clashMessage = new StringBuilder("Strip Number Clashes:\n");
+        for (ImmutablePair<String, String> pair : clashes.keySet()) {
+            clashMessage.append(pair).append(": ").append(clashes.get(pair)).append("\n");
+        }
+        return clashMessage.toString();
+    }
+
     public Config save(String filename) throws IOException {
         ObjectMapper objectMapper = getObjectMapper();
         objectMapper.writerWithDefaultPrettyPrinter().writeValue(new File(filename), this);
@@ -106,8 +117,6 @@ public final class Config {
             PixelPoint prev = null;
 
             for (PixelPoint pixel : segment.getPixels()) {
-                // TODO no two segments should contain pixels on the same strips
-
                 // each pixelIndexBase-adjusted pixel number must be non-negative
                 boolean negativePixelNum = pixel.getPixel() - segment.getPixelIndexBase() < 0;
                 if (negativePixelNum) {
@@ -133,38 +142,52 @@ public final class Config {
             throw new IllegalStateException("insanity (check logs)");
         }
     }
-    public Map<ImmutablePair<String, String>, Set<Integer>> checkForSegmentNumberClashes() {
-        return checkForSegmentNumberClashes(s -> true);
+
+    public Map<ImmutablePair<String, String>, Set<Integer>> calculateClashes() {
+        return calculateClashes(s -> true);
     }
 
-    public Map<ImmutablePair<String, String>, Set<Integer>> checkForSegmentNumberClashes(Function<Segment, Boolean> filter) {
-
-
+    public Map<ImmutablePair<String, String>, Set<Integer>> calculateClashes(Predicate<? super Segment> filter) {
         Map<ImmutablePair<String, String>, Set<Integer>> clashes = new HashMap<>();
         Map<String, Set<Integer>> segmentNumbersByName = new HashMap<>();
-        getPixelMap().forEach(s ->
-                segmentNumbersByName.put(s.getName(), s.getStripNumbers())
+        getPixelMap().stream().filter(filter).forEach(s ->
+                segmentNumbersByName.put(s.getName(), s.getEffectiveStripNumbers())
         );
         for (Map.Entry<String, Set<Integer>> seg : segmentNumbersByName.entrySet()) {
-            Set<Integer> sNums = seg.getValue();
-            for (Map.Entry<String, Set<Integer>> other : segmentNumbersByName.entrySet()) {
-                if (!seg.getKey().equals(other.getKey())) {
-                    ImmutablePair<String, String> clashPair = new ImmutablePair<>(seg.getKey(), other.getKey());
-                    Set<Integer> clashingStripNums = new HashSet<>();
-                    for (Integer sNum : sNums) {
-                        if (other.getValue().contains(sNum)) {
-                            clashingStripNums.add(sNum);
+                Set<Integer> sNums = seg.getValue();
+                for (Map.Entry<String, Set<Integer>> other : segmentNumbersByName.entrySet()) {
+                    if (!seg.getKey().equals(other.getKey())) {
+                        ImmutablePair<String, String> clashPair = new ImmutablePair<>(seg.getKey(), other.getKey());
+                        Set<Integer> clashingStripNums = new HashSet<>();
+                        for (Integer sNum : sNums) {
+                            if (other.getValue().contains(sNum)) {
+                                clashingStripNums.add(sNum);
+                            }
+                        }
+                        if (!clashingStripNums.isEmpty()) {
+                            clashes.put(clashPair, clashingStripNums);
                         }
                     }
-                    if(!clashingStripNums.isEmpty()) {
-                        clashes.put(clashPair, clashingStripNums);
-                    }
-                }
             }
         }
-        // TODO filter out zero clash items
-
         return clashes;
+    }
+
+    @JsonIgnore
+    public Set<Integer> getUnusedStripNumbers(int from, int to) {
+        Set<Integer> unused = new HashSet<>();
+        Set<Integer> used = getUsedStripNumbers();
+        for (int i = from; i <=to ; i++) {
+            if (!used.contains(i)) {
+                unused.add(i);
+            }
+        }
+        return unused;
+    }
+
+    @JsonIgnore
+    private Set<Integer> getUsedStripNumbers() {
+        return getPixelMap().stream().flatMap(s -> s.getEffectiveStripNumbers().stream()).collect(Collectors.toSet());
     }
 
     public static Config load() throws IOException {
