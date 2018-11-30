@@ -501,7 +501,7 @@ public class ArrayScanner2 extends DragonMind {
         if (hits.size() > 0) {
             Point centroid = Point.centroid(hits);
             log("For strip (" + nStrip + "," + nPixel + ") centroid is (" + centroid + ")");
-            displayMap.add(new PixelPoint(centroid, nStrip, nPixel));
+            displayMap.add(new PixelPoint(nStrip, nPixel, centroid));
 
             if (displayMap.size() > 3 && mapVariance() < 20) {
                 log(format("Low map variance: %.2f", mapVariance()));

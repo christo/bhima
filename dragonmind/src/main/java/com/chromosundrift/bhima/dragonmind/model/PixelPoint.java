@@ -16,10 +16,10 @@ public final class PixelPoint {
         this.point = new Point(x, y);
     }
 
-    public PixelPoint(Point point, int strip, int pixel) {
+    public PixelPoint(int stripIndex, int pixelIndex, Point point) {
         this.point = point;
-        this.strip = strip;
-        this.pixel = pixel;
+        this.strip = stripIndex;
+        this.pixel = pixelIndex;
     }
 
     public int getStrip() {

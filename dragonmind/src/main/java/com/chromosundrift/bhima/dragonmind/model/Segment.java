@@ -9,12 +9,15 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
@@ -54,6 +57,14 @@ public final class Segment {
     private List<Transform> transforms = new ArrayList<>();
 
     private List<PixelPoint> pixels = new CopyOnWriteArrayList<>();
+
+    public Segment() {
+    }
+
+    public Segment(String name, List<PixelPoint> pixels) {
+        this.name = name;
+        this.pixels = pixels;
+    }
 
     /**
      * Constructs the expected mapped image file name for the given details.
@@ -251,5 +262,12 @@ public final class Segment {
         } else {
             return Optional.empty();
         }
+    }
+
+    @JsonIgnore
+    public Set<Integer> getStripNumbers() {
+        HashSet<Integer> stripNums = new HashSet<>();
+        getPixels().forEach(s -> stripNums.add(s.getStrip()));
+        return stripNums;
     }
 }

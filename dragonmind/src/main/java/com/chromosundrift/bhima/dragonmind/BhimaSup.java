@@ -1,6 +1,7 @@
 package com.chromosundrift.bhima.dragonmind;
 
 import com.chromosundrift.bhima.dragonmind.model.Config;
+import com.chromosundrift.bhima.dragonmind.web.DragonmindServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
@@ -18,7 +19,6 @@ import java.util.List;
 import static java.lang.Runtime.getRuntime;
 import static java.util.Collections.emptyList;
 
-// TODO fix filesystem monitoring and movie cycling
 // TODO receive NDI stream for display
 // TODO make window bigger and doing view scaling to fit the correct aspect ratio centred and fit.
 
@@ -38,13 +38,14 @@ public class BhimaSup extends DragonMind {
     private long lastFileShowed = 0;
     private Movie movie = null;
     private Config config;
-    private boolean movieMode = true;
+    private boolean movieMode = false;
 
     private int inx = 0;
     private int iny = 0;
     private boolean mouseMode = false;
 
     private List<String> builtInVideos;
+    private DragonmindServer server = null;
 
     @Override
     public void settings() {
@@ -54,6 +55,15 @@ public class BhimaSup extends DragonMind {
     @Override
     public void setup() {
         super.setup();
+
+
+        if (args.length > 0 && args[0].equals("-server") || args.length > 1 && args[1].equals("-server")) {
+            server = new DragonmindServer();
+            server.start(8888);
+            getRuntime().addShutdownHook(new Thread(() -> server.stop(), "Dragonmind Server Shutdown Hook"));
+        }
+
+
         background(0);
 
         builtInVideos = Arrays.asList(
@@ -92,7 +102,7 @@ public class BhimaSup extends DragonMind {
             // TODO: dynamically perform this scaling function into the video frame (full width, vertically centred)
 
             // manual trasform fixup for getting the whole dragon in-frame with the video panel
-            translate(-2.45f * width, -0.96f * height);
+            translate(-2.35f * width, -2.56f * height);
             scale((float) width / 1920);
 
             getPusherMan().ensureReady();

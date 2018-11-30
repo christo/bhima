@@ -1,0 +1,24 @@
+
+apply plugin: 'war'
+
+version = '0.0.1-SNAPSHOT'
+sourceCompatibility = 1.8
+
+repositories {
+	mavenCentral()
+}
+
+
+dependencies {
+	implementation('org.glassfish.jersey.containers:jersey-container-jetty-http:2.27')
+	implementation('org.glassfish.jersey.core:jersey-server:2.27')
+    implementation('org.glassfish.jersey.containers:jersey-container-servlet-core:2.27')
+
+    implementation('org.eclipse.jetty:jetty-util:9.4.14.v20181114')
+    implementation('org.eclipse.jetty:jetty-servlet:9.4.14.v20181114')
+    implementation('org.eclipse.jetty:jetty-server:9.4.14.v20181114')
+
+    implementation group: 'org.slf4j', name: 'slf4j-simple', version: '1.8.0-beta2'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.8.0-beta2'
+
+}

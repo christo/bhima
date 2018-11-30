@@ -1,15 +1,17 @@
 package com.chromosundrift.bhima.dragonmind;
 
 import com.chromosundrift.bhima.dragonmind.model.Config;
+import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
 import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.chromosundrift.bhima.dragonmind.model.Transform;
-import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
 import com.chromosundrift.bhima.geometry.Point;
 import com.chromosundrift.bhima.geometry.Rect;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
+import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.core.PMatrix;
 import processing.event.KeyEvent;
@@ -20,6 +22,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -35,6 +38,12 @@ import static org.apache.commons.lang3.StringUtils.defaultString;
  * App for editing layout of segments, loading and saving from config file.
  */
 public class MapEditor extends DragonMind {
+
+    // TODO add right wing back
+    // TODO LHS manual mirroring
+
+
+    // KEYBOARD SHORTCUTS:
 
     private static final char ADD_POINT = '`';
     private static final char DELETE_POINT = '!';
@@ -62,12 +71,10 @@ public class MapEditor extends DragonMind {
     private static final char META_GLOBAL_SCALE_DOWN = '-';
     private static final char META_GLOBAL_SCALE_RESET = '0';
     private static final char SHIFT_RESET_VIEW = ' ';
-    private static final int MAX_PIXELS_PER_STRIP = 600; // TODO get from config?
 
-    // TODO: robustness; strip operations can cause RTEs if pixelpushers are shut down
-    // TODO add right wing back
-    // TODO LHS manual mirroring
-    // TODO head
+    private static final boolean DRAW_GENERATED_DRAGON = true;
+    public static final int FRAMES_PER_UI_REDRAW = 10;
+
 
     private static Logger logger = LoggerFactory.getLogger(MapEditor.class);
     private static final float MOUSE_ZOOM_SPEED = 0.001f;
@@ -116,9 +123,11 @@ public class MapEditor extends DragonMind {
     private float viewZoom = 1;
     private PixelPoint draggingPixelPoint = null;
     private Config generatedDragon;
+    private PGraphics segmentInfo;
+    private PGraphics segmentSummary;
+    private PGraphics viewInfo;
 
     public void settings() {
-        // TODO application preferences
         //        fullScreen(P2D);
         size(1920, 1080, P2D);
         pixelDensity(2);
@@ -135,7 +144,7 @@ public class MapEditor extends DragonMind {
                 .addSegment(3, pw, ph)
                 .addSegment(3, pw, ph)
                 .addSegment(1, pw, ph)
-                    //.addPanel()
+                //.addPanel()
                 .build(); // TODO finish the 3 panel segment with a panelpoint function
         generatedDragon = dragonBuilder.build();
     }
@@ -184,7 +193,9 @@ public class MapEditor extends DragonMind {
         } finally {
 
             popMatrix();
-            drawGeneratedDragon();
+            if (DRAW_GENERATED_DRAGON) {
+                drawGeneratedDragon();
+            }
             popMatrix();
             drawUi();
         }
@@ -210,29 +221,53 @@ public class MapEditor extends DragonMind {
     }
 
     private void drawUi() {
-        drawSegmentInfo();
-        drawSegmentMap();
-        drawViewInfo();
+        // don't redraw UI every frame
+        if (frameCount % FRAMES_PER_UI_REDRAW == 0 || segmentInfo == null || segmentSummary == null || viewInfo == null) {
+            segmentInfo = drawSegmentInfo();
+            segmentSummary = drawSegmentSummary();
+            viewInfo = drawViewInfo();
+        }
+        image(segmentInfo, 0, 0);
+        image(segmentSummary, 0, 0);
+        image(viewInfo, 0, 0);
     }
 
-    private void drawSegmentMap() {
+    private PGraphics drawSegmentSummary() {
+        PGraphics graphics = createGraphics(width, height);
+        graphics.beginDraw();
+        // Draw summary of clashing segments
+        Map<ImmutablePair<String, String>, Set<Integer>> clashes = config.checkForSegmentNumberClashes(s -> !s.getIgnored());
+        if (!clashes.isEmpty()) {
+            graphics.fill(0);
+            StringBuilder clashMessage = new StringBuilder("Strip Number Clashes:\n");
+            for (ImmutablePair<String, String> pair : clashes.keySet()) {
+                clashMessage.append(pair).append(": ").append(clashes.get(pair)).append("\n");
+            }
+            graphics.text(clashMessage.toString(), 20, 20);
+        }
 
+        graphics.endDraw();
+        return graphics;
     }
 
-    private void drawViewInfo() {
-        pushStyle();
-        fill(255, 100);
-        noStroke();
+    private PGraphics drawViewInfo() {
+        PGraphics graphics = createGraphics(width, height);
+        graphics.beginDraw();
+        graphics.pushStyle();
+        graphics.fill(255, 100);
+        graphics.noStroke();
         float textHeight = 18;
         float padding = textHeight * 0.5f;
-        rect(0, height - padding - textHeight, width, padding + textHeight);
-        fill(0, 0, 0, 128);
-        textSize(textHeight);
+        graphics.rect(0, height - padding - textHeight, width, padding + textHeight);
+        graphics.fill(0, 0, 0, 128);
+        graphics.textSize(textHeight);
         String info = format("zoom: %.2f%% x: %.2f y: %.2f   (zoom: mouse wheel, move: SHIFT + drag, reset: SHIFT + SPACE)",
                 viewZoom * 100, viewShiftX, viewShiftY);
-        textFont(getDefaultFont());
-        text(info, padding, height - padding - textHeight / 2);
-        popStyle();
+        graphics.textFont(getDefaultFont());
+        graphics.text(info, padding, height - padding - textHeight / 2);
+        graphics.popStyle();
+        graphics.endDraw();
+        return graphics;
     }
 
     /**
@@ -267,28 +302,30 @@ public class MapEditor extends DragonMind {
     /**
      * Draws the GUI box with text in that describes the current segment.
      */
-    private void drawSegmentInfo() {
+    private PGraphics drawSegmentInfo() {
+        PGraphics g = createGraphics(width, height);
+        g.beginDraw();
         if (!config.getPixelMap().isEmpty()) {
             Segment segment = config.getPixelMap().get(selectedSegment);
             int margin = 20;
-            pushStyle();
+            g.pushStyle();
             float w = 320;
             float h = 300;
             float screenX = width - w;
             float screenY = 50;
 
-            noStroke();
+            g.noStroke();
             if (segment.getEnabled()) {
-                fill(230, 200);
+                g.fill(230, 200);
             } else if (segment.getIgnored()) {
-                fill(240, 240, 140, 200);
+                g.fill(240, 240, 140, 200);
             } else {
-                fill(230, 200, 200, 200);
+                g.fill(230, 200, 200, 200);
             }
             // background for text
-            rect(screenX, screenY, w, h);
-            fill(0);
-            stroke(255, 0, 0);
+            g.rect(screenX, screenY, w, h);
+            g.fill(0);
+            g.stroke(255, 0, 0);
             // label for segment
             StringBuilder text = new StringBuilder();
             List<PixelPoint> pixels = segment.getPixels();
@@ -313,15 +350,18 @@ public class MapEditor extends DragonMind {
             text.append("step size: ").append(dt).append("\n");
             text.append("strip num override: ").append(segment.getStripNumberOverride()).append("\n\n");
             text.append("seg xform: ").append(segment.getTransforms().toString());
-            textFont(getDefaultFont());
-            textSize(12);
-            text(text.toString(), screenX + margin, screenY + margin, w - margin, 200 - margin);
-            popStyle();
+            g.textFont(getDefaultFont());
+            g.textSize(12);
+            g.text(text.toString(), screenX + margin, screenY + margin, w - margin, 200 - margin);
+            g.popStyle();
         }
+        g.endDraw();
+        return g;
     }
 
     /**
      * Draw only enabled segments, ignored segments are more transparent.
+     *
      * @param config
      */
     private void drawSegments(Config config) {
@@ -476,7 +516,7 @@ public class MapEditor extends DragonMind {
             float newViewShiftX = viewShiftX + mouseX - pmouseX;
             float newViewShiftY = viewShiftY + mouseY - pmouseY;
             // TODO fix range checking for zoom and shift
-//            boolean shiftInRange = shiftInRange(newViewShiftX, newViewShiftY);
+            //            boolean shiftInRange = shiftInRange(newViewShiftX, newViewShiftY);
             boolean shiftInRange = true;
             if (shiftInRange) {
                 viewShiftX = newViewShiftX;
@@ -755,12 +795,12 @@ public class MapEditor extends DragonMind {
                 // TODO this assumes pixels are in order! enforce this invariant in Segment
                 boolean nextPixelLeavesNumberSpace = nextPixel.getPixel() != nextPixelNumber;
                 boolean nextPixelDifferentStrip = nextPixel.getStrip() != thisPixel.getStrip();
-                if (nextPixelLeavesNumberSpace || nextPixelDifferentStrip){
+                if (nextPixelLeavesNumberSpace || nextPixelDifferentStrip) {
                     // put the new pixel at the midpoint between this pixel and next pixel
                     int newX = thisPixel.getX() + (thisPixel.getX() - nextPixel.getX()) / 2;
                     int newY = thisPixel.getY() + (thisPixel.getY() - nextPixel.getY()) / 2;
                     PixelPoint newPixel = new PixelPoint(thisPixel.getStrip(), nextPixelNumber, newX, newY);
-                    pixels.add(i+1, newPixel);
+                    pixels.add(i + 1, newPixel);
                 } else {
                     logger.warn("can't create pixel at this point because no spare pixel number");
                 }

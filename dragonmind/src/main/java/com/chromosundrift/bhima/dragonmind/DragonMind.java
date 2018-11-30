@@ -1,8 +1,8 @@
 package com.chromosundrift.bhima.dragonmind;
 
 import com.chromosundrift.bhima.dragonmind.model.Config;
-import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
+import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.chromosundrift.bhima.geometry.Point;
 import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
 import g4p_controls.GAlign;
@@ -20,8 +20,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.Properties;
-
-import static java.lang.String.format;
 
 /**
  * Processing-based app for running patterns.
@@ -132,15 +130,17 @@ public class DragonMind extends ProcessingBase {
 
             for (PixelPoint pp : pixelPoints) {
                 Strip strip = getActualStrip(pp);
-                int ppx = (int) screenX(pp.getX(), pp.getY());
-                int ppy = (int) screenY(pp.getX(), pp.getY());
-                int targetColour = pImage.get(ppx, ppy);
-                if (!(ppx >= 0 && ppx < width) || !(ppy >= 0 && ppy < height)) {
-                    logger.error("out of bounds pixel: {}, {}", ppx, ppy);
+                if (strip != null) {
+                    int ppx = (int) screenX(pp.getX(), pp.getY());
+                    int ppy = (int) screenY(pp.getX(), pp.getY());
+                    int targetColour = pImage.get(ppx, ppy);
+                    if (!(ppx >= 0 && ppx < width) || !(ppy >= 0 && ppy < height)) {
+                        logger.error("out of bounds pixel: {}, {}", ppx, ppy);
+                    }
+                    int position = pp.getPixel() - pixelIndexBase;
+                    // if the pixel pushers get yanked offline, the strip will be null
+                    strip.setPixel(targetColour, position);
                 }
-                int position = pp.getPixel() - pixelIndexBase;
-                strip.setPixel(targetColour, position);
-
             }
         }
     }
@@ -179,7 +179,8 @@ public class DragonMind extends ProcessingBase {
         if (actualStripNum != mappedStripNum && logger.isDebugEnabled()) {
             logger.debug("hackmap: strip {} -> {}", mappedStripNum, actualStripNum);
         }
-        return actualStripNum;
+//        return actualStripNum;
+        return mappedStripNum;
     }
 
     /**
@@ -273,8 +274,7 @@ public class DragonMind extends ProcessingBase {
         List<Strip> strips = pusherMan.getStrips();
         int actualStripNum = getActualStripNum(pp.getStrip());
         if (strips.size() > actualStripNum && actualStripNum >= 0) {
-            Strip strip = strips.get(actualStripNum);
-            return strip;
+            return strips.get(actualStripNum);
         } else {
             return null;
         }

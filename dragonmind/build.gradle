@@ -23,6 +23,9 @@ repositories {
 // TODO dep processing library PixelPusher.jar pixelpusher-java https://github.com/robot-head/PixelPusher-java locally and/or do a maven install of it from processing libraries
 
 dependencies {
+
+    compile project(':dragonmind-web')
+
     // these need to point to where processing libraries are stored
     // default on mac is ~/Documents/Processing
     compile files('lib/PixelPusher.jar')
@@ -31,6 +34,7 @@ dependencies {
 //    runtime files('lib/glvideo.jar')
     compile ':gstreamer-java:'
     runtime ':jna:'
+    // TODO copy all these into lib
     runtime files('../../processing/libraries/video/library/macosx64/libgstreamer-0.10.dylib')
 
     compile(group: 'org.processing', name: 'core', version: '3.3.7')
@@ -79,7 +83,6 @@ dependencies {
     runtime ":jogl-all:natives-windows-amd64"
     runtime ":jogl-all:natives-windows-i586"
 
-    // TODO seriously write some unit tests, dog
     testCompile group: 'junit', name: 'junit', version: '4.12'
 
     compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.6'

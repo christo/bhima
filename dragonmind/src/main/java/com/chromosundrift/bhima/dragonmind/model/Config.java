@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
+import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +17,14 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
@@ -48,7 +56,7 @@ public final class Config {
      */
     private float[][] cameraMask;
 
-    private List<Segment> pixelMap;
+    private List<Segment> pixelMap = new ArrayList<>();
 
     private List<PixelPusherInfo> pixelPushers;
 
@@ -124,6 +132,39 @@ public final class Config {
         if (!ok) {
             throw new IllegalStateException("insanity (check logs)");
         }
+    }
+    public Map<ImmutablePair<String, String>, Set<Integer>> checkForSegmentNumberClashes() {
+        return checkForSegmentNumberClashes(s -> true);
+    }
+
+    public Map<ImmutablePair<String, String>, Set<Integer>> checkForSegmentNumberClashes(Function<Segment, Boolean> filter) {
+
+
+        Map<ImmutablePair<String, String>, Set<Integer>> clashes = new HashMap<>();
+        Map<String, Set<Integer>> segmentNumbersByName = new HashMap<>();
+        getPixelMap().forEach(s ->
+                segmentNumbersByName.put(s.getName(), s.getStripNumbers())
+        );
+        for (Map.Entry<String, Set<Integer>> seg : segmentNumbersByName.entrySet()) {
+            Set<Integer> sNums = seg.getValue();
+            for (Map.Entry<String, Set<Integer>> other : segmentNumbersByName.entrySet()) {
+                if (!seg.getKey().equals(other.getKey())) {
+                    ImmutablePair<String, String> clashPair = new ImmutablePair<>(seg.getKey(), other.getKey());
+                    Set<Integer> clashingStripNums = new HashSet<>();
+                    for (Integer sNum : sNums) {
+                        if (other.getValue().contains(sNum)) {
+                            clashingStripNums.add(sNum);
+                        }
+                    }
+                    if(!clashingStripNums.isEmpty()) {
+                        clashes.put(clashPair, clashingStripNums);
+                    }
+                }
+            }
+        }
+        // TODO filter out zero clash items
+
+        return clashes;
     }
 
     public static Config load() throws IOException {
@@ -213,7 +254,13 @@ public final class Config {
     }
 
     public void addSegment(Segment segment) {
+
         pixelMap.add(segment);
+    }
+
+    public void addSegments(Segment segment, Segment... segments) {
+        pixelMap.add(segment);
+        pixelMap.addAll(asList(segments));
     }
 
     @JsonIgnore
