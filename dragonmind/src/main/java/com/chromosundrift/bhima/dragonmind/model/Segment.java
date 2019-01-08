@@ -88,7 +88,6 @@ public final class Segment {
      */
     @JsonIgnore
     public Rect getBoundingBox(Stream<Point> points) {
-        // initialise to the first point
         final AtomicInteger minX = new AtomicInteger(Integer.MAX_VALUE);
         final AtomicInteger minY = new AtomicInteger(Integer.MAX_VALUE);
         final AtomicInteger maxX = new AtomicInteger(Integer.MIN_VALUE);

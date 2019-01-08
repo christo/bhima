@@ -7,7 +7,7 @@ plugins {
 group 'com.chromosundrift'
 version '1.0-SNAPSHOT'
 
-mainClassName = "com.chromosundrift.bhima.dragonmind.BhimaSup"
+mainClassName = "com.chromosundrift.bhima.dragonmind.program.BhimaSup"
 applicationDefaultJvmArgs = ["-Dgreeting.language=en"]
 
 sourceCompatibility = 1.8

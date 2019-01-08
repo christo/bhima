@@ -29,7 +29,7 @@ public final class CachingImageLoader {
         lock.lock();
         try {
             BufferedImage cached = imageCache.get(filename);
-            if (cached!= null) {
+            if (cached != null) {
                 return cached;
             } else {
                 BufferedImage image = ImageIO.read(new File(filename));

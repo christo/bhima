@@ -1,8 +1,8 @@
 package com.chromosundrift.bhima.dragonmind;
 
+import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
 import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.chromosundrift.bhima.dragonmind.model.Transform;
-import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
 import com.chromosundrift.bhima.geometry.Point;
 import com.chromosundrift.bhima.geometry.Rect;
 import processing.core.PApplet;
@@ -88,7 +88,7 @@ public class ProcessingBase extends PApplet {
         outlinedText(label, v1 + 10, v2 + 20);
     }
 
-    protected PImage generateImageNoise(int w, int h) {
+    public PImage generateImageNoise(int w, int h) {
         PImage noise = createImage(w, h, ALPHA);
         Random r = new Random();
         for (int x = 0; x < w; x++) {

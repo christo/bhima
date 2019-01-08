@@ -3,6 +3,7 @@ package com.chromosundrift.bhima.dragonmind;
 import com.chromosundrift.bhima.dragonmind.model.Config;
 import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
 import com.chromosundrift.bhima.dragonmind.model.Segment;
+import com.chromosundrift.bhima.dragonmind.program.BallsProgram;
 import com.chromosundrift.bhima.geometry.Point;
 import com.heroicrobot.dropbit.devices.pixelpusher.Strip;
 import g4p_controls.GAlign;
@@ -27,7 +28,7 @@ import java.util.Properties;
 public class DragonMind extends ProcessingBase {
 
     private static final Logger logger = LoggerFactory.getLogger(DragonMind.class);
-    public static final String PROP_FILE = "build.properties";
+    private static final String PROP_FILE = "build.properties";
     private static final boolean DEBUG_NOISY = false;
 
     private BallsProgram balls = new BallsProgram();
@@ -60,7 +61,7 @@ public class DragonMind extends ProcessingBase {
         background(145, 71, 67, 255);
         String urlString = getResourceFileOrUrl("dragon-logo.png");
         PImage logo = loadImage(urlString);
-        image(logo, width / 2 - logo.width / 2, height / 2 - logo.height / 2, logo.width, logo.height);
+        image(logo, width / 2f - logo.width / 2f, height / 2f - logo.height / 2f, logo.width, logo.height);
         String brandText = "Bhima Dragonmind";
         textAlign(CENTER);
         textSize(48);
@@ -70,7 +71,7 @@ public class DragonMind extends ProcessingBase {
 
         int textMarginTop = 100;
         String version = "unknown";
-        text(brandText, width / 2, height / 2 + logo.height / 2 + textMarginTop);
+        text(brandText, width / 2f, height / 2 + logo.height / 2 + textMarginTop);
         try {
             Properties p = new Properties();
             InputStream propFile = getClass().getClassLoader().getResourceAsStream(PROP_FILE);
@@ -149,40 +150,6 @@ public class DragonMind extends ProcessingBase {
         mapSurfaceToPixels(pImage, segment.getPixels(), segment.getPixelIndexBase());
     }
 
-    private int getActualStripNum(int mappedStripNum) {
-        // TODO fix this HACK, need to edit mapped strip nums in config
-        int actualStripNum = mappedStripNum;
-        switch (mappedStripNum) {
-            case 5:
-                actualStripNum = 2;
-                break;
-            case 6:
-                actualStripNum = 10;
-                break;
-            case 7:
-                actualStripNum = 1;
-                break;
-            case 8:
-                actualStripNum = 3;
-                break;
-            case 9:
-                actualStripNum = 20;
-                break;
-            case 12:
-                actualStripNum = 8;
-                break;
-            case 17:
-                actualStripNum = 19;
-                break;
-        }
-
-        if (actualStripNum != mappedStripNum && logger.isDebugEnabled()) {
-            logger.debug("hackmap: strip {} -> {}", mappedStripNum, actualStripNum);
-        }
-//        return actualStripNum;
-        return mappedStripNum;
-    }
-
     /**
      * Draws the LED points and connecting wires in configured model space.
      *
@@ -196,15 +163,15 @@ public class DragonMind extends ProcessingBase {
      * @param strongForeground
      * @param runLights
      */
-    protected void drawPoints(List<PixelPoint> pixels,
-                              int lineAlpha,
-                              boolean rainbow,
-                              List<NamedColour> colours,
-                              int highlight,
-                              int brightHighlight,
-                              int wire,
-                              int strongForeground, boolean runLights, int indexBase) {
-
+    protected void drawModelPoints(List<PixelPoint> pixels,
+                                   int lineAlpha,
+                                   boolean rainbow,
+                                   List<NamedColour> colours,
+                                   int highlight,
+                                   int brightHighlight,
+                                   int wire,
+                                   int strongForeground, boolean runLights, int indexBase) {
+        // TODO refactor this crazy signature
         pushStyle();
         ellipseMode(CENTER);
         Point prevPoint = null;
@@ -272,7 +239,7 @@ public class DragonMind extends ProcessingBase {
 
     private Strip getActualStrip(PixelPoint pp) {
         List<Strip> strips = pusherMan.getStrips();
-        int actualStripNum = getActualStripNum(pp.getStrip());
+        int actualStripNum = pp.getStrip();
         if (strips.size() > actualStripNum && actualStripNum >= 0) {
             return strips.get(actualStripNum);
         } else {

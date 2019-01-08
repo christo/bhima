@@ -9,9 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
-import org.apache.commons.lang3.Range;
 import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.omg.PortableInterceptor.INACTIVE;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,16 +23,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_NULL;
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
 import static java.util.Arrays.asList;
 
 @SuppressWarnings({"WeakerAccess", "unused"})
-@JsonInclude(NON_NULL)
+@JsonInclude(NON_EMPTY)
 @JsonPropertyOrder({"project", "version", "brightnessThreshold", "cameraMask", "pixelPushers"})
 public final class Config {
 
@@ -154,20 +151,20 @@ public final class Config {
                 segmentNumbersByName.put(s.getName(), s.getEffectiveStripNumbers())
         );
         for (Map.Entry<String, Set<Integer>> seg : segmentNumbersByName.entrySet()) {
-                Set<Integer> sNums = seg.getValue();
-                for (Map.Entry<String, Set<Integer>> other : segmentNumbersByName.entrySet()) {
-                    if (!seg.getKey().equals(other.getKey())) {
-                        ImmutablePair<String, String> clashPair = new ImmutablePair<>(seg.getKey(), other.getKey());
-                        Set<Integer> clashingStripNums = new HashSet<>();
-                        for (Integer sNum : sNums) {
-                            if (other.getValue().contains(sNum)) {
-                                clashingStripNums.add(sNum);
-                            }
-                        }
-                        if (!clashingStripNums.isEmpty()) {
-                            clashes.put(clashPair, clashingStripNums);
+            Set<Integer> sNums = seg.getValue();
+            for (Map.Entry<String, Set<Integer>> other : segmentNumbersByName.entrySet()) {
+                if (!seg.getKey().equals(other.getKey())) {
+                    ImmutablePair<String, String> clashPair = new ImmutablePair<>(seg.getKey(), other.getKey());
+                    Set<Integer> clashingStripNums = new HashSet<>();
+                    for (Integer sNum : sNums) {
+                        if (other.getValue().contains(sNum)) {
+                            clashingStripNums.add(sNum);
                         }
                     }
+                    if (!clashingStripNums.isEmpty()) {
+                        clashes.put(clashPair, clashingStripNums);
+                    }
+                }
             }
         }
         return clashes;
@@ -177,7 +174,7 @@ public final class Config {
     public Set<Integer> getUnusedStripNumbers(int from, int to) {
         Set<Integer> unused = new HashSet<>();
         Set<Integer> used = getUsedStripNumbers();
-        for (int i = from; i <=to ; i++) {
+        for (int i = from; i <= to; i++) {
             if (!used.contains(i)) {
                 unused.add(i);
             }

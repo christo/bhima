@@ -1,8 +1,8 @@
 package com.chromosundrift.bhima.dragonmind;
 
 import com.chromosundrift.bhima.dragonmind.model.Config;
-import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
+import com.chromosundrift.bhima.dragonmind.model.Segment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -147,7 +147,7 @@ public class DragonBuilder {
         }
 
         public SegmentBuilding addPanel() {
-             // TODO
+            // TODO
             return this;
         }
 

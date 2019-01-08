@@ -1,4 +1,4 @@
-package com.chromosundrift.bhima.dragonmind;
+package com.chromosundrift.bhima.dragonmind.program;
 
 import java.util.Random;
 

@@ -1,20 +1,21 @@
-package com.chromosundrift.bhima.dragonmind;
+package com.chromosundrift.bhima.dragonmind.program;
 
+import com.chromosundrift.bhima.dragonmind.DragonMind;
+import com.chromosundrift.bhima.dragonmind.NearDeathExperience;
 import com.chromosundrift.bhima.dragonmind.model.Config;
 import com.chromosundrift.bhima.dragonmind.web.DragonmindServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
+import processing.core.PConstants;
+import processing.core.PFont;
 import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.event.KeyEvent;
 import processing.event.MouseEvent;
 import processing.video.Movie;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
 
 import static java.lang.Runtime.getRuntime;
 import static java.util.Collections.emptyList;
@@ -29,23 +30,24 @@ public class BhimaSup extends DragonMind {
 
     private static final Logger logger = LoggerFactory.getLogger(BhimaSup.class);
 
-    private static long MS_MOVIE_CYCLE_PERIOD = 1000 * 120;
     private static int INNER_WIDTH = 400;
     private static int INNER_HEIGHT = 100;
 
-    private StickSlurper ss;
-    private int current = -1;
-    private long lastFileShowed = 0;
-    private Movie movie = null;
+    private boolean movieMode = true; // TODO convert to curerntProgram
+    private boolean mouseMode = false;
+
+
     private Config config;
-    private boolean movieMode = false;
 
     private int inx = 0;
     private int iny = 0;
-    private boolean mouseMode = false;
 
-    private List<String> builtInVideos;
     private DragonmindServer server = null;
+
+    private float xpos = 0;
+    private PFont mesgFont;
+    private String mesg;
+    private MoviePlayer moviePlayer;
 
     @Override
     public void settings() {
@@ -55,7 +57,7 @@ public class BhimaSup extends DragonMind {
     @Override
     public void setup() {
         super.setup();
-
+        xpos = width;
 
         if (args.length > 0 && args[0].equals("-server") || args.length > 1 && args[1].equals("-server")) {
             server = new DragonmindServer();
@@ -63,28 +65,15 @@ public class BhimaSup extends DragonMind {
             getRuntime().addShutdownHook(new Thread(() -> server.stop(), "Dragonmind Server Shutdown Hook"));
         }
 
+        mesgFont = loadFont("HelveticaNeue-CondensedBlack-16.vlw");
 
         background(0);
 
-        builtInVideos = Arrays.asList(
-                "video/laser-mountain.m4v",
-                "video/golden-cave.m4v",
-                "video/quick-threads.m4v",
-                "video/dots-waves.m4v",
-                "video/diagonal-bars.mp4",
-                "video/fire-ex.m4v",
-                "video/diamonds.m4v",
-                "video/Star Pink Vj ANIMATION FREE FOOTAGE HD-oMM1wsQEU-M.mp4",
-                //"video/50x1000 red scales.mov", // FIXME
-                "video/100x1000 aztec rug.m4v",
-                "video/colour-ink.m4v",
-                "video/clouds.m4v");
+        moviePlayer = new MoviePlayer();
+        moviePlayer.setup(this);
 
         try {
             config = loadConfigFromFirstArgOrDefault();
-            ss = new StickSlurper();
-            ss.start();
-            getRuntime().addShutdownHook(new Thread(() -> ss.stop(), "StickSlurper Shutdown Hook"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -93,10 +82,21 @@ public class BhimaSup extends DragonMind {
     @Override
     public void draw() {
         try {
-            keepFreshMovie();
-            PImage pImage = getPImage();
-            image(pImage, inx, iny, INNER_WIDTH, INNER_HEIGHT);
+            // main feed
+            PImage mainSrc;
+            if (movieMode) {
+                mainSrc = moviePlayer.draw(this, width, height);
+            } else {
+                mainSrc = getPImage();
+            }
+            // scroll text
+            PImage comp = scrollText(mainSrc);
 
+            // display preview in on-screen viewport
+            image(comp, inx, iny, INNER_WIDTH, INNER_HEIGHT);
+
+
+            // BHIMA DRAGON MAPPING BULLSHIT FROM HERE ON
             pushMatrix();
             applyTransforms(config.getBackground().getTransforms());
             // TODO: dynamically perform this scaling function into the video frame (full width, vertically centred)
@@ -110,13 +110,13 @@ public class BhimaSup extends DragonMind {
                 if (segment.getEnabled() && !segment.getIgnored()) {
                     pushMatrix();
                     applyTransforms(segment.getTransforms());
-                    mapSurfaceToPixels(pImage, segment);
+                    mapSurfaceToPixels(mainSrc, segment);
 
-                    int bright = color(255, 0, 0, 90);
-                    int color = color(170, 170, 170, 90);
-                    int strongFg = color(255, 90);
+                    int bright = color(255, 0, 0, 30);
+                    int color = color(170, 170, 170, 30);
+                    int strongFg = color(255, 30);
                     // draw the pixelpoints into the current view
-                    drawPoints(segment.getPixels(), 255, false, emptyList(), -1, bright, color, strongFg, false, segment.getPixelIndexBase());
+                    drawModelPoints(segment.getPixels(), 20, false, emptyList(), -1, bright, color, strongFg, false, segment.getPixelIndexBase());
                     popMatrix();
                 }
             });
@@ -129,9 +129,32 @@ public class BhimaSup extends DragonMind {
 
     }
 
+    private PImage scrollText(PImage pImage) {
+        // text overlay
+        xpos -= 0.2;
+        if (xpos < -2000) {
+            xpos = width + 10;
+        }
+
+        PGraphics pg = createGraphics(width, height);
+        pg.beginDraw();
+        pg.background(255, 255, 255, 0);
+        clear();
+        pg.fill(0, 0, 0);
+
+        float fontSize = (float) (15 - ((width - xpos) * 0.006));
+        pg.textFont(mesgFont, fontSize);
+        mesg = "LOVE   OVER   FEAR";
+        pg.text(mesg, xpos, 63);
+        pg.endDraw();
+
+        pImage.blend(pg, 0, 0, width, height, 0, 0, width, height, PConstants.OVERLAY);
+        return pImage;
+    }
+
     private PImage getPImage() {
-        if (movieMode && movie != null) {
-            return movie.get();
+        if (movieMode) {
+            return moviePlayer.draw(this, width, height);
         } else {
             if (mouseMode) {
                 return fullCrossHair(this, mouseX, mouseY, width, height);
@@ -149,59 +172,6 @@ public class BhimaSup extends DragonMind {
     @Override
     public void die(String what, Exception e) {
         throw new NearDeathExperience(what, e);
-    }
-
-    private void keepFreshMovie() {
-        long now = System.currentTimeMillis();
-        if (lastFileShowed + MS_MOVIE_CYCLE_PERIOD < now) {
-            logger.info("time to load new movie");
-            current++;
-            List<File> media = ss.getMedia();
-
-            try {
-                Movie newMovie = null;
-                // TODO figure out if we need to dispose of anything in movieland when we load a new movie
-                if (media.size() > 0) {
-                    logger.info("Loading new movie from media library");
-                    current %= media.size();
-                    String movieFile = media.get(current).getAbsolutePath();
-                    newMovie = setupMovie(movieFile);
-                    lastFileShowed = now;
-                } else {
-                    logger.info("Loading new movie from built-ins");
-                    current %= builtInVideos.size();
-                    newMovie = setupMovie(builtInVideos.get(current));
-                    lastFileShowed = now;
-                }
-                if (movie != null) {
-                    movie.dispose();
-                }
-                if (newMovie != null) {
-                    movie = newMovie;
-                    logger.info("New movie loaded OK");
-                } else {
-                    // need to reload it?
-                    movie = setupMovie(movie.filename);
-                }
-            } catch (NearDeathExperience e) {
-                logger.warn("Movie loading failed. Dodging death.");
-                ss.excludeMovieFile(media.get(current).getName());
-            }
-        }
-    }
-
-    /**
-     * Load and start looping movie with the given file name.
-     *
-     * @param movieFile the movie file name to load.
-     * @return the {@link Movie}.
-     */
-    private Movie setupMovie(String movieFile) {
-        logger.info("setting up movie " + movieFile);
-        Movie movie = new Movie(this, movieFile);
-        movie.speed(1f);
-        movie.loop();
-        return movie;
     }
 
     /**

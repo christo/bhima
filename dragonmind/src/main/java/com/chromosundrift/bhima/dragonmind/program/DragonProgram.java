@@ -1,5 +1,6 @@
-package com.chromosundrift.bhima.dragonmind;
+package com.chromosundrift.bhima.dragonmind.program;
 
+import com.chromosundrift.bhima.dragonmind.DragonMind;
 import processing.core.PGraphics;
 
 public interface DragonProgram {

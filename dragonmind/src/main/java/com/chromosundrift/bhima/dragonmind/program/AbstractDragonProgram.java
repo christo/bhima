@@ -1,5 +1,6 @@
-package com.chromosundrift.bhima.dragonmind;
+package com.chromosundrift.bhima.dragonmind.program;
 
+import com.chromosundrift.bhima.dragonmind.DragonMind;
 import processing.core.PGraphics;
 import processing.core.PImage;
 
@@ -20,7 +21,7 @@ public abstract class AbstractDragonProgram implements DragonProgram {
     }
 
     /**
-     * Draws static.
+     * Draws full-frame static.
      */
     @Override
     public PGraphics draw(DragonMind mind, int width, int height) {
@@ -30,5 +31,15 @@ public abstract class AbstractDragonProgram implements DragonProgram {
         pg.image(pImage, 0, 0);
         pg.endDraw();
         return pg;
+    }
+
+    /**
+     * Does nothing, override me.
+     *
+     * @param mind
+     */
+    @Override
+    public void mouseClicked(DragonMind mind) {
+
     }
 }

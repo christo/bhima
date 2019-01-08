@@ -234,6 +234,7 @@ public class MapEditor extends DragonMind {
 
     /**
      * Summary of important mapping info across the segments, e.g. strip number clashes
+     *
      * @return
      */
     private PGraphics drawSegmentSummary() {
@@ -249,7 +250,7 @@ public class MapEditor extends DragonMind {
         if (!clashes.isEmpty()) {
             graphics.fill(0);
             String clashesDesc = Config.describeClashes(clashes);
-            String unusedStripNums = config.getUnusedStripNumbers(0, 23).toString(); // TODO are strip nums zero-based?
+            String unusedStripNums = config.getUnusedStripNumbers(0, 23).toString();
             graphics.text(clashesDesc + "\n\nunused strip nums:\n" + unusedStripNums, 20, 20);
         }
 
@@ -369,7 +370,7 @@ public class MapEditor extends DragonMind {
     /**
      * Draw only enabled segments, ignored segments are more transparent.
      *
-     * @param config
+     * @param config the config from which the segments are to be drawn.
      */
     private void drawSegments(Config config) {
         List<Segment> pixelMap = config.getPixelMap();
@@ -429,7 +430,7 @@ public class MapEditor extends DragonMind {
                 int wire = color(120, 70, 120, lineAlpha);
                 int brightHighlight = color(255, 0, 0, lineAlpha);
                 int fg = color(0, 255);
-                drawPoints(segment.getPixels(), lineAlpha, rainbow, colours, highlightedPixel, brightHighlight, wire, fg, true, segment.getPixelIndexBase());
+                drawModelPoints(segment.getPixels(), lineAlpha, rainbow, colours, highlightedPixel, brightHighlight, wire, fg, true, segment.getPixelIndexBase());
                 popStyle();
                 popMatrix();
             }
@@ -522,13 +523,9 @@ public class MapEditor extends DragonMind {
         if (event.isShiftDown()) {
             float newViewShiftX = viewShiftX + mouseX - pmouseX;
             float newViewShiftY = viewShiftY + mouseY - pmouseY;
-            // TODO fix range checking for zoom and shift
-            //            boolean shiftInRange = shiftInRange(newViewShiftX, newViewShiftY);
-            boolean shiftInRange = true;
-            if (shiftInRange) {
-                viewShiftX = newViewShiftX;
-                viewShiftY = newViewShiftY;
-            }
+            // TODO range checking for zoom and shift
+            viewShiftX = newViewShiftX;
+            viewShiftY = newViewShiftY;
         } else if (event.isControlDown()) {
             // maybe dragging a pixel
             if (draggingPixelPoint != null) {
@@ -537,6 +534,7 @@ public class MapEditor extends DragonMind {
                 withAllTransforms(getSelectedSegment(), s -> {
                     // FIXME this is still not tracking the mouse correctly
                     // (word on the street is that getMatrix() only grabs the top of the matrix stack)
+                    // consider: https://github.com/AlexPoupakis/mouse2DTransformations/blob/master/Mouse2DTransformations/src/template/library/MouseTransformed.java
 
                     // invert the matrix so we can apply it to the mouse position and get target in-model points
                     PMatrix m = getMatrix().get();
@@ -554,7 +552,7 @@ public class MapEditor extends DragonMind {
 
             } else {
                 // we have started shiffting a point
-                logger.info("started dragging a point");
+                logger.debug("started dragging a point");
                 handlePointAt(mouseX, mouseY, pp -> draggingPixelPoint = pp);
             }
         }
@@ -684,7 +682,6 @@ public class MapEditor extends DragonMind {
     }
 
     private void handleSegmentKey(KeyEvent event) {
-        // NO META KEY DOWN; segment operations
         char k = event.getKey();
         if (k == NEXT_SEGMENT) {
             selectedSegment++;
