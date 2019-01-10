@@ -40,7 +40,7 @@ public class MoviePlayer extends AbstractDragonProgram implements DragonProgram 
     public void setup(DragonMind mind) {
 
         builtInVideos = Arrays.asList(
-                "video/loveoverfear400x100.m4v",
+                "video/betterfire400x100.m4v",
                 "video/golden-cave.m4v",
                 "video/colour-ink.m4v",
                 "video/laser-mountain.m4v",
@@ -50,7 +50,7 @@ public class MoviePlayer extends AbstractDragonProgram implements DragonProgram 
                 "video/diagonal-bars.mp4",
                 "video/diamonds.m4v",
                 "video/Star Pink Vj ANIMATION FREE FOOTAGE HD-oMM1wsQEU-M.mp4",
-                //"video/50x1000 red scales.mov", // FIXME
+                //"video/50x1000 red scales.mov", // video doesn't work
                 "video/100x1000 aztec rug.m4v"
         );
 
