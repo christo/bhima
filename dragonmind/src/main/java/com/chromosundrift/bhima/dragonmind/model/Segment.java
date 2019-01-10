@@ -40,6 +40,9 @@ public final class Segment {
     @JsonInclude(NON_NULL)
     private Integer stripNumberOverride = null;
 
+    @JsonInclude(NON_NULL)
+    private String subassembly;
+
     /**
      * Does not light up nor display in the editor.
      */
@@ -172,6 +175,14 @@ public final class Segment {
 
     public void setPixelIndexBase(int pixelIndexBase) {
         this.pixelIndexBase = pixelIndexBase;
+    }
+
+    public String getSubassembly() {
+        return subassembly;
+    }
+
+    public void setSubassembly(String subassembly) {
+        this.subassembly = subassembly;
     }
 
     public void flipIgnored() {
