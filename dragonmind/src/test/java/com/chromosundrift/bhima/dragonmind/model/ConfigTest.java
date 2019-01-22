@@ -89,7 +89,5 @@ public class ConfigTest {
             assertEquals("expected single strip number clash set for pair " + pair, 1, clash.size());
             assertEquals(Integer.valueOf(2), clash.iterator().next());
         }
-
-        System.out.println("immutablePairSetMap = " + clashes);
     }
 }

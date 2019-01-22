@@ -17,8 +17,7 @@ public final class PixelPointDeserializer extends StdDeserializer<PixelPoint> {
     }
 
     @Override
-    public PixelPoint deserialize(JsonParser p, DeserializationContext ctxt) throws IOException,
-            JsonProcessingException {
+    public PixelPoint deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
 
         ObjectCodec codec = p.getCodec();
         JsonNode node = codec.readTree(p);

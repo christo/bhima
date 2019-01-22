@@ -772,7 +772,7 @@ public class ArrayScanner2 extends DragonMind {
                 }
                 logger.debug("set main image to {}", f);
             } else {
-                logger.debug("Mouse was clicked but not in a small image");;
+                logger.debug("Mouse was clicked but not in a small image");
             }
         }
     }

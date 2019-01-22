@@ -95,10 +95,10 @@ public class BhimaSup extends DragonMind {
             // display preview in on-screen viewport
             image(comp, inx, iny, INNER_WIDTH, INNER_HEIGHT);
 
-
             // BHIMA DRAGON MAPPING BULLSHIT FROM HERE ON
             pushMatrix();
             applyTransforms(config.getBackground().getTransforms());
+
             // TODO: dynamically perform this scaling function into the video frame (full width, vertically centred)
 
             // manual trasform fixup for getting the whole dragon in-frame with the video panel
