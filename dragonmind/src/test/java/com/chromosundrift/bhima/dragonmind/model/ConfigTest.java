@@ -16,6 +16,7 @@ import java.util.Set;
 import static java.util.Arrays.asList;
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class ConfigTest {
@@ -56,7 +57,7 @@ public class ConfigTest {
         c.setPixelMap(segments);
         String actual = c.unParse(true);
 
-        Assert.assertFalse(actual.toLowerCase().contains("segments"));
+        assertFalse(actual.toLowerCase().contains("segments"));
 
         ClassLoader cl = getClass().getClassLoader();
         InputStreamReader expectedR = new InputStreamReader(cl.getResourceAsStream("expected.config.json"));
