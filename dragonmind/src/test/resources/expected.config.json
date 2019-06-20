@@ -1,7 +1,6 @@
 {
   "project" : "Bhima 2018",
   "version" : "1.0",
-  "brightnessThreshold" : 150.0,
   "pixelPushers" : [ {
     "macAddress" : "12:34:56:78:90",
     "name" : "PP1",

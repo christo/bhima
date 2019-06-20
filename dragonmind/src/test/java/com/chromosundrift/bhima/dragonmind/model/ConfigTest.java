@@ -23,11 +23,10 @@ public class ConfigTest {
     @Test
     public void testSave() throws ConfigException {
         Config c = new Config("test proj", "123");
-        c.setBrightnessThreshold(160);
         PixelPusherInfo ppi = new PixelPusherInfo("12:34:56:78:90", "PP1", "black, rectangular");
         c.setPixelPushers(singletonList(ppi));
         String config = c.unParse(false);
-        String expected = "{\"project\":\"test proj\",\"version\":\"123\",\"brightnessThreshold\":160.0," +
+        String expected = "{\"project\":\"test proj\",\"version\":\"123\"," +
                 "\"pixelPushers\":[{\"macAddress\":\"12:34:56:78:90\"," +
                 "\"name\":\"PP1\",\"description\":\"black, rectangular\"}]}";
         Assert.assertEquals(expected, config);
@@ -36,7 +35,6 @@ public class ConfigTest {
     @Test
     public void testSaveNontrivial() throws ConfigException, IOException {
         Config c = new Config("Bhima 2018", "1.0");
-        c.setBrightnessThreshold(150);
         PixelPusherInfo ppi = new PixelPusherInfo("12:34:56:78:90", "PP1", "black, rectangular");
         c.setPixelPushers(singletonList(ppi));
         ArrayList<Segment> segments = new ArrayList<>();

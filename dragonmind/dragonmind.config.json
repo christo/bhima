@@ -1,7 +1,6 @@
 {
   "project" : "Bhima 2018",
   "version" : "1.0",
-  "brightnessThreshold" : 0.0,
   "cameraMask" : [ [ 0.0, 0.0 ], [ 1920.0, 0.0 ], [ 1920.0, 1080.0 ], [ 0.0, 1080.0 ] ],
   "background" : {
     "opacity" : 1.0,

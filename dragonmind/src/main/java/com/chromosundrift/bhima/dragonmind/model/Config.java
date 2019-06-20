@@ -60,8 +60,6 @@ public final class Config {
 
     private List<PixelPusherInfo> pixelPushers;
 
-    private float brightnessThreshold;
-
     private BufferedImage bgImage;
 
     public Config() {
@@ -263,14 +261,6 @@ public final class Config {
 
     public void setPixelPushers(List<PixelPusherInfo> pixelPushers) {
         this.pixelPushers = pixelPushers;
-    }
-
-    public float getBrightnessThreshold() {
-        return brightnessThreshold;
-    }
-
-    public void setBrightnessThreshold(float brightnessThreshold) {
-        this.brightnessThreshold = brightnessThreshold;
     }
 
     public void addSegment(Segment segment) {
