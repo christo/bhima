@@ -1,5 +1,5 @@
 {
-  "project" : "Bhima Mini 2019 Detapered",
+  "project" : "Bhima Mini 2018",
   "version" : "1.1",
   "cameraMask" : [ [ 0.0, 0.0 ], [ 1920.0, 0.0 ], [ 1920.0, 1080.0 ], [ 0.0, 1080.0 ] ],
   "background" : {
