@@ -4,6 +4,7 @@ import com.chromosundrift.bhima.dragonmind.model.Config;
 import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
 import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.chromosundrift.bhima.dragonmind.model.Transform;
+import com.chromosundrift.bhima.geometry.Knapp;
 import com.chromosundrift.bhima.geometry.Point;
 import com.chromosundrift.bhima.geometry.Rect;
 import org.apache.commons.lang3.StringUtils;
@@ -19,17 +20,18 @@ import processing.event.MouseEvent;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static com.chromosundrift.bhima.dragonmind.model.Transform.Type;
+import static com.chromosundrift.bhima.geometry.Knapp.ZAG_ZIG;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.defaultString;
@@ -65,6 +67,7 @@ public class MapEditor extends DragonMind {
     private static final char PREVIOUS_SEGMENT = '[';
     private static final char NEXT_SEGMENT = ']';
     private static final char TOGGLE_RAINBOW_MODE = 'r';
+    private static final char TOGGLE_SEGMENT_LABELS = 'd';
     private static final char META_SAVE = 's';
     private static final char META_LOAD = 'o';
     private static final char META_GLOBAL_SCALE_UP = '=';
@@ -73,7 +76,7 @@ public class MapEditor extends DragonMind {
     private static final char SHIFT_RESET_VIEW = ' ';
 
     private static final boolean DRAW_GENERATED_DRAGON = true;
-    public static final int FRAMES_PER_UI_REDRAW = 10;
+    private static final int FRAMES_PER_UI_REDRAW = 15;
 
 
     private static Logger logger = LoggerFactory.getLogger(MapEditor.class);
@@ -106,7 +109,7 @@ public class MapEditor extends DragonMind {
      */
     private boolean rainbow;
 
-    private List<NamedColour> colours = new ArrayList<>();
+
 
     /**
      * Whether or not to show scan images if they are available in the usual place on disk.
@@ -126,6 +129,8 @@ public class MapEditor extends DragonMind {
     private PGraphics segmentInfo;
     private PGraphics segmentSummary;
     private PGraphics viewInfo;
+    private boolean showSegmentLabels = true;
+    private RainbowPalette rainbowPalette;
 
     public void settings() {
         //        fullScreen(P2D);
@@ -137,33 +142,37 @@ public class MapEditor extends DragonMind {
         } catch (IOException e) {
             logger.error("Could not load config", e);
         }
-        DragonBuilder dragonBuilder = new DragonBuilder(1730, 800, 4);
-        int ph = 80 - dragonBuilder.margin;
-        int pw = 80 - dragonBuilder.margin;
-        dragonBuilder.addSegment(3, pw, ph)
+        DragonBuilder dragonBuilder = new DragonBuilder(1420, 800, 4);
+        int ph = 85 - dragonBuilder.margin;
+        int pw = 70 - dragonBuilder.margin;
+        Function<DragonBuilder.PanelPoint, Boolean> exceptions = pp -> {
+            if (pp.panelNumber == 10) {
+                if (pp.x == 9 && pp.y == 9) {
+                    return false;
+                }
+            } else if (pp.panelNumber == 11) {
+                // TODO
+                return true;
+            }
+            return true;
+        };
+        dragonBuilder
                 .addSegment(3, pw, ph)
                 .addSegment(3, pw, ph)
-                .addSegment(1, pw, ph)
-                //.addPanel()
-                .build(); // TODO finish the 3 panel segment with a panelpoint function
+                .addSegment(3, pw, ph, ZAG_ZIG)
+                .addSegment(3, exceptions, pw, ph, ZAG_ZIG)
+                //.addPanel(),
+                .build();
         generatedDragon = dragonBuilder.build();
     }
 
     public void setup() {
         super.setup();
         background(220);
-        registerColour("Violet", 148, 0, 211);
-        registerColour("Indigo", 75, 0, 130);
-        registerColour("Blue", 0, 0, 255);
-        registerColour("Green", 0, 255, 0);
-        registerColour("Yellow", 255, 255, 0);
-        registerColour("Orange", 255, 127, 0);
-        registerColour("Red", 255, 0, 0);
+        rainbowPalette = new RainbowPalette();
+
     }
 
-    private void registerColour(String name, int red, int green, int blue) {
-        colours.add(new NamedColour(name, red, green, blue));
-    }
 
     @Override
     public void draw() {
@@ -388,28 +397,33 @@ public class MapEditor extends DragonMind {
 
                 // draw it
                 Rect r = calculateScreenBox(segment);
-
+                int metaColour = color(255, 100, 0);
                 if (segment.getIgnored()) {
                     // ignored stuff is feinter
-                    stroke(127, 127, 0);
+                    metaColour = color(127, 127, 0);
                     strokeWeight(0.25f);
                 } else if (i == selectedSegment) {
                     if (r.contains(mouseX, mouseY)) {
-                        fill(255, 0, 0, 80);
+                        fill(255, 255, 255, 200);
                     }
 
-                    stroke(255, 0, 0);
+                    metaColour = color(255, 0, 0);
                     strokeWeight(2);
                     if (showImage) {
                         drawSegmentImage(segment);
                     }
                 } else {
-                    stroke(255, 100, 0);
+                    metaColour = color(255, 100, 0);
                     strokeWeight(0.5f);
                 }
+                stroke(metaColour);
                 pushMatrix();
                 resetMatrix();
                 rect(r);
+                fill(metaColour);
+                if (showSegmentLabels) {
+                    drawLabel(segment, r);
+                }
                 popMatrix();
                 if (segment.getIgnored()) {
                     // ignored stuff is feinter
@@ -430,10 +444,41 @@ public class MapEditor extends DragonMind {
                 int wire = color(120, 70, 120, lineAlpha);
                 int brightHighlight = color(255, 0, 0, lineAlpha);
                 int fg = color(0, 255);
-                drawModelPoints(segment.getPixels(), lineAlpha, rainbow, colours, highlightedPixel, brightHighlight, wire, fg, true, segment.getPixelIndexBase());
+                drawModelPoints(segment.getPixels(), lineAlpha, rainbow, rainbowPalette.getColours(), highlightedPixel, brightHighlight, wire, fg, true, segment.getPixelIndexBase());
                 popStyle();
                 popMatrix();
             }
+        }
+    }
+
+    /**
+     * Draws the name of the segment.
+     *
+     * @param segment the segment whose name is to be drawn
+     * @param boundingBox the box into which the name is to be drawn.
+     */
+    private void drawLabel(Segment segment, Rect boundingBox) {
+        if (segment.getName() != null) {
+            int padding = 4;
+            Point topLeftCorner = boundingBox.getMinMin();
+            int textAreaHeight = 20;
+            int x1 = topLeftCorner.getX();
+            int y1 = topLeftCorner.getY() - textAreaHeight;
+            int x2 = boundingBox.getMaxMax().getX();
+            int y2 = topLeftCorner.getY();
+            PGraphics pg = createGraphics(x2 - x1, y2 - y1);
+            pg.beginDraw();
+            pg.background(200, 200, 155, 0);
+            pg.stroke(255, 100, 0);
+            pg.strokeWeight(2);
+            pg.fill(200, 200, 155);
+            pg.textFont(getDefaultFont());
+            pg.textSize((float) (getDefaultFont().getSize() * 0.7));
+            pg.rect(0, 0, Math.min(pg.width, pg.textWidth(segment.getName()) + (padding * 2)), pg.height, padding, padding, 0, 0); // note reusing padding as corner radius
+            pg.fill(255, 100, 0);
+            pg.text(segment.getName(), padding, padding, pg.width-padding, pg.height-padding);
+            pg.endDraw();
+            image(pg, x1, y1);
         }
     }
 
@@ -585,7 +630,7 @@ public class MapEditor extends DragonMind {
     }
 
     private void handlePointAt(int sx, int sy, Consumer<PixelPoint> pointConsumer) {
-
+        // TODO double check we include viewzoom and viewshift here for mouse point selection
         withAllTransforms(getSelectedSegment(), s -> {
             // now only calculate pointer distances for current segment points if the pointer is in the bounding box
             Rect rect = calculateScreenBox(s);
@@ -607,8 +652,8 @@ public class MapEditor extends DragonMind {
     /**
      * Finds the pixelIndex for the given segment-pixelpoint pair
      *
-     * @param segment
-     * @param pp
+     * @param segment the segment.
+     * @param pp the pixel point.
      */
     private int getIndexFor(Segment segment, PixelPoint pp) {
         int index = 0;
@@ -640,6 +685,9 @@ public class MapEditor extends DragonMind {
 
             if (k == TOGGLE_RAINBOW_MODE) {
                 rainbow = !rainbow;
+            }
+            if (k == TOGGLE_SEGMENT_LABELS) {
+                showSegmentLabels = !showSegmentLabels;
             }
             if (k == SHIFT_RESET_VIEW && event.isShiftDown()) {
                 resetView();

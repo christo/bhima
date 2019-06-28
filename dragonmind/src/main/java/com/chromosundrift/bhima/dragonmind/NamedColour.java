@@ -1,10 +1,10 @@
 package com.chromosundrift.bhima.dragonmind;
 
-class NamedColour {
-    private String name;
-    private int red;
-    private int green;
-    private int blue;
+final class NamedColour {
+    private final String name;
+    private final int red;
+    private final int green;
+    private final int blue;
 
     public NamedColour(String name, int red, int green, int blue) {
         this.name = name;

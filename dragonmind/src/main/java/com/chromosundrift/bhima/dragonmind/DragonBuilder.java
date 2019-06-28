@@ -3,17 +3,25 @@ package com.chromosundrift.bhima.dragonmind;
 import com.chromosundrift.bhima.dragonmind.model.Config;
 import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
 import com.chromosundrift.bhima.dragonmind.model.Segment;
+import com.chromosundrift.bhima.geometry.Knapp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.function.IntConsumer;
+import java.util.function.Supplier;
+import java.util.stream.IntStream;
+
+import static com.chromosundrift.bhima.geometry.Knapp.ZIG_ZAG;
 
 /**
  * Generates a straight dragon model in a strict diamond grid, tapering from the bottom up.
  */
-public class DragonBuilder {
+public class DragonBuilder extends AbstractSegmentBuilder {
 
     // TODO LHS
     // TODO finish tapering tail
@@ -52,63 +60,62 @@ public class DragonBuilder {
         return c;
     }
 
-    public SegmentBuilding addSegment(int nPanels, int pw, int ph) {
-        return addSegment(nPanels, p -> true, pw, ph);
-    }
-
-    public SegmentBuilding addSegment(int nPanels, Function<PanelPoint, Boolean> includePoint, int pw, int ph) {
+    public SegmentBuilding addSegment(int nPanels, Function<PanelPoint, Boolean> includePoint, int pw, int ph, Knapp k) {
 
         int nLedX = 10;
         int nLedY = 10;
         int vStep = ph / nLedY;
         int hStep = pw / nLedX;
         int sNum = segments.size() + 1;
-        Segment e = generateSegment(nPanels, xOrigin - (nPanels + gPanelNumber) * (pw + margin), yOrigin, pw, sNum, vStep, hStep, nLedX, nLedY);
+        int x = xOrigin - (nPanels + gPanelNumber) * (pw + margin);
+        Segment e = generateSegment(nPanels, x, yOrigin, pw, sNum, vStep, hStep, nLedX, nLedY, includePoint, k);
         return new SegmentBuilding(e);
     }
 
-    private Segment generateSegment(int nPanels, int x, int y, int pw, int sNum, int vStep, int hStep, int nLedX, int nLedY) {
+    private Segment generateSegment(int nPanels, int x, int y, int pw, int sNum, int vStep, int hStep, int nLedX, int nLedY, Function<PanelPoint, Boolean> includePoint, Knapp k) {
         Segment s = new Segment();
-        s.setName("generated segment " + sNum);
+        s.setName("gen seg " + sNum);
 
         // generate panels right to left
         for (int n = nPanels - 1; n >= 0; n--) {
             int xPos = x + (pw + margin) * n;
-            s.addPixelPoints(generatePanel(xPos, y, nLedX, nLedY, hStep, vStep));
+            s.addPixelPoints(generatePanel(xPos, y, nLedX, nLedY, hStep, vStep, includePoint, k));
         }
         return s;
     }
 
-    public List<PixelPoint> generatePanel(int x, int y, int nLedX, int nLedY, int dx, int dy) {
+    public List<PixelPoint> generatePanel(int x, int y, int nLedX, int nLedY, int dx, int dy, Function<PanelPoint, Boolean> includePoint, Knapp knapp) {
         ArrayList<PixelPoint> pps = new ArrayList<>();
-        // start at the top right
-        int pixelIndex = 0;
-        int evenRowVerticalOffset = dy / 2;
+        final AtomicInteger pixelIndex = new AtomicInteger(0);
+        int oddColumnVerticalOffset = dy / 2;
         int stripIndex = 0;
-        // start at top left
-        for (int yy = 0; yy < nLedY; yy++) {
 
-            // first zig - left to right
+        Supplier<IntStream> leftToRight = () -> IntStream.range(0, nLedX);
+        Supplier<IntStream> rightToLeft = () -> IntStream.iterate(nLedX - 1, i -> i - 1).limit(nLedX);
 
-            for (int xx = 0; xx < nLedX; xx++) {
-                boolean evenColumn = xx % 2 == gPanelNumber % 2;
-                // y offset alternates each column, but is the same as the previous across panel boundaries
-                int yOffset = evenColumn ? evenRowVerticalOffset : 0;
-                PixelPoint pp = new PixelPoint(stripIndex, pixelIndex, x + dx * xx, y + yOffset + dy * yy);
-                pps.add(pp);
-                pixelIndex++;
-            }
-            yy++;
+        List<Supplier<IntStream>> seq = (knapp == ZIG_ZAG)
+                ? Arrays.asList(leftToRight, rightToLeft)
+                : Arrays.asList(rightToLeft, leftToRight);
 
-            // then zag - right to left
+        // start at top left light of the panel
 
-            for (int xx = nLedX - 1; xx >= 0; xx--) {
-                boolean evenColumn = xx % 2 == gPanelNumber % 2;
-                int yOffset = evenColumn ? evenRowVerticalOffset : 0;
-                PixelPoint pp = new PixelPoint(stripIndex, pixelIndex, x + dx * xx, y + yOffset + dy * yy);
-                pps.add(pp);
-                pixelIndex++;
-            }
+        for (AtomicInteger yy = new AtomicInteger(0); yy.get() < nLedY; yy.incrementAndGet()) {
+
+            IntConsumer addPoint = (xx) -> {
+                if (includePoint.apply(new PanelPoint(gPanelNumber, xx, yy.get()))) {
+                    boolean evenColumn = xx % 2 == gPanelNumber % 2;
+                    // y offset alternates each column, but is the same as the previous across panel boundaries
+                    int yOffset = !evenColumn ? oddColumnVerticalOffset : 0;
+                    int pixelX = x + dx * xx;
+                    int pixelY = y + yOffset + dy * yy.get();
+                    PixelPoint pp = new PixelPoint(stripIndex, pixelIndex.getAndIncrement(), pixelX, pixelY);
+                    pps.add(pp);
+                }
+            };
+            // follow the zigzagness of the Knapp of the given panel
+            seq.get(0).get().forEach(addPoint);
+            yy.incrementAndGet();
+            seq.get(1).get().forEach(addPoint);
         }
         gPanelNumber++;
         return pps;
@@ -127,9 +134,18 @@ public class DragonBuilder {
             this.x = x;
             this.y = y;
         }
+
+        @Override
+        public String toString() {
+            return "PanelPoint{" +
+                    "#" + panelNumber +
+                    "@" + x +
+                    "," + y +
+                    '}';
+        }
     }
 
-    public final class SegmentBuilding {
+    public final class SegmentBuilding extends AbstractSegmentBuilder {
 
         private Segment s;
 
@@ -137,13 +153,9 @@ public class DragonBuilder {
             this.s = segment;
         }
 
-        public SegmentBuilding addSegment(int nPanels, int pw, int ph) {
-            return addSegment(nPanels, p -> true, pw, ph);
-        }
-
-        public SegmentBuilding addSegment(int nPanels, Function<PanelPoint, Boolean> includePoint, int pw, int ph) {
+        public SegmentBuilding addSegment(int nPanels, Function<PanelPoint, Boolean> includePoint, int pw, int ph, Knapp k) {
             build();
-            return DragonBuilder.this.addSegment(nPanels, includePoint, pw, ph);
+            return DragonBuilder.this.addSegment(nPanels, includePoint, pw, ph, k);
         }
 
         public SegmentBuilding addPanel() {
