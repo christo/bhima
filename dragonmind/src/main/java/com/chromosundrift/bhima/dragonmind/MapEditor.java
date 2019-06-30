@@ -4,7 +4,6 @@ import com.chromosundrift.bhima.dragonmind.model.Config;
 import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
 import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.chromosundrift.bhima.dragonmind.model.Transform;
-import com.chromosundrift.bhima.geometry.Knapp;
 import com.chromosundrift.bhima.geometry.Point;
 import com.chromosundrift.bhima.geometry.Rect;
 import org.apache.commons.lang3.StringUtils;
@@ -32,6 +31,7 @@ import java.util.stream.Stream;
 
 import static com.chromosundrift.bhima.dragonmind.model.Transform.Type;
 import static com.chromosundrift.bhima.geometry.Knapp.ZAG_ZIG;
+import static com.chromosundrift.bhima.geometry.Rect.NULL_RECT;
 import static java.lang.String.format;
 import static java.util.stream.Collectors.toSet;
 import static org.apache.commons.lang3.StringUtils.defaultString;
@@ -78,12 +78,19 @@ public class MapEditor extends DragonMind {
     private static final boolean DRAW_GENERATED_DRAGON = true;
     private static final int FRAMES_PER_UI_REDRAW = 15;
 
-
     private static Logger logger = LoggerFactory.getLogger(MapEditor.class);
     private static final float MOUSE_ZOOM_SPEED = 0.001f;
+
+    /**
+     * Pixel distance to snap-to selection
+     */
     private static final int SELECT_DIST = 10;
 
+    /**
+     * Configuration file to load/save
+     */
     private Config config;
+
     private final CachingImageLoader loader = new CachingImageLoader(300);
     private PImage bg;
 
@@ -108,7 +115,6 @@ public class MapEditor extends DragonMind {
      * Whether to show strips in different colours.
      */
     private boolean rainbow;
-
 
 
     /**
@@ -358,10 +364,12 @@ public class MapEditor extends DragonMind {
             Set<Integer> strips = pixels.stream().map(PixelPoint::getStrip).collect(toSet());
             text.append(" strip #s: ").append(StringUtils.join(strips, ", ")).append("\n\n");
 
-            PixelPoint thisPixel = pixels.get(pixelIndex);
-            text.append("Strip: ").append(thisPixel.getStrip())
-                    .append(" Pixel number: ").append(thisPixel.getPixel() - segment.getPixelIndexBase())
-                    .append(" x,y: ").append(thisPixel.getPoint().toString()).append("\n");
+            if (pixels.size() > 0) {
+                PixelPoint thisPixel = pixels.get(pixelIndex);
+                text.append("Strip: ").append(thisPixel.getStrip())
+                        .append(" Pixel number: ").append(thisPixel.getPixel() - segment.getPixelIndexBase())
+                        .append(" x,y: ").append(thisPixel.getPoint().toString()).append("\n");
+            }
             text.append("pixelIndex: ").append(pixelIndex).append("\n");
             text.append("pixel index base: ").append(segment.getPixelIndexBase()).append("\n\n");
             text.append("step size: ").append(dt).append("\n");
@@ -396,8 +404,9 @@ public class MapEditor extends DragonMind {
                 }
 
                 // draw it
-                Rect r = calculateScreenBox(segment);
-                int metaColour = color(255, 100, 0);
+                Rect r = segment.getPixels().size() > 0 ? calculateScreenBox(segment) : NULL_RECT;
+
+                int metaColour;
                 if (segment.getIgnored()) {
                     // ignored stuff is feinter
                     metaColour = color(127, 127, 0);
@@ -454,7 +463,7 @@ public class MapEditor extends DragonMind {
     /**
      * Draws the name of the segment.
      *
-     * @param segment the segment whose name is to be drawn
+     * @param segment     the segment whose name is to be drawn
      * @param boundingBox the box into which the name is to be drawn.
      */
     private void drawLabel(Segment segment, Rect boundingBox) {
@@ -476,7 +485,7 @@ public class MapEditor extends DragonMind {
             pg.textSize((float) (getDefaultFont().getSize() * 0.7));
             pg.rect(0, 0, Math.min(pg.width, pg.textWidth(segment.getName()) + (padding * 2)), pg.height, padding, padding, 0, 0); // note reusing padding as corner radius
             pg.fill(255, 100, 0);
-            pg.text(segment.getName(), padding, padding, pg.width-padding, pg.height-padding);
+            pg.text(segment.getName(), padding, padding, pg.width - padding, pg.height - padding);
             pg.endDraw();
             image(pg, x1, y1);
         }
@@ -653,7 +662,7 @@ public class MapEditor extends DragonMind {
      * Finds the pixelIndex for the given segment-pixelpoint pair
      *
      * @param segment the segment.
-     * @param pp the pixel point.
+     * @param pp      the pixel point.
      */
     private int getIndexFor(Segment segment, PixelPoint pp) {
         int index = 0;

@@ -13,6 +13,8 @@ public final class Rect {
 
     private static final Logger logger = LoggerFactory.getLogger(Rect.class);
 
+    public static final Rect NULL_RECT = new Rect(0, 0, 1, 1);
+
     private final Point minMin;
     private final Point maxMax;
 
