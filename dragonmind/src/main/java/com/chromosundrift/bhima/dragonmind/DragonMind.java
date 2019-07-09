@@ -284,7 +284,7 @@ public class DragonMind extends ProcessingBase {
     }
 
     private void debugIfNotAnimationThread(final String mesg) {
-        if (!Thread.currentThread().getName().equals("main-FPSAWTAnimator#00-Timer0")) {
+        if (logger.isDebugEnabled() && !Thread.currentThread().getName().equals("main-FPSAWTAnimator#00-Timer0")) {
             logger.debug(mesg);
         }
     }
