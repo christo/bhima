@@ -5,6 +5,7 @@ import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.chromosundrift.bhima.dragonmind.model.Transform;
 import com.chromosundrift.bhima.geometry.Point;
 import com.chromosundrift.bhima.geometry.Rect;
+import mouse.transformed2d.MouseTransformed;
 import processing.core.PApplet;
 import processing.core.PImage;
 
@@ -19,6 +20,7 @@ import static com.chromosundrift.bhima.dragonmind.model.Transform.Type.*;
 public class ProcessingBase extends PApplet {
 
     private final ExecutorService offloader;
+    protected MouseTransformed mouseTransformed;
 
     public ProcessingBase(int offloaderThreads) {
         offloader = Executors.newFixedThreadPool(offloaderThreads);

@@ -6,6 +6,7 @@ import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.chromosundrift.bhima.dragonmind.model.Transform;
 import com.chromosundrift.bhima.geometry.Point;
 import com.chromosundrift.bhima.geometry.Rect;
+import mouse.transformed2d.MouseTransformed;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
@@ -157,7 +158,7 @@ public class MapEditor extends DragonMind {
                     return false;
                 }
             } else if (pp.panelNumber == 11) {
-                // TODO
+                // TODO add exceptions for panel 11
                 return true;
             }
             return true;
@@ -176,7 +177,7 @@ public class MapEditor extends DragonMind {
         super.setup();
         background(220);
         rainbowPalette = new RainbowPalette();
-
+        mouseTransformed = new MouseTransformed(this);
     }
 
 
