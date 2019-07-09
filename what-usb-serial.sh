@@ -7,7 +7,7 @@ function grepdev() {
     flags=$1
     pattern=$2
     mesg=$3
-    output=$(ls -lt /dev | grep '^c' | egrep "$flags" "$pattern" | head -n 12)
+    output=$(ls -lt /dev | grep '^c' | egrep "$flags" "$pattern" | head -n 6)
     if [[ ! -z "$output" ]]; then 
         echo $mesg
         echo -n "$output"
@@ -17,7 +17,7 @@ function grepdev() {
 
 grepdev -i usb "smart guess:"
 grepdev -vi '(disk|Bluetooth|BIGJAMBOX|Bose|autofs|console)' "filtered:"
-grepdev -i . raw
+grepdev -i . "raw:"
 
 #echo smart guess:
 #ls -lt /dev |grep '^c' |grep -i usb |head -n 5
