@@ -59,7 +59,11 @@ public class StickSlurper {
         // FIXME inelegant
         dirs.clear();
         dirs.addAll(newDirs);
-        logger.info("Media dirs: {}", dirs.stream().map(File::getAbsolutePath).collect(Collectors.toList()));
+        if (dirs.size() == 0) {
+            logger.info("Media dirs: None");
+        } else {
+            logger.info("Media dirs: {}", dirs.stream().map(File::getAbsolutePath).collect(Collectors.toList()));
+        }
         return dirs;
     }
 
