@@ -6,6 +6,8 @@ import com.chromosundrift.bhima.dragonmind.model.Transform;
 import com.chromosundrift.bhima.geometry.Point;
 import com.chromosundrift.bhima.geometry.Rect;
 import mouse.transformed2d.MouseTransformed;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
 import processing.core.PImage;
 
@@ -19,12 +21,20 @@ import static com.chromosundrift.bhima.dragonmind.model.Transform.Type.*;
 
 public class ProcessingBase extends PApplet {
 
+    private static final Logger logger = LoggerFactory.getLogger(ProcessingBase.class);
+
     private final ExecutorService offloader;
     protected MouseTransformed mouseTransformed;
 
     public ProcessingBase(int offloaderThreads) {
         offloader = Executors.newFixedThreadPool(offloaderThreads);
         Runtime.getRuntime().addShutdownHook(new Thread(offloader::shutdown));
+    }
+
+    @Override
+    public void setup() {
+        super.setup();
+        logger.info("surface implementation: {}", surface.getClass());
     }
 
     public ProcessingBase() {
