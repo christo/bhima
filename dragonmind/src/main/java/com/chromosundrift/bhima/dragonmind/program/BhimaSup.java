@@ -1,8 +1,11 @@
 package com.chromosundrift.bhima.dragonmind.program;
 
+import com.chromosundrift.bhima.api.Dragon;
+import com.chromosundrift.bhima.api.ProgramInfo;
 import com.chromosundrift.bhima.dragonmind.DragonMind;
 import com.chromosundrift.bhima.dragonmind.NearDeathExperience;
 import com.chromosundrift.bhima.dragonmind.model.Config;
+import com.chromosundrift.bhima.dragonmind.model.Wiring;
 import com.chromosundrift.bhima.dragonmind.web.DragonmindServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +19,7 @@ import processing.event.MouseEvent;
 import processing.video.Movie;
 
 import java.io.IOException;
+import java.util.List;
 
 import static java.lang.Runtime.getRuntime;
 import static java.util.Collections.emptyList;
@@ -26,7 +30,7 @@ import static java.util.Collections.emptyList;
 /**
  * Loads and plays video on Bhima configured by file.
  */
-public class BhimaSup extends DragonMind {
+public class BhimaSup extends DragonMind implements Dragon {
 
     private static final Logger logger = LoggerFactory.getLogger(BhimaSup.class);
 
@@ -38,6 +42,7 @@ public class BhimaSup extends DragonMind {
 
 
     private Config config;
+    private Wiring wiring;
 
     private int inx = 0;
     private int iny = 0;
@@ -48,6 +53,40 @@ public class BhimaSup extends DragonMind {
     private PFont mesgFont;
     private String mesg;
     private MoviePlayer moviePlayer;
+
+    @Override
+    public String getStatus() {
+        return "running"; // TODO implement status
+    }
+
+    @Override
+    public Config getConfig() {
+        return config;
+    }
+
+    @Override
+    public Wiring getWiring() {
+        return wiring;
+    }
+
+    @Override
+    public ProgramInfo getCurrentProgram() {
+        if (!movieMode || moviePlayer == null) {
+            return ProgramInfo.NULL_PROGRAM_INFO;
+        } else {
+            return moviePlayer.getCurrentProgramInfo(inx, iny, INNER_WIDTH, INNER_HEIGHT);
+        }
+    }
+
+    @Override
+    public List<ProgramInfo> getPrograms() {
+        return moviePlayer.getMovieInfos(inx, iny, INNER_WIDTH, INNER_HEIGHT);
+    }
+
+    @Override
+    public ProgramInfo runProgram(String id) {
+        return moviePlayer.runMovie(id);
+    }
 
     @Override
     public void settings() {
@@ -61,8 +100,11 @@ public class BhimaSup extends DragonMind {
 
         if (args.length > 0 && args[0].equals("-server") || args.length > 1 && args[1].equals("-server")) {
             server = new DragonmindServer();
-            server.start(8888);
-            getRuntime().addShutdownHook(new Thread(() -> server.stop(), "Dragonmind Server Shutdown Hook"));
+            server.start(this);
+            getRuntime().addShutdownHook(new Thread(() -> {
+                server.stop();
+                logger.info("Server shutdown complete");
+            }, "Dragonmind Server Shutdown Hook"));
         }
 
         mesgFont = loadFont("HelveticaNeue-CondensedBlack-16.vlw");
@@ -70,7 +112,7 @@ public class BhimaSup extends DragonMind {
         background(0);
 
         moviePlayer = new MoviePlayer();
-        moviePlayer.setup(this);
+        moviePlayer.setup(this); // TODO this composition linkage causes ambiguous state space in lifecycle
 
         try {
             config = loadConfigFromFirstArgOrDefault();
@@ -124,6 +166,7 @@ public class BhimaSup extends DragonMind {
         } catch (NearDeathExperience e) {
             // we might want to die a normal death here, while we intercept deaths in this class due to
             // braindead video load failures, other cases of die() should be reinstated
+            logger.info("Near death experience " + e.getMessage());
             super.die(e.getMessage(), e);
         }
 

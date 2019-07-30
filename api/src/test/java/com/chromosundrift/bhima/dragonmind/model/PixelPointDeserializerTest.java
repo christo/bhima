@@ -8,15 +8,14 @@ import org.junit.Test;
 
 import java.io.IOException;
 
-public class PixelPointSerializerTest {
+public class PixelPointDeserializerTest {
     @Test
     public void testIt() throws IOException {
-        PixelPointDeserializer ppd = new PixelPointDeserializer(PixelPoint.class);
         String json = "[6, 124, 446, 501]";
         ObjectMapper mapper = new ObjectMapper();
         SimpleModule module =
                 new SimpleModule("PixelPointDeserializer", new Version(1, 0, 0, null, null, null));
-        module.addDeserializer(PixelPoint.class, new PixelPointDeserializer(PixelPoint.class));
+        module.addDeserializer(PixelPoint.class, new PixelPointDeserializer());
         mapper.registerModule(module);
         PixelPoint pp = mapper.readValue(json, PixelPoint.class);
         PixelPoint expected = new PixelPoint(6, 124, 446, 501);

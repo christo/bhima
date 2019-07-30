@@ -3,18 +3,12 @@ plugins {
     id 'application'
 }
 
-
-group 'com.chromosundrift'
-version '1.0-SNAPSHOT'
-
 mainClassName = "com.chromosundrift.bhima.dragonmind.program.BhimaSup"
 applicationDefaultJvmArgs = ["-Dgreeting.language=en"]
 
 sourceCompatibility = 1.8
 
 repositories {
-    mavenCentral()
-    mavenLocal()
 
 //    flatDir { dirs "${rootDir}/../../processing/libraries/video/library" }
 //    flatDir { dirs "${rootDir}/../../processing/libraries/PixelPusher/library" }
@@ -24,6 +18,7 @@ repositories {
 
 dependencies {
 
+    compile project(':api')
     compile project(':dragonmind-web')
 
     // these need to point to where processing libraries are stored
@@ -47,8 +42,12 @@ dependencies {
 
     runtime group: 'org.jogamp.jogl', name: 'jogl-all', version: '2.3.2'
 
-    compile group: 'org.slf4j', name: 'slf4j-simple', version: '1.8.0-beta2'
-    //compile 'org.slf4j:slf4j-jdk14:1.8.0-beta2'
+    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+    implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
+    implementation group: 'ch.qos.logback', name: 'logback-access', version: '1.2.3'
+
+    //compile 'org.slf4j:slf4j-jdk14:1.7.26'
     compile group: 'commons-io', name: 'commons-io', version: '2.6'
     compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
     compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.2'
@@ -56,6 +55,8 @@ dependencies {
     compile ":G4P:"
     //runtime fileTree(dir: 'lib', include: '*.jar')
 
+    // TODO add database for playlists or program plans etc.
+    //compile group: 'com.h2database', name: 'h2', version: '1.4.199'
 
     runtime ":gluegen-rt:2.3.2"
     runtime ":gluegen-rt:natives-android-aarch64"

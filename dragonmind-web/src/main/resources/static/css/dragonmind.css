@@ -1,0 +1,17 @@
+.pagetitle {
+    color: red;
+}
+
+.currentProgram {
+    margin: 20px auto 5px;
+    text-align: center;
+}
+.programText {
+    margin: 0 0 3px 0;
+}
+#currentProgramName {
+    margin: 0 5px;
+}
+#currentProgramType {
+    margin: 0 5px;
+}

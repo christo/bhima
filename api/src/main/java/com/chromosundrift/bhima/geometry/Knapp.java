@@ -1,7 +1,6 @@
 package com.chromosundrift.bhima.geometry;
 
 import java.util.function.Supplier;
-import java.util.stream.IntStream;
 
 public enum Knapp {
 

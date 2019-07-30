@@ -86,7 +86,7 @@ public final class Segment {
     /**
      * Get the smallest rectangle that contains all the points.
      *
-     * @param points
+     * @param points the points.
      * @return a rectangle snugly containing all points (including on the line).
      */
     @JsonIgnore

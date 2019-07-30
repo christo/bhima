@@ -4,6 +4,7 @@ import com.chromosundrift.bhima.dragonmind.model.Config;
 import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
 import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.chromosundrift.bhima.dragonmind.model.Transform;
+import com.chromosundrift.bhima.dragonmind.model.Wiring;
 import com.chromosundrift.bhima.geometry.Point;
 import com.chromosundrift.bhima.geometry.Rect;
 import mouse.transformed2d.MouseTransformed;
@@ -25,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -42,12 +44,14 @@ import static org.apache.commons.lang3.StringUtils.defaultString;
  */
 public class MapEditor extends DragonMind {
 
+    // TODO UI that doesn't suck by putting this into a JPanel (?): processing.opengl.PSurfaceJOGL
+
     // TODO add right wing back
     // TODO LHS manual mirroring
 
-
     // KEYBOARD SHORTCUTS:
 
+    private static final char HELP = '?';
     private static final char ADD_POINT = '`';
     private static final char DELETE_POINT = '!';
     private static final char SPLIT_SEGMENT = '|';
@@ -76,6 +80,39 @@ public class MapEditor extends DragonMind {
     private static final char META_GLOBAL_SCALE_RESET = '0';
     private static final char SHIFT_RESET_VIEW = ' ';
 
+    private static final Map<String, Character> keys = new TreeMap<>();
+
+    static {
+        keys.put("help", HELP);
+        keys.put("add point", ADD_POINT);
+        keys.put("delete point", DELETE_POINT);
+        keys.put("split segment", SPLIT_SEGMENT);
+        keys.put("previous dt pixels", PREVIOUS_DT_PIXELS);
+        keys.put("next dt pixels", NEXT_DT_PIXELS);
+        keys.put("increase line transparency", INCREASE_LINE_TRANSPARENCY);
+        keys.put("decrease line transparency", DECREASE_LINE_TRANSPARENCY);
+        keys.put("toggle show segment scan image", TOGGLE_SHOW_SEGMENT_SCAN_IMAGE);
+        keys.put("toggle ignore segment", TOGGLE_IGNORE_SEGMENT);
+        keys.put("toggle disable segment", TOGGLE_DISABLE_SEGMENT);
+        keys.put("shift pixel numbering down", SHIFT_PIXEL_NUMBERING_DOWN);
+        keys.put("shift pixel numbering up", SHIFT_PIXEL_NUMBERING_UP);
+        keys.put("rotate segment ccw", ROTATE_SEGMENT_CCW);
+        keys.put("rotate segment cw", ROTATE_SEGMENT_CW);
+        keys.put("reset segment scale", RESET_SEGMENT_SCALE);
+        keys.put("segment scale down", SEGMENT_SCALE_DOWN);
+        keys.put("segment scale up", SEGMENT_SCALE_UP);
+        keys.put("previous segment", PREVIOUS_SEGMENT);
+        keys.put("next segment", NEXT_SEGMENT);
+        keys.put("toggle rainbow mode", TOGGLE_RAINBOW_MODE);
+        keys.put("toggle segment labels", TOGGLE_SEGMENT_LABELS);
+        keys.put("meta save", META_SAVE);
+        keys.put("meta load", META_LOAD);
+        keys.put("meta global scale up", META_GLOBAL_SCALE_UP);
+        keys.put("meta global scale down", META_GLOBAL_SCALE_DOWN);
+        keys.put("meta global scale reset", META_GLOBAL_SCALE_RESET);
+        keys.put("shift reset view", SHIFT_RESET_VIEW);
+    }
+
     private static final boolean DRAW_GENERATED_DRAGON = true;
     private static final int FRAMES_PER_UI_REDRAW = 15;
 
@@ -91,6 +128,7 @@ public class MapEditor extends DragonMind {
      * Configuration file to load/save
      */
     private Config config;
+    private Wiring wiring;
 
     private final CachingImageLoader loader = new CachingImageLoader(300);
     private PImage bg;
@@ -140,8 +178,8 @@ public class MapEditor extends DragonMind {
     private RainbowPalette rainbowPalette;
 
     public void settings() {
-        //        fullScreen(P2D);
-        size(1920, 1080, P2D);
+        fullScreen(P2D);
+        // size(1920, 1080, P2D);
         pixelDensity(2);
         smooth();
         try {
@@ -702,7 +740,9 @@ public class MapEditor extends DragonMind {
             if (k == SHIFT_RESET_VIEW && event.isShiftDown()) {
                 resetView();
             }
-
+            if (k == HELP) {
+                printHelp();
+            }
             // movement step size choices
             handleStepSizeKey(k);
         }
@@ -923,7 +963,13 @@ public class MapEditor extends DragonMind {
         // TODO fit to screen by scale and translate; use modelX etc.
     }
 
+    private void printHelp() {
+        logger.info("Keyboard Shortcuts:");
+        keys.entrySet().forEach((Map.Entry kv) -> logger.info(kv.getKey() + " '" + kv.getValue() + "'"));
+    }
+
     public static void main(String[] args) {
+        logger.info("Map Editor system startup");
         System.setProperty("gstreamer.library.path", "/Users/christo/src/christo/processing/libraries/video/library/macosx64");
         System.setProperty("gstreamer.plugin.path", "/Users/christo/src/christo/processing/libraries/video/library//macosx64/plugins/");
         PApplet.main(MapEditor.class, args);

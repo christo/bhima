@@ -1,0 +1,41 @@
+{
+  "numPorts" : 24,
+  "segments" : {
+    "Right tail tip 2 panels mapping 1537791339092" : {
+      "20" : 20
+    },
+    "Right neck" : {
+      "17" : 17
+    },
+    "Right wing (clean) mapping from Mappings/Mapping22.csv" : {
+      "3" : 3,
+      "4" : 4,
+      "5" : 5,
+      "6" : 6
+    },
+    "Right third headmost trio mapping 1537785224894" : {
+      "9" : 9
+    },
+    "BEST Right tail 3rd and 4th last panels mapping 1537791339092" : {
+      "20" : 20
+    },
+    "Right fourth headmost trio mapping 1537788427342" : {
+      "8" : 8
+    },
+    "Right fifth headmost trio, mapping 1537789150522" : {
+      "12" : 12
+    },
+    "Right second headmost trio mapping 1537784392804" : {
+      "7" : 7,
+      "10" : 10
+    },
+    "rheadx BEST HEAD" : {
+      "15" : 15,
+      "16" : 16
+    },
+    "Lheadx BEST HEAD" : {
+      "13" : 13,
+      "14" : 14
+    }
+  }
+}

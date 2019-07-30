@@ -1,11 +1,549 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link rel="stylesheet" href="https://unpkg.com/onsenui/css/onsenui.css">
-    <link rel="stylesheet" href="https://unpkg.com/onsenui/css/onsen-css-components.min.css">
-    <script src="https://unpkg.com/onsenui/js/onsenui.min.js"></script>
+    <link rel="stylesheet" href="css/onsenui.css">
+    <link rel="stylesheet" href="css/onsen-css-components.min.css">
+    <link rel="stylesheet" href="css/dragonmind.css">
+    <link rel="manifest" href="/manifest.json">
+    <script src="js/onsenui.min.js"></script>
+    <script src="js/jquery-3.4.1.min.js"></script>
+    <script src="js/dragonmind-control.js"></script>
+
 </head>
 <body>
-<ons-button onclick="alert('Hello World!')">Click Me</ons-button>
+
+
+<ons-navigator id="myNavigator" page="login.html" animation="slide"></ons-navigator>
+
+
+<!--  The Login Page -->
+
+<template id="login.html">
+    <ons-page id="login">
+        <ons-toolbar>
+            <div class="center pagetitle">DRAGONMIND</div>
+            <div class="right">
+                <ons-if platform="android">
+                    <ons-toolbar-button><ons-icon icon="fa-pencil"></ons-icon></ons-toolbar-button>
+                    <ons-toolbar-button><ons-icon icon="ion-android-more-vertical"></ons-icon></ons-toolbar-button>
+                </ons-if>
+            </div>
+        </ons-toolbar>
+
+        <div class="currentProgram">
+            <div class="programText">
+                <span id="currentProgramType"></span>
+                <span id="currentProgramName"></span>
+            </div>
+            <span id="currentProgramThumbnail"></span>
+        </div>
+
+        <ons-row class="user_cover">
+            <ons-col onclick="openHome()">
+                <div class="user_thumbnail" style="background-color: #dd6218"><ons-icon icon="fa-cubes"></ons-icon></div>
+                <div class="username" id="choose_programs">Programs</div>
+            </ons-col>
+            <ons-col onclick="openWiring()">
+                <div class="user_thumbnail" style="background-color: #00a899"><ons-icon icon="fa-heart"></ons-icon></div>
+                <div class="username" id="choose_wiring">Wiring</div>
+            </ons-col>
+        </ons-row>
+        <ons-row class="user_cover">
+            <ons-col onclick="openHome()">
+                <div class="user_thumbnail" style="background-color: #e3aa05"><ons-icon icon="fa-cog"></ons-icon></div>
+                <div class="username" id="choose_setup">Setup</div>
+            </ons-col>
+            <ons-col onclick="openControl()">
+                <div class="user_thumbnail" style="background-color: #94b052"><ons-icon icon="fa-bus-alt"></ons-icon></div>
+                <div class="username" id="choose_control">Control</div>
+            </ons-col>
+        </ons-row>
+        <ons-row class="user_cover">
+            <ons-col>
+                <div class="user_thumbnail"><ons-icon icon="fa-plus-circle"></ons-icon></div>
+                <div class="username" id="username_5">Add Program</div>
+            </ons-col>
+        </ons-row>
+
+        <style type="text/css">
+      .user_cover {
+        padding: 0px 40px;
+        margin: 20px 0px;
+      }
+
+      .username {
+        text-align: center;
+        color: white;
+        width: 100%;
+        font-size: 12px;
+        margin-top: 5px;
+      }
+
+      .user_thumbnail {
+        width: 100px;
+        height: 100px;
+        display: table;
+        text-align: center;
+        margin: auto;
+      }
+
+      .user_thumbnail ons-icon {
+        font-size: 70px;
+        display: table-cell;
+        vertical-align: middle;
+      }
+    </style>
+    </ons-page>
+</template>
+
+
+<!--  The Splitter Page -->
+
+<template id="home_splitter.html">
+    <ons-page id="home_splitter">
+        <ons-splitter>
+            <ons-splitter-side id="menu" page="menu.html" side="left" width="220px" collapse swipeable></ons-splitter-side>
+            <ons-splitter-content id="content" page="home.html"></ons-splitter-content>
+        </ons-splitter>
+    </ons-page>
+</template>
+
+
+<!--  The Splitter Menu -->
+
+<template id="menu.html">
+    <ons-page id="menu">
+        <ons-list style="background-color: transparent;">
+            <ons-list-header class="menu_header">Programs</ons-list-header>
+            <ons-list-item tappable>Video</ons-list-item>
+            <ons-list-item tappable>Playlists</ons-list-item>
+            <ons-list-item tappable>Programs</ons-list-item>
+            <ons-list-item tappable>Images</ons-list-item>
+            <ons-list-header class="menu_header">Options</ons-list-header>
+            <ons-list-item tappable>Program Settings</ons-list-item>
+            <ons-list-item tappable>Global Settings</ons-list-item>
+            <ons-list-item onclick="goBack()" tappable>Back</ons-list-item>
+        </ons-list>
+
+        <style type="text/css">
+      .menu_header {
+        background-color: black;
+        border-bottom: 1px solid rgba(147, 145, 145, 0.76);
+        color: white;
+        height: 25px;
+        font-size: 10px;
+        padding: 0 0 0 16px!important;
+      }
+    </style>
+    </ons-page>
+</template>
+
+
+<template id="control_splitter.html">
+    <ons-page id="control_splitter">
+        <ons-splitter>
+            <ons-splitter-side id="menu" page="menu.html" side="left" width="220px" collapse swipeable></ons-splitter-side>
+            <ons-splitter-content id="content" page="control.html"></ons-splitter-content>
+        </ons-splitter>
+    </ons-page>
+</template>
+
+<template id="control.html">
+
+    <ons-page id="control">
+        <ons-toolbar>
+            <div class="left"><ons-toolbar-button id="menu_button"><ons-icon icon="fa-bars"></ons-icon></ons-toolbar-button></div>
+            <div class="center pagetitle">CONTROL</div>
+            <div class="right">
+                <ons-toolbar-button><ons-icon icon="ion-android-more-vertical"></ons-icon></ons-toolbar-button>
+            </div>
+        </ons-toolbar>
+        <div class="currentProgram">
+            <div class="programText">
+                <span id="currentProgramType"></span>
+                <span id="currentProgramName"></span>
+            </div>
+            <span id="currentProgramThumbnail"></span>
+        </div>
+
+        <div class="movie_list">
+            All Programs
+            <ons-carousel id="allPrograms" auto-refresh swipeable overscrollable item-width="400px">
+                <!-- TODO dynamically add program items here -->
+
+                foobar
+            </ons-carousel>
+        </div>
+    </ons-page>
+</template>
+
+<template id="runProgramDialog.html">
+    <ons-dialog id="run-program-dialog" cancelable>
+        <div style="text-align: center; padding: 10px;">
+            <p>
+                Run this program?
+            </p>
+
+            <p>
+                <ons-button onclick="okProgramDialog('run-program-dialog')">Run</ons-button>
+            </p>
+        </div>
+    </ons-dialog>
+</template>
+
+<!--  The Home Page -->
+
+<template id="home.html">
+    <ons-page id="home">
+        <ons-toolbar>
+            <div class="left"><ons-toolbar-button id="menu_button"><ons-icon icon="fa-bars"></ons-icon></ons-toolbar-button></div>
+            <div class="center pagetitle">PROGRAMS</div>
+            <div class="right">
+                <ons-toolbar-button><ons-icon icon="fa-search"></ons-icon></ons-toolbar-button>
+                <ons-if platform="android"><ons-toolbar-button><ons-icon icon="ion-android-more-vertical"></ons-icon></ons-toolbar-button></ons-if>
+            </div>
+        </ons-toolbar>
+
+        <div class="status left">
+            status: <span id="status">pending</span>
+        </div>
+
+
+
+        <ons-carousel class="carousel" swipeable auto-scroll id="carousel">
+            <ons-carousel-item>
+                <img src="img/dragon-head-neg.png" />
+            </ons-carousel-item>
+            <ons-carousel-item>
+                <img src="img/23415364-dragon-skin-texture.jpg" />
+            </ons-carousel-item>
+            <ons-carousel-item>
+                <img src="img/snake-skin1.jpg" />
+            </ons-carousel-item>
+        </ons-carousel>
+        <div class="cover-label center">
+            <ul>
+                <li><div id="dot0" class="circle circle_current">&#x25cf;</div></li>
+                <li><div id="dot1" class="circle">&#x25cf;</div></li>
+                <li><div id="dot2" class="circle">&#x25cf;</div></li>
+            </ul>
+        </div>
+
+        <div class="movie_list">
+            My List
+            <ons-carousel auto-refresh swipeable overscrollable item-width="110px">
+                <ons-carousel-item modifier="nodivider" id="Fire Bubbles" onclick="openMovieDetails(this.id)">
+                    <img src="img/23415364-dragon-skin-texture.jpg">
+                </ons-carousel-item>
+                <ons-carousel-item modifier="nodivider" id="Zigzag Stripes" onclick="openMovieDetails(this.id)">
+                    <img src="assets/img/movie_cover_template.jpg">
+                </ons-carousel-item>
+                <ons-carousel-item modifier="nodivider" id="Pulsator 2.0" onclick="openMovieDetails(this.id)">
+                    <img src="assets/img/movie_cover_template.jpg">
+                </ons-carousel-item>
+                <ons-carousel-item modifier="nodivider" id="Persian Rug" onclick="openMovieDetails(this.id)">
+                    <img src="assets/img/movie_cover_template.jpg">
+                </ons-carousel-item>
+                <ons-carousel-item modifier="nodivider" id="Colourwaves 2D" onclick="openMovieDetails(this.id)">
+                    <img src="assets/img/movie_cover_template.jpg">
+                </ons-carousel-item>
+            </ons-carousel>
+        </div>
+
+        <div class="movie_list">
+            Current Programs
+            <ons-carousel auto-refresh swipeable overscrollable item-width="110px">
+                <ons-carousel-item modifier="nodivider" id="Electricity" onclick="openMovieDetails(this.id)">
+                    <img src="assets/img/movie_cover_template.jpg">
+                </ons-carousel-item>
+                <ons-carousel-item modifier="nodivider" id="Laser Mountain" onclick="openMovieDetails(this.id)">
+                    <img src="assets/img/movie_cover_template.jpg">
+                </ons-carousel-item>
+                <ons-carousel-item modifier="nodivider" id="Big Fire" onclick="openMovieDetails(this.id)">
+                    <img src="assets/img/movie_cover_template.jpg">
+                </ons-carousel-item>
+                <ons-carousel-item modifier="nodivider" id="Retro Graphics 2" onclick="openMovieDetails(this.id)">
+                    <img src="assets/img/movie_cover_template.jpg">
+                </ons-carousel-item>
+                <ons-carousel-item modifier="nodivider" id="Balls" onclick="openMovieDetails(this.id)">
+                    <img src="assets/img/movie_cover_template.jpg">
+                </ons-carousel-item>
+            </ons-carousel>
+        </div>
+
+        <div class="movie_list">
+            All Programs
+            <ons-carousel auto-refresh swipeable overscrollable item-width="110px">
+                <ons-carousel-item modifier="nodivider" id="Spinner" class="movie_cover" onclick="openMovieDetails(this.id)">
+                    <img src="assets/img/movie_cover_template.jpg">
+                </ons-carousel-item>
+                <ons-carousel-item modifier="nodivider" id="Rotozoom" class="movie_cover" onclick="openMovieDetails(this.id)">
+                    <img src="assets/img/movie_cover_template.jpg">
+                </ons-carousel-item>
+                <ons-carousel-item modifier="nodivider" id="Rainbow" class="movie_cover" onclick="openMovieDetails(this.id)">
+                    <img src="assets/img/movie_cover_template.jpg">
+                </ons-carousel-item>
+                <ons-carousel-item modifier="nodivider" id="Sine wave" class="movie_cover" onclick="openMovieDetails(this.id)">
+                    <img src="assets/img/movie_cover_template.jpg">
+                </ons-carousel-item>
+                <ons-carousel-item modifier="nodivider" id="Retro Graphics 1" class="movie_cover" onclick="openMovieDetails(this.id)">
+                    <img src="assets/img/movie_cover_template.jpg">
+                </ons-carousel-item>
+            </ons-carousel>
+        </div>
+
+        <style type="text/css">
+      .carousel ons-carousel-item img {
+        width: 100%;
+        max-height: 190px
+      }
+
+      .cover-label {
+        text-align: center;
+        cursor: default;
+      }
+
+      ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      ul li {
+        display: inline;
+        margin-right: 5px;
+      }
+
+      .circle {
+        font-size: 15px;
+        display: table-cell;
+        color: #999;
+      + }
+
+      .circle_current {
+        color: white;
+      }
+
+      .movie_list {
+        margin: 10px;
+        height: 130px;
+        padding-top: 30px;
+      }
+
+      .movie_list img {
+        width: 90%
+      }
+    </style>
+    </ons-page>
+</template>
+
+
+<!--  The Movie Detail Page -->
+
+<template id="movie_details.html">
+    <ons-page id="movie_details">
+        <ons-toolbar class="trailer_toolbar" modifier="transparent" inline>
+            <div class="left">
+                <ons-if platform="android"><ons-back-button>Back</ons-back-button></ons-if>
+            </div>
+            <div class="right">
+                <ons-if platform="android">
+                    <ons-toolbar-button><ons-icon icon="md-cast"></ons-icon></ons-toolbar-button>
+                    <ons-toolbar-button><ons-icon icon="md-share"></ons-icon></ons-toolbar-button>
+                    <ons-toolbar-button><ons-icon icon="fa-search"></ons-icon></ons-toolbar-button>
+                </ons-if>
+                <ons-if platform="ios">
+                    <ons-toolbar-button onclick="goBack()"><ons-icon style="opacity: 0.7; color: black" icon="ion-ios-close"></ons-icon></ons-toolbar-button>
+                </ons-if>
+            </div>
+        </ons-toolbar>
+
+        <div class="trailer">
+            <ons-icon icon="fa-play-circle"></ons-icon>
+            <img src="assets/img/onsenui-roadmap.jpg">
+        </div>
+
+        <div class="movie_info">
+            <h2 id="movie_title"></h2>
+            <ons-row class="movie_general_info">
+                <ons-col class="stars">
+                    <ons-icon style="color: red" icon="fa-star"></ons-icon>
+                    <ons-icon style="color: red" icon="fa-star"></ons-icon>
+                    <ons-icon style="color: red" icon="fa-star"></ons-icon>
+                    <ons-icon style="color: red" icon="fa-star"></ons-icon>
+                    <ons-icon style="color: gray" icon="fa-star"></ons-icon>
+                </ons-col>
+                <ons-col>2 mins</ons-col>
+                <ons-col>Processing</ons-col>
+                <ons-col>Noninteractive</ons-col>
+            </ons-row>
+            <div class="movie_synopsis">Bubbles and fire mixed together, the fire pops the bubbles when they get to the top and the
+            smoke comes out of them. Space mushrooms are obviously heavily involved.</div>
+            <div class="movie_cast">
+                Programming: Christo <br/>
+                Design: Silvie
+            </div>
+            <ons-row class="movie_extra_buttons">
+                <ons-col>
+                    <ons-button modifier="quiet">
+                        <ons-icon icon="ion-plus-round"></ons-icon>
+                        <div>Add to playlist</div>
+                    </ons-button>
+                </ons-col>
+                <ons-col>
+                    <ons-if platform="ios">
+                        <ons-button modifier="quiet">
+                            <ons-icon icon="ion-ios-upload-outline"></ons-icon>
+                            <div>Share</div>
+                        </ons-button>
+                    </ons-if>
+                </ons-col>
+            </ons-row>
+        </div>
+
+        <div class="movie_list">
+            Similar Programs
+            <ons-carousel auto-refresh swipeable overscrollable item-width="110px">
+                <ons-carousel-item modifier="nodivider" id="Mushroom Bubbles" onclick="openMovieDetails(this.id)">
+                    <img src="assets/img/movie_cover_template.jpg">
+                </ons-carousel-item>
+                <ons-carousel-item modifier="nodivider" id="Green Fire" onclick="openMovieDetails(this.id)">
+                    <img src="assets/img/movie_cover_template.jpg">
+                </ons-carousel-item>
+                <ons-carousel-item modifier="nodivider" id="Slow Glow" onclick="openMovieDetails(this.id)">
+                    <img src="assets/img/movie_cover_template.jpg">
+                </ons-carousel-item>
+            </ons-carousel>
+        </div>
+
+        <style type="text/css">
+      .trailer {
+        height: 190px;
+        position: relative;
+      }
+
+      .trailer img {
+        width: 100%;
+        height: 100%
+      }
+
+      .trailer ons-icon {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        font-size: 50px;
+        margin-top: -25px;
+        margin-left: -25px;
+        color: #666;
+        background: white;
+        width: 50px;
+        text-align: center;
+        border-radius: 50%;
+        opacity: 0.7;
+      }
+
+      .trailer ons-icon:active {
+        opacity: 1;
+      }
+
+      .trailer_toolbar {
+        position: absolute;
+      }
+
+      .movie_info {
+        padding: 0px 10px;
+        font-size: 14px;
+      }
+
+      .movie_general_info {
+        width: 250px;
+        margin-bottom: 15px;
+        color: gray;
+      }
+
+      .movie_synopsis {
+        text-align: justify;
+        margin-bottom: 10px;
+      }
+
+      .movie_cast {
+        color: gray;
+      }
+
+      .stars {
+        white-space: nowrap;
+        margin-right: 15px
+      }
+
+      .movie_extra_buttons {
+        margin-top: 20px;
+        width: 50%;
+      }
+
+      .movie_extra_buttons ons-icon {
+        font-size: 25px;
+      }
+
+      .movie_extra_buttons ons-button {
+        text-align: center;
+        color: white;
+        font-size: 14px;
+      }
+
+      .movie_extra_buttons ons-button:active {
+        color: #96003c;
+      }
+    </style>
+    </ons-page>
+</template>
+
+<style type="text/css">
+  .page {
+    color: white;
+  }
+
+  .page__background {
+    background-color: black;
+  }
+
+  .toolbar:not(.toolbar--transparent) {
+    background-color: black;
+  }
+
+  .toolbar-button {
+    color: white;
+  }
+
+  .list-item {
+    color: white;
+  }
+</style>
+
+<!-- Wiring page -->
+
+<template id="wiring.html">
+    <ons-page id="wiring">
+        <ons-toolbar class="wiring_toolbar" modifier="transparent" inline>
+            <div class="left">
+                <ons-if platform="android"><ons-back-button>Back</ons-back-button></ons-if>
+            </div>
+            <div class="center pagetitle">WIRING</div>
+            <div class="right">
+                <ons-if platform="android">
+                    <ons-toolbar-button><ons-icon icon="ion-android-more-vertical"></ons-icon></ons-toolbar-button>
+                </ons-if>
+            </div>
+        </ons-toolbar>
+
+        <ons-select id="choose-sel" onchange="editSelects(event)">
+            <option value="basic">Tail tip</option>
+            <option value="material">Body</option>
+            <option value="underbar">Neck</option>
+            <option value="head">Head</option>
+        </ons-select>
+
+    </ons-page>
+</template>
+
+
 </body>
 </html>

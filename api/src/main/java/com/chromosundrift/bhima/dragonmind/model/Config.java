@@ -196,7 +196,7 @@ public final class Config {
     private static ObjectMapper getObjectMapper() {
         ObjectMapper mapper = new ObjectMapper();
         SimpleModule module = new SimpleModule("ConfigModule", new Version(1, 0, 0, null, null, null));
-        module.addDeserializer(PixelPoint.class, new PixelPointDeserializer(PixelPoint.class));
+        module.addDeserializer(PixelPoint.class, new PixelPointDeserializer());
         module.addSerializer(PixelPoint.class, new PixelPointSerializer(PixelPoint.class));
         mapper.registerModule(module);
         return mapper;

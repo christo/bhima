@@ -43,6 +43,7 @@ public class DragonMind extends ProcessingBase {
 
     @Override
     public void setup() {
+        super.setup();
         balls.setup(this);
         pusherMan = new PusherMan(DEBUG_NOISY);
         pusherMan.init();
