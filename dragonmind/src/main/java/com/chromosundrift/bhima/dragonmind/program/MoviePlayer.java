@@ -15,7 +15,6 @@ import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.video.Movie;
 
-import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -66,10 +65,7 @@ public class MoviePlayer extends AbstractDragonProgram implements DragonProgram 
 
     private BufferedImage getMovieImage(Movie m, int x, int y, int w, int h) {
         Image image = m.getImage();
-        BufferedImage bi = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g2d = bi.createGraphics();
-        g2d.drawImage(image, x, y, w, h, null);
-        g2d.dispose();
+        BufferedImage bi = imageToBufferedImage(image, x, y, w, h);
         return bi;
     }
 
@@ -85,6 +81,10 @@ public class MoviePlayer extends AbstractDragonProgram implements DragonProgram 
         }
         this.mind = mind;
         builtInVideos = Arrays.asList(
+                "video/kaliedoscope.mp4",
+                "video/frostyloop.mp4",
+                "video/pink-star.mp4",
+                "video/minerals1.mp4",
                 "video/betterfire400x100.m4v",
                 "video/golden-cave.m4v",
                 "video/colour-ink.m4v",
@@ -94,7 +94,6 @@ public class MoviePlayer extends AbstractDragonProgram implements DragonProgram 
                 "video/dots-waves.m4v",
                 "video/candy-stripes.mp4",
                 "video/diamonds.m4v",
-                "video/Star Pink Vj ANIMATION FREE FOOTAGE HD-oMM1wsQEU-M.mp4",
                 //"video/50x1000 red scales.mov", // video doesn't work
                 "video/100x1000 aztec rug.m4v"
         );
@@ -204,7 +203,7 @@ public class MoviePlayer extends AbstractDragonProgram implements DragonProgram 
      *
      * @return the list of movie infos.
      */
-    List<ProgramInfo> getMovieInfos(int x, int y, int w, int h) {
+    public List<ProgramInfo> getProgramInfos(int x, int y, int w, int h) {
         List<File> media = videoMonitor.getMedia();
         Stream<String> filenames = media.size() > 0
                 ? media.stream().map(File::getName)
@@ -248,7 +247,7 @@ public class MoviePlayer extends AbstractDragonProgram implements DragonProgram 
     }
 
     public ProgramInfo runMovie(String id) {
-        Optional<ProgramInfo> opi = getMovieInfos(0, 0, 400, 100).stream().filter(pi -> pi.getId().equals(id)).findFirst();
+        Optional<ProgramInfo> opi = getProgramInfos(0, 0, 400, 100).stream().filter(pi -> pi.getId().equals(id)).findFirst();
         if (opi.isPresent()) {
             Movie newMovie = setupMovie(mind, id);
             if (movie != null) {

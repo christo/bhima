@@ -80,7 +80,7 @@ public class BhimaSup extends DragonMind implements Dragon {
 
     @Override
     public List<ProgramInfo> getPrograms() {
-        return moviePlayer.getMovieInfos(inx, iny, INNER_WIDTH, INNER_HEIGHT);
+        return moviePlayer.getProgramInfos(inx, iny, INNER_WIDTH, INNER_HEIGHT);
     }
 
     @Override

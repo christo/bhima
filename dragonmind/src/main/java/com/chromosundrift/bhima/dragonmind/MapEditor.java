@@ -62,6 +62,7 @@ public class MapEditor extends DragonMind {
     private static final char TOGGLE_SHOW_SEGMENT_SCAN_IMAGE = 'I';
     private static final char TOGGLE_IGNORE_SEGMENT = 'i';
     private static final char TOGGLE_DISABLE_SEGMENT = '\\';
+    private static final char TOGGLE_DRAW_GENERATED_DRAGON = 'g';
     private static final char SHIFT_PIXEL_NUMBERING_DOWN = '(';
     private static final char SHIFT_PIXEL_NUMBERING_UP = ')';
     private static final char ROTATE_SEGMENT_CCW = ',';
@@ -94,6 +95,7 @@ public class MapEditor extends DragonMind {
         keys.put("toggle show segment scan image", TOGGLE_SHOW_SEGMENT_SCAN_IMAGE);
         keys.put("toggle ignore segment", TOGGLE_IGNORE_SEGMENT);
         keys.put("toggle disable segment", TOGGLE_DISABLE_SEGMENT);
+        keys.put("toggle draw generated dragon", TOGGLE_DRAW_GENERATED_DRAGON);
         keys.put("shift pixel numbering down", SHIFT_PIXEL_NUMBERING_DOWN);
         keys.put("shift pixel numbering up", SHIFT_PIXEL_NUMBERING_UP);
         keys.put("rotate segment ccw", ROTATE_SEGMENT_CCW);
@@ -113,7 +115,6 @@ public class MapEditor extends DragonMind {
         keys.put("shift reset view", SHIFT_RESET_VIEW);
     }
 
-    private static final boolean DRAW_GENERATED_DRAGON = true;
     private static final int FRAMES_PER_UI_REDRAW = 15;
 
     private static Logger logger = LoggerFactory.getLogger(MapEditor.class);
@@ -130,6 +131,7 @@ public class MapEditor extends DragonMind {
     private Config config;
     private Wiring wiring;
 
+    private boolean drawGeneratedDragon = true;
     private final CachingImageLoader loader = new CachingImageLoader(300);
     private PImage bg;
 
@@ -187,9 +189,10 @@ public class MapEditor extends DragonMind {
         } catch (IOException e) {
             logger.error("Could not load config", e);
         }
-        DragonBuilder dragonBuilder = new DragonBuilder(1420, 800, 4);
-        int ph = 85 - dragonBuilder.margin;
-        int pw = 70 - dragonBuilder.margin;
+        int margin = 4;
+        DragonBuilder dragonBuilder = new DragonBuilder(1410, 560, margin);
+        int ph = 85 - margin;
+        int pw = 70 - margin;
         Function<DragonBuilder.PanelPoint, Boolean> exceptions = pp -> {
             if (pp.panelNumber == 10) {
                 if (pp.x == 9 && pp.y == 9) {
@@ -206,7 +209,11 @@ public class MapEditor extends DragonMind {
                 .addSegment(3, pw, ph)
                 .addSegment(3, pw, ph, ZAG_ZIG)
                 .addSegment(3, exceptions, pw, ph, ZAG_ZIG)
-                //.addPanel(),
+                .addSegment(3, pw, ph, ZAG_ZIG)
+//                .addSegment(2, (int)(pw * 1.1), (int)(ph * 0.8), ZAG_ZIG)
+//                .addSegment(2, (int)(pw * 1.1), (int)(ph * 0.8), ZAG_ZIG)
+                .addSegment(2, pw, ph, ZAG_ZIG)
+                .addSegment(2, pw, ph, ZAG_ZIG)
                 .build();
         generatedDragon = dragonBuilder.build();
     }
@@ -247,7 +254,7 @@ public class MapEditor extends DragonMind {
         } finally {
 
             popMatrix();
-            if (DRAW_GENERATED_DRAGON) {
+            if (drawGeneratedDragon) {
                 drawGeneratedDragon();
             }
             popMatrix();
@@ -546,7 +553,7 @@ public class MapEditor extends DragonMind {
                 PImage image = loader.loadPimage(file);
                 image(image, 0, 0); // should be in transform matrix here
             } catch (IOException e) {
-                logger.error("exception loading " + file, e);
+                logger.error("can't load image file " + file + " " + e.getMessage());
                 logger.warn("turning off image loading");
                 showImage = false;
             }
@@ -733,6 +740,9 @@ public class MapEditor extends DragonMind {
 
             if (k == TOGGLE_RAINBOW_MODE) {
                 rainbow = !rainbow;
+            }
+            if (k == TOGGLE_DRAW_GENERATED_DRAGON) {
+                drawGeneratedDragon = !drawGeneratedDragon;
             }
             if (k == TOGGLE_SEGMENT_LABELS) {
                 showSegmentLabels = !showSegmentLabels;
