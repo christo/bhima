@@ -115,7 +115,7 @@ public class MapEditor extends DragonMind {
         keys.put("shift reset view", SHIFT_RESET_VIEW);
     }
 
-    private static final int FRAMES_PER_UI_REDRAW = 15;
+    private static final int FRAMES_PER_UI_REDRAW = 10;
 
     private static Logger logger = LoggerFactory.getLogger(MapEditor.class);
     private static final float MOUSE_ZOOM_SPEED = 0.001f;
@@ -209,11 +209,10 @@ public class MapEditor extends DragonMind {
                 .addSegment(3, pw, ph)
                 .addSegment(3, pw, ph, ZAG_ZIG)
                 .addSegment(3, exceptions, pw, ph, ZAG_ZIG)
-                .addSegment(3, pw, ph, ZAG_ZIG)
-//                .addSegment(2, (int)(pw * 1.1), (int)(ph * 0.8), ZAG_ZIG)
-//                .addSegment(2, (int)(pw * 1.1), (int)(ph * 0.8), ZAG_ZIG)
                 .addSegment(2, pw, ph, ZAG_ZIG)
-                .addSegment(2, pw, ph, ZAG_ZIG)
+//                .addSegment(3, pw, ph, ZAG_ZIG)
+//                .addSegment(2, pw, ph, ZAG_ZIG)
+                //.addSegment(2, pw, ph, ZAG_ZIG)
                 .build();
         generatedDragon = dragonBuilder.build();
     }
