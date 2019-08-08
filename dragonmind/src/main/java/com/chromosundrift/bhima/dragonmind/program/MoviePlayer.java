@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static com.chromosundrift.bhima.api.ProgramInfo.NULL_PROGRAM_INFO;
 import static java.lang.Runtime.getRuntime;
 import static java.util.stream.Collectors.toList;
 
@@ -52,7 +53,7 @@ public class MoviePlayer extends AbstractDragonProgram implements DragonProgram 
 
     public ProgramInfo getCurrentProgramInfo(int x, int y, int w, int h) {
         if (movie == null) {
-            return ProgramInfo.NULL_PROGRAM_INFO;
+            return NULL_PROGRAM_INFO;
         } else {
             return getProgramInfo(movie, x, y, w, h);
         }
@@ -64,9 +65,20 @@ public class MoviePlayer extends AbstractDragonProgram implements DragonProgram 
     }
 
     private BufferedImage getMovieImage(Movie m, int x, int y, int w, int h) {
-        Image image = m.getImage();
-        BufferedImage bi = imageToBufferedImage(image, x, y, w, h);
-        return bi;
+        try {
+            Image image = m.getImage();
+            if (image == null) {
+                logger.warn("movie image is null!");
+                return NULL_PROGRAM_INFO.getThumbnail();
+            }
+            if (image.getClass().isAssignableFrom(BufferedImage.class)) {
+                return (BufferedImage) image;
+            }
+            return imageToBufferedImage(image, x, y, w, h);
+        } catch (RuntimeException e) {
+            logger.warn("unable to get image", e);
+            return NULL_PROGRAM_INFO.getThumbnail();
+        }
     }
 
     private ProgramInfo getMovieProgramInfo(BufferedImage bi, String f) {
@@ -81,14 +93,13 @@ public class MoviePlayer extends AbstractDragonProgram implements DragonProgram 
         }
         this.mind = mind;
         builtInVideos = Arrays.asList(
+                "video/laser-mountain.m4v",
                 "video/kaliedoscope.mp4",
                 "video/frostyloop.mp4",
                 "video/pink-star.mp4",
-                "video/minerals1.mp4",
                 "video/betterfire400x100.m4v",
                 "video/golden-cave.m4v",
                 "video/colour-ink.m4v",
-                "video/laser-mountain.m4v",
                 "video/clouds.m4v",
                 "video/quick-threads.m4v",
                 "video/dots-waves.m4v",
@@ -192,7 +203,10 @@ public class MoviePlayer extends AbstractDragonProgram implements DragonProgram 
     private Movie setupMovie(DragonMind mind, String movieFile) {
         logger.info("setting up movie " + movieFile);
         Movie movie = new Movie(mind, movieFile);
-        movie.speed(1f);
+        //movie.speed(1f);
+        float playFps = Math.min(movie.frameRate, 30);
+        logger.debug("playing back {} at {} FPS (native framerate is {})", movieFile, movie.frameRate, playFps);
+        movie.frameRate(playFps);
         movie.loop();
         return movie;
     }
@@ -234,7 +248,7 @@ public class MoviePlayer extends AbstractDragonProgram implements DragonProgram 
         } catch (RuntimeException re) {
             // TODO maybe catch NearDeathExperience and exclude the movie like above
             logger.error("cannot generate thumbnail for {}", filename, re);
-            return getMovieProgramInfo(noThumbnail(), filename);
+            return getMovieProgramInfo(NULL_PROGRAM_INFO.getThumbnail(), filename);
         } finally {
             if (thisMovie != null) {
                 thisMovie.dispose();
@@ -242,12 +256,10 @@ public class MoviePlayer extends AbstractDragonProgram implements DragonProgram 
         }
     }
 
-    private BufferedImage noThumbnail() {
-        return ProgramInfo.NULL_PROGRAM_INFO.getThumbnail();
-    }
-
-    public ProgramInfo runMovie(String id) {
-        Optional<ProgramInfo> opi = getProgramInfos(0, 0, 400, 100).stream().filter(pi -> pi.getId().equals(id)).findFirst();
+    @Override
+    public ProgramInfo runProgram(String id) {
+        Stream<ProgramInfo> stream = getProgramInfos(0, 0, 400, 100).stream();
+        Optional<ProgramInfo> opi = stream.filter(pi -> pi.getId().equals(id)).findFirst();
         if (opi.isPresent()) {
             Movie newMovie = setupMovie(mind, id);
             if (movie != null) {
@@ -256,7 +268,7 @@ public class MoviePlayer extends AbstractDragonProgram implements DragonProgram 
             movie = newMovie;
             currentVideoStartMs = System.currentTimeMillis();
         }
-        return opi.orElse(ProgramInfo.NULL_PROGRAM_INFO);
+        return opi.orElse(NULL_PROGRAM_INFO);
 
     }
 }

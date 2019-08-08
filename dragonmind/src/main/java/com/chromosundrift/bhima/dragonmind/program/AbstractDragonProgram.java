@@ -9,6 +9,8 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 
 public abstract class AbstractDragonProgram implements DragonProgram {
+    public static final String TYPE_SKETCH = "Sketch";
+
     /**
      * Does nothing, override me.
      */

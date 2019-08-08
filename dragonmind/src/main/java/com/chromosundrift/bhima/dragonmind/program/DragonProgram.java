@@ -8,6 +8,7 @@ import java.util.List;
 
 public interface DragonProgram {
 
+    /** presetup, runs once post ctor. */
     void settings(DragonMind mind);
 
     void setup(DragonMind mind);
@@ -17,4 +18,11 @@ public interface DragonProgram {
     void mouseClicked(DragonMind mind);
 
     List<ProgramInfo> getProgramInfos(int x, int y, int w, int h);
+
+    /** switch to program variant with the given id as returned from the
+     * {@link com.chromosundrift.bhima.api.ProgramInfo ProgramInfos} returned from any
+     * {@link #getProgramInfos(int, int, int, int)} call.
+     *
+     */
+    ProgramInfo runProgram(String id);
 }

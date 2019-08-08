@@ -54,6 +54,7 @@ public class BhimaSup extends DragonMind implements Dragon {
     private String mesg;
     private MoviePlayer moviePlayer;
 
+
     @Override
     public String getStatus() {
         return "running"; // TODO implement status
@@ -85,7 +86,7 @@ public class BhimaSup extends DragonMind implements Dragon {
 
     @Override
     public ProgramInfo runProgram(String id) {
-        return moviePlayer.runMovie(id);
+        return moviePlayer.runProgram(id);
     }
 
     @Override
