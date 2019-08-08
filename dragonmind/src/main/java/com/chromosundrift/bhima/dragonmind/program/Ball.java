@@ -19,11 +19,16 @@ public class Ball {
     public void move(int maxX, int maxY) {
         this.x += this.dx;
         this.y += this.dy;
-        if (x < 0 || x > maxX) {
-            dx = -dx;
+        // if ball is out of bounds, drift into range.
+        if (x < 0) {
+            dx = Math.abs(dx);
+        } else if (x > maxX) {
+            dy = -Math.abs(dx);
         }
-        if (y < 0 || y > maxY) {
-            dy = -dy;
+        if (y < 0) {
+            dy = Math.abs(dy);
+        } else if (y > maxY) {
+            dy = -Math.abs(dy);
         }
     }
 
