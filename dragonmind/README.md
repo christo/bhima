@@ -18,11 +18,8 @@ for other lifeforms and disturbances.
 
 The possibly esoteric `pixelmap` part of the config file contains a sequence of `segment` objects. Each segment
 represents a quadrilateral panel located at some location relative to the whole dragon. Transforms such as `translate`
-(x,y array), `scale` (x, y array), `rotate` (float in radians), `keystone` (array of x top to bottom ratio, y left to
-right ratio where `[1,1]` is the identity transform), `shear` (x,y array - haven't decided exactly what that means) and
-`warp` (translations of each vertex in the bounding quad) are defined in an array, executed in order, relative to the
-origin (top left). At least that's the plan at the time of writing. Unlike the others, quad warps are not affine
-transforms and this may be harder than it looks.
+(x,y array), `scale` (x, y array), `rotate` (float in radians), executed in order, relative to the origin (top left). 
+At least that's the plan at the time of writing.
 
 The `pixels` array contains arrays with four elements: strip-number, pixel-number, x co-ordinate, y co-ordinate. All
 are zero-based. At this stage strip numbers are globally unique but we might need to add pixelpusher number and group
