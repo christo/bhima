@@ -32,8 +32,7 @@
 
         <div class="currentProgram">
             <div class="programText">
-                <span id="currentProgramType"></span>
-                <span id="currentProgramName"></span>
+                <span id="currentProgramType"></span> <span id="currentProgramName"></span>
             </div>
             <span id="currentProgramThumbnail"></span>
         </div>
@@ -58,13 +57,14 @@
                 <div class="username" id="choose_control">Control</div>
             </ons-col>
         </ons-row>
+        <!--
         <ons-row class="user_cover">
             <ons-col>
                 <div class="user_thumbnail"><ons-icon icon="fa-plus-circle"></ons-icon></div>
                 <div class="username" id="username_5">Add Program</div>
             </ons-col>
         </ons-row>
-
+        -->
         <style type="text/css">
       .user_cover {
         padding: 0px 40px;
@@ -159,12 +159,10 @@
             </div>
         </ons-toolbar>
 
-        <!-- todo insert currently running program and update with result of post to runProgram-->
-
         <div class="movie_list">
-            <div>All Programs</div>
             <ons-carousel id="allPrograms" auto-refresh swipeable overscrollable item-width="400px">
                 stand-by
+                <!-- will be filled by js -->
             </ons-carousel>
         </div>
     </ons-page>

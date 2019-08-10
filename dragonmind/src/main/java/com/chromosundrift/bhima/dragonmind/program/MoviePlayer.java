@@ -40,6 +40,7 @@ public class MoviePlayer extends AbstractDragonProgram implements DragonProgram 
     private StickSlurper videoMonitor;
     private ObjectMapper objectmapper;
 
+    private boolean mute = false;
     private int currentVideoIndex = -1;
     private long currentVideoStartMs = 0;
     private Movie movie = null;
@@ -207,6 +208,7 @@ public class MoviePlayer extends AbstractDragonProgram implements DragonProgram 
         float playFps = Math.min(movie.frameRate, 30);
         logger.debug("playing back {} at {} FPS (native framerate is {})", movieFile, movie.frameRate, playFps);
         movie.frameRate(playFps);
+        movie.volume(mute ? 0f : 1f);
         movie.loop();
         return movie;
     }

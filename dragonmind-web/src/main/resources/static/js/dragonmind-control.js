@@ -31,7 +31,7 @@ document.addEventListener('init', function(event) {
           var name = pi.name;
           var type = pi.type;
           var thumbnail = pi.thumbnail;
-          var item = '<ons-carousel-item tappable id="'+ id +'" onclick="requestProgram(this.id)"><div>' + type + " " + name + "</div><img src='data:image/jpg;charset=utf-8;base64," + thumbnail + "'/></ons-carousel-item>";
+          var item = '<ons-carousel-item tappable id="'+ id +'" onclick="requestProgram(this.id)" class="programItem"><div>' + type + " " + name + "</div><img src='data:image/jpg;charset=utf-8;base64," + thumbnail + "'/></ons-carousel-item>";
           carousel[0].innerHTML += '\n' + item;
 
       });
@@ -43,7 +43,7 @@ document.addEventListener('init', function(event) {
 
 });
 
-var pid;
+var pid; // TODO remove global state
 
 function openMovieDetails(id) {
   document.querySelector('#myNavigator').pushPage('movie_details.html', {data: {title: id}});
