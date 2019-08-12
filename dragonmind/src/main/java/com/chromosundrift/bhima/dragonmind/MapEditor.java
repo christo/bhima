@@ -190,7 +190,7 @@ public class MapEditor extends DragonMind {
             logger.error("Could not load config", e);
         }
         int margin = 4;
-        DragonBuilder dragonBuilder = new DragonBuilder(1410, 560, margin);
+        DragonBuilder dragonBuilder = new DragonBuilder(1420, 560, margin);
         int ph = 85 - margin;
         int pw = 70 - margin;
         Function<DragonBuilder.PanelPoint, Boolean> exceptions = pp -> {
@@ -201,6 +201,10 @@ public class MapEditor extends DragonMind {
             } else if (pp.panelNumber == 11) {
                 // TODO add exceptions for panel 11
                 return true;
+            } else if (pp.panelNumber == 12) {
+                return pp.y <=8 || pp.y ==9 && pp.x==8;
+            } else if (pp.panelNumber == 13) {
+                return pp.y <=7;
             }
             return true;
         };
@@ -209,7 +213,7 @@ public class MapEditor extends DragonMind {
                 .addSegment(3, pw, ph)
                 .addSegment(3, pw, ph, ZAG_ZIG)
                 .addSegment(3, exceptions, pw, ph, ZAG_ZIG)
-                .addSegment(2, pw, ph, ZAG_ZIG)
+                .addSegment(2, exceptions, pw, ph, ZAG_ZIG)
 //                .addSegment(3, pw, ph, ZAG_ZIG)
 //                .addSegment(2, pw, ph, ZAG_ZIG)
                 //.addSegment(2, pw, ph, ZAG_ZIG)

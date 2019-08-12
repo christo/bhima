@@ -9,6 +9,7 @@ import mouse.transformed2d.MouseTransformed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
+import processing.core.PGraphics;
 import processing.core.PImage;
 
 import java.util.List;
@@ -59,6 +60,24 @@ public class ProcessingBase extends PApplet {
         line(x, y - d, x, y + d);
         line(x - d, y, x + d, y);
         ellipse(x, y, d, d);
+    }
+
+    @Override
+    public PGraphics createGraphics(int w, int h) {
+        // prevent exception on creating graphics of width or height <= 0
+        return super.createGraphics(max(1, w), max(1, h));
+    }
+
+    @Override
+    public PGraphics createGraphics(int w, int h, String renderer) {
+        // prevent exception on creating graphics of width or height <= 0
+        return super.createGraphics(max(1, w), max(1, h), renderer);
+    }
+
+    @Override
+    public PGraphics createGraphics(int w, int h, String renderer, String path) {
+        // prevent exception on creating graphics of width or height <= 0
+        return super.createGraphics(max(1, w), max(1, h), renderer, path);
     }
 
     protected void crossHair(Point point, float size) {

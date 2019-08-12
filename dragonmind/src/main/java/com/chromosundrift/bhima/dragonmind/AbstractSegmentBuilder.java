@@ -21,6 +21,8 @@ abstract class AbstractSegmentBuilder {
      */
     public abstract DragonBuilder.SegmentBuilding addSegment(int nPanels, Function<DragonBuilder.PanelPoint, Boolean> includePoint, int pw, int ph, Knapp k);
 
+    public abstract DragonBuilder.SegmentBuilding addSegment(int nPanels, Function<DragonBuilder.PanelPoint, Boolean> includePoint, int pw, int ph, int nLedX, int nLedY, Knapp k);
+
     public DragonBuilder.SegmentBuilding addSegment(int nPanels, int pw, int ph) {
         return addSegment(nPanels, pw, ph, Knapp.ZIG_ZAG);
     }

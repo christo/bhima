@@ -61,9 +61,10 @@ public class DragonBuilder extends AbstractSegmentBuilder {
     }
 
     public SegmentBuilding addSegment(int nPanels, Function<PanelPoint, Boolean> includePoint, int pw, int ph, Knapp k) {
+        return addSegment(nPanels, includePoint, pw, ph, 10, 10, k);
+    }
 
-        int nLedX = 10;
-        int nLedY = 10;
+    public SegmentBuilding addSegment(int nPanels, Function<PanelPoint, Boolean> includePoint, int pw, int ph, int nLedX, int nLedY, Knapp k) {
         int vStep = ph / nLedY;
         int hStep = pw / nLedX;
         int sNum = segments.size() + 1;
@@ -156,6 +157,12 @@ public class DragonBuilder extends AbstractSegmentBuilder {
         public SegmentBuilding addSegment(int nPanels, Function<PanelPoint, Boolean> includePoint, int pw, int ph, Knapp k) {
             build();
             return DragonBuilder.this.addSegment(nPanels, includePoint, pw, ph, k);
+        }
+
+        @Override
+        public SegmentBuilding addSegment(int nPanels, Function<PanelPoint, Boolean> includePoint, int pw, int ph, int nLedX, int nLedY, Knapp k) {
+            build();
+            return DragonBuilder.this.addSegment(nPanels, includePoint, pw, ph, nLedX, nLedY, k);
         }
 
         public SegmentBuilding addPanel() {
