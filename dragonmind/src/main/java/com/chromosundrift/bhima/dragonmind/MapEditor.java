@@ -189,8 +189,8 @@ public class MapEditor extends DragonMind {
         } catch (IOException e) {
             logger.error("Could not load config", e);
         }
-        int margin = 4;
-        DragonBuilder dragonBuilder = new DragonBuilder(1420, 560, margin);
+        int margin = 2;
+        DragonBuilder dragonBuilder = new DragonBuilder(1430, 560, margin);
         int ph = 85 - margin;
         int pw = 70 - margin;
         Function<DragonBuilder.PanelPoint, Boolean> exceptions = pp -> {
@@ -202,9 +202,11 @@ public class MapEditor extends DragonMind {
                 // TODO add exceptions for panel 11
                 return true;
             } else if (pp.panelNumber == 12) {
-                return pp.y <=8 || pp.y ==9 && pp.x==8;
+                return pp.y <= 8 || pp.y == 9 && pp.x == 8;
             } else if (pp.panelNumber == 13) {
-                return pp.y <=7;
+                return pp.y <= 7;
+            } else if (pp.panelNumber == 14) {
+                return pp.y <= 6;
             }
             return true;
         };
@@ -213,7 +215,7 @@ public class MapEditor extends DragonMind {
                 .addSegment(3, pw, ph)
                 .addSegment(3, pw, ph, ZAG_ZIG)
                 .addSegment(3, exceptions, pw, ph, ZAG_ZIG)
-                .addSegment(2, exceptions, pw, ph, ZAG_ZIG)
+                .addSegment(3, exceptions, pw, ph, ZAG_ZIG)
 //                .addSegment(3, pw, ph, ZAG_ZIG)
 //                .addSegment(2, pw, ph, ZAG_ZIG)
                 //.addSegment(2, pw, ph, ZAG_ZIG)
@@ -632,7 +634,7 @@ public class MapEditor extends DragonMind {
         } else if (event.isControlDown()) {
             // maybe dragging a pixel
             if (draggingPixelPoint != null) {
-                logger.debug("continuing to drag a pixelPoint " + draggingPixelPoint);
+                logger.debug("continuing to drag pixelPoint " + draggingPixelPoint);
                 // note we assume the draggingPixelPoint is in the selected segment (upheld elsewhere)
                 withAllTransforms(getSelectedSegment(), s -> {
                     // FIXME this is still not tracking the mouse correctly
@@ -654,7 +656,6 @@ public class MapEditor extends DragonMind {
                 });
 
             } else {
-                // we have started shiffting a point
                 logger.debug("started dragging a point");
                 handlePointAt(mouseX, mouseY, pp -> draggingPixelPoint = pp);
             }
@@ -666,21 +667,21 @@ public class MapEditor extends DragonMind {
      * means the points in the segment are renderable from a reset matrix starting point or their model and screen
      * space coordinates can be meaningfully interacted with.
      */
-    private void withAllTransforms(Segment segment, Consumer<Segment> go) {
+    private final void withAllTransforms(Segment segment, Consumer<Segment> go) {
         applyZoom();
         applyGlobalTransforms();
-        applyTransforms(segment.getTransforms()); // assuming draggingPixelPoint is in selected segment
+        applyTransforms(segment.getTransforms());
         go.accept(segment);
     }
 
     @Override
-    public void mouseReleased(MouseEvent event) {
+    public final void mouseReleased(MouseEvent event) {
         logger.info("not dragging a pixelPoint");
         draggingPixelPoint = null;
     }
 
     @Override
-    public void mouseMoved(MouseEvent event) {
+    public final void mouseMoved(MouseEvent event) {
         // don't change the selected point if the control key is down, we might be moving a point
         if (!event.isControlDown()) {
             handlePointAt(event.getX(), event.getY(), pp -> pixelIndex = getIndexFor(getSelectedSegment(), pp));

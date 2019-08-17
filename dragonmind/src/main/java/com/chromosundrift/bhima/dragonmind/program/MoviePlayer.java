@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import processing.core.PConstants;
 import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.video.Movie;
@@ -152,7 +153,6 @@ public class MoviePlayer extends AbstractDragonProgram implements DragonProgram 
             PImage pImage = movie.get();
             PGraphics pg = mind.createGraphics(width, height);
             pg.beginDraw();
-
             pg.image(pImage, 0, 0);
             pg.endDraw();
             return pg;

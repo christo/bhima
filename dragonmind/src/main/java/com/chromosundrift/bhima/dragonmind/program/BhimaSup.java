@@ -99,13 +99,17 @@ public class BhimaSup extends DragonMind implements Dragon {
         super.setup();
         xpos = width;
 
-        if (args.length > 0 && args[0].equals("-server") || args.length > 1 && args[1].equals("-server")) {
-            server = new DragonmindServer();
-            server.start(this);
-            getRuntime().addShutdownHook(new Thread(() -> {
-                server.stop();
-                logger.info("Server shutdown complete");
-            }, "Dragonmind Server Shutdown Hook"));
+        if (args != null) {
+            if (args.length > 0 && args[0].equals("-server") || args.length > 1 && args[1].equals("-server")) {
+                server = new DragonmindServer();
+                server.start(this);
+                getRuntime().addShutdownHook(new Thread(() -> {
+                    server.stop();
+                    logger.info("Server shutdown complete");
+                }, "Dragonmind Server Shutdown Hook"));
+            }
+        } else {
+            logger.error("Processing!!!! why is args null!?");
         }
 
         mesgFont = loadFont("HelveticaNeue-CondensedBlack-16.vlw");
@@ -113,7 +117,7 @@ public class BhimaSup extends DragonMind implements Dragon {
         background(0);
 
         moviePlayer = new MoviePlayer();
-        moviePlayer.setup(this); // TODO this composition linkage causes ambiguous state space in lifecycle
+        moviePlayer.setup(this); // FIXME this composition linkage causes ambiguous state space in lifecycle
 
         try {
             config = loadConfigFromFirstArgOrDefault();
@@ -145,8 +149,8 @@ public class BhimaSup extends DragonMind implements Dragon {
             // TODO: dynamically perform this scaling function into the video frame (full width, vertically centred)
 
             // manual trasform fixup for getting the whole dragon in-frame with the video panel
-            translate(-2.35f * width, -2.56f * height);
-            scale((float) width / 1920);
+            translate(-2.28f * width, -2.56f * height);
+            scale((float) width / 1982);
 
             getPusherMan().ensureReady();
             config.getPixelMap().forEach(segment -> {
