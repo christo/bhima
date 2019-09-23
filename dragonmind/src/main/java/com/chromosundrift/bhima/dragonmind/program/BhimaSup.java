@@ -149,7 +149,7 @@ public class BhimaSup extends DragonMind implements Dragon {
             // TODO: dynamically perform this scaling function into the video frame (full width, vertically centred)
 
             // manual trasform fixup for getting the whole dragon in-frame with the video panel
-            translate(-2.28f * width, -2.56f * height);
+            translate(-2.28f * width, -2.40f * height);
             scale((float) width / 1982);
 
             getPusherMan().ensureReady();
@@ -179,7 +179,7 @@ public class BhimaSup extends DragonMind implements Dragon {
 
     private PImage scrollText(PImage pImage) {
         // text overlay
-        xpos -= 0.2;
+        xpos -= 0.1;
         if (xpos < -2000) {
             xpos = width + 10;
         }
@@ -196,7 +196,7 @@ public class BhimaSup extends DragonMind implements Dragon {
         pg.text(mesg, xpos, 63);
         pg.endDraw();
 
-        pImage.blend(pg, 0, 0, width, height, 0, 0, width, height, PConstants.OVERLAY);
+        pImage.blend(pg, 0, 0, width, height, 0, 0, width, height, PConstants.DARKEST);
         return pImage;
     }
 

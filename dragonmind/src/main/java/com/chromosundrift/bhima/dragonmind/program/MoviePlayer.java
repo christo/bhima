@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import processing.core.PConstants;
 import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.video.Movie;
@@ -95,6 +94,18 @@ public class MoviePlayer extends AbstractDragonProgram implements DragonProgram 
         }
         this.mind = mind;
         builtInVideos = Arrays.asList(
+                "video/400x100/mushroom-moments.m4v",
+                "video/400x100/flying-food.m4v",
+                "video/400x100/zebra-trippin.m4v",
+                "video/400x100/train-mirror.m4v",
+                "video/400x100/chemical.m4v",
+                "video/400x100/geometrix.m4v",
+                "video/400x100/ink-tank.m4v",
+                "video/400x100/red-dots.m4v",
+                "video/400x100/cosmology.m4v",
+                "video/400x100/electric-sheep.m4v",
+                "video/400x100/inner-space.m4v",
+                "video/400x100/candy-crush.m4v",
                 "video/laser-mountain.m4v",
                 "video/kaliedoscope.mp4",
                 "video/frostyloop.mp4",

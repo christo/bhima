@@ -3,6 +3,10 @@ package com.chromosundrift.bhima.dragonmind;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Arrays;
+
+import static java.util.Arrays.stream;
+
 public class DragonMindTest {
     @Test
     public void testGetResourceUrl() {
