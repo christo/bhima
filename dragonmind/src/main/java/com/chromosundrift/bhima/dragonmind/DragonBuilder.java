@@ -85,6 +85,18 @@ public class DragonBuilder extends AbstractSegmentBuilder {
         return s;
     }
 
+    /**
+     * Crazy.
+     * @param x panel origin x coordinate.
+     * @param y panel origin y coordinate.
+     * @param nLedX number of points in the x axis.
+     * @param nLedY number of points in the y axis.
+     * @param dx distance in x axis between pixels.
+     * @param dy distance in y axis between pixels.
+     * @param includePoint function to decide if the point should be created (as opposed to skipped).
+     * @param knapp the weft of the wiring.
+     * @return the pixels arrayed in a regular diamond grid.
+     */
     public List<PixelPoint> generatePanel(int x, int y, int nLedX, int nLedY, int dx, int dy, Function<PanelPoint, Boolean> includePoint, Knapp knapp) {
         ArrayList<PixelPoint> pps = new ArrayList<>();
         final AtomicInteger pixelIndex = new AtomicInteger(0);
@@ -103,7 +115,8 @@ public class DragonBuilder extends AbstractSegmentBuilder {
         for (AtomicInteger yy = new AtomicInteger(0); yy.get() < nLedY; yy.incrementAndGet()) {
 
             IntConsumer addPoint = (xx) -> {
-                if (includePoint.apply(new PanelPoint(gPanelNumber, xx, yy.get()))) {
+                PanelPoint prospective = new PanelPoint(gPanelNumber, xx, yy.get());
+                if (includePoint.apply(prospective)) {
                     boolean evenColumn = xx % 2 == gPanelNumber % 2;
                     // y offset alternates each column, but is the same as the previous across panel boundaries
                     int yOffset = !evenColumn ? oddColumnVerticalOffset : 0;
@@ -123,7 +136,7 @@ public class DragonBuilder extends AbstractSegmentBuilder {
     }
 
     /**
-     * Represents an LED at the given x,y on a specific panel number.
+     * Represents an LED at the given x,y on a specific panel number. Convenience class.
      */
     public final class PanelPoint {
         public final int panelNumber;
