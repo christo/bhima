@@ -204,8 +204,6 @@ public final class Segment {
         return transform;
     }
 
-    // TODO replace the segment's transform with the new instance instead of assimilating the params
-
     public void rotate(float angle) {
         // Rotate transform may not exist, in which case create identity rotation transform
         Transform rotate = firstTransformByType(Transform.Type.ROTATE)

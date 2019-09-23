@@ -200,6 +200,12 @@ public class ProcessingBase extends PApplet {
         return new Rect(minx, miny, maxx, maxy);
     }
 
+    /**
+     * Invokes Processing matrix transforms that correspond to the given list such
+     * that subsequent drawing operations occur in the new coordinate space.
+     *
+     * @param transforms
+     */
     protected void applyTransforms(List<Transform> transforms) {
         // TODO clean these up to use PMatrix forms
         for (Transform t : transforms) {
