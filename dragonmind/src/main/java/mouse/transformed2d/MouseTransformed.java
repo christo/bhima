@@ -14,14 +14,14 @@ import static processing.core.PApplet.*;
  */
 
 public class MouseTransformed {
-    private PApplet pApplet;
+    private TransformAdapter adapter;
     private ArrayDeque<MouseParameters> mouseStack = new ArrayDeque<>();
 
-    public MouseTransformed(PApplet pApplet) {
-        this.pApplet = pApplet;
+    public MouseTransformed(TransformAdapter adapter, PApplet resetter) {
+        this.adapter = adapter;
         mouseStack.addLast(new MouseParameters());
 
-        pApplet.registerMethod("post", this);
+        resetter.registerMethod("post", this);
     }
 
     public void post() {
@@ -34,7 +34,7 @@ public class MouseTransformed {
      * @see <a href="https://processing.org/reference/pushMatrix_.html">Processing's pushMatrix()</a>
      */
     public void pushMatrix() {
-        pApplet.pushMatrix();
+        adapter.pushMatrix();
         final MouseParameters last = mouseStack.getLast();
         MouseParameters params = new MouseParameters(last.totalOffsetX, last.totalOffsetY, last.totalRotate, last.totalScaleX, last.totalScaleY);
         mouseStack.addLast(params);
@@ -47,7 +47,7 @@ public class MouseTransformed {
      */
     public void popMatrix() {
         if (mouseStack.size() > 1) {
-            pApplet.popMatrix();
+            adapter.popMatrix();
             if (mouseStack.size() > 1) {
                 mouseStack.removeLast();
             }
@@ -63,7 +63,7 @@ public class MouseTransformed {
      * @see <a href="https://processing.org/reference/translate_.html">Processing's translate()</a>
      */
     public void translate(float offsetX, float offsetY) {
-        pApplet.translate(offsetX, offsetY);
+        adapter.translate(offsetX, offsetY);
         final MouseParameters last = mouseStack.getLast();
         last.totalOffsetX += cos((float) last.totalRotate) * (last.totalScaleX) * offsetX - sin((float) last.totalRotate) * (last.totalScaleY) * offsetY;
         last.totalOffsetY += cos((float) last.totalRotate) * (last.totalScaleX) * offsetY + sin((float) last.totalRotate) * (last.totalScaleY) * offsetX;
@@ -76,7 +76,7 @@ public class MouseTransformed {
      * @see <a href="https://processing.org/reference/scale_.html">Processing's scale()</a>
      */
     public void scale(float scale) {
-        pApplet.scale(scale);
+        adapter.scale(scale);
         mouseStack.getLast().totalScaleX *= scale;
         mouseStack.getLast().totalScaleY *= scale;
     }
@@ -89,7 +89,7 @@ public class MouseTransformed {
      * @see <a href="https://processing.org/reference/scale_.html">Processing's scale()</a>
      */
     public void scale(float scaleX, float scaleY) {
-        pApplet.scale(scaleX, scaleY);
+        adapter.scale(scaleX, scaleY);
         mouseStack.getLast().totalScaleX *= scaleX;
         mouseStack.getLast().totalScaleY *= scaleY;
     }
@@ -101,7 +101,7 @@ public class MouseTransformed {
      * @see <a href="https://processing.org/reference/rotate_.html">Processing's rotate()</a>
      */
     public void rotate(double angle) {
-        pApplet.rotate((float) angle);
+        adapter.rotate((float) angle);
         mouseStack.getLast().totalRotate += angle;
     }
 
@@ -117,7 +117,7 @@ public class MouseTransformed {
      * @see <a href="https://processing.org/reference/mouseX.html">Processing's mouseX</a>
      */
     public int mouseX() {
-        return screenY(pApplet.mouseY, pApplet.mouseX);
+        return screenY(adapter.getMouseY(), adapter.getMouseX());
     }
 
     public int screenY(int y, int x) {
@@ -134,7 +134,7 @@ public class MouseTransformed {
      * @see <a href="https://processing.org/reference/mouseY.html">Processing's mouseY</a>
      */
     public int mouseY() {
-        return screenX(pApplet.mouseX, pApplet.mouseY);
+        return screenX(adapter.getMouseX(), adapter.getMouseX());
     }
 
     public int screenX(int x, int y) {

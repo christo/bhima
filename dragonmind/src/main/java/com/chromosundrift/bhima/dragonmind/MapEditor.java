@@ -8,6 +8,7 @@ import com.chromosundrift.bhima.dragonmind.model.Wiring;
 import com.chromosundrift.bhima.geometry.Point;
 import com.chromosundrift.bhima.geometry.Rect;
 import mouse.transformed2d.MouseTransformed;
+import mouse.transformed2d.PAppletTransformAdapter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
@@ -189,6 +190,10 @@ public class MapEditor extends DragonMind {
         } catch (IOException e) {
             logger.error("Could not load config", e);
         }
+        initDragonBuilder();
+    }
+
+    private void initDragonBuilder() {
         int margin = 2;
         DragonBuilder dragonBuilder = new DragonBuilder(1430, 560, margin);
         int ph = 85 - margin;
@@ -227,9 +232,8 @@ public class MapEditor extends DragonMind {
         super.setup();
         background(220);
         rainbowPalette = new RainbowPalette();
-        mouseTransformed = new MouseTransformed(this);
+        mouseTransformed = new MouseTransformed(new PAppletTransformAdapter(this), this);
     }
-
 
     @Override
     public void draw() {
