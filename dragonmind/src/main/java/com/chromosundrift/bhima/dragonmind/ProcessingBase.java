@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Stream;
 
 import static com.chromosundrift.bhima.dragonmind.model.Transform.Type.*;
 
@@ -30,6 +31,16 @@ public class ProcessingBase extends PApplet {
     public ProcessingBase(int offloaderThreads) {
         offloader = Executors.newFixedThreadPool(offloaderThreads);
         Runtime.getRuntime().addShutdownHook(new Thread(offloader::shutdown));
+    }
+
+    /**
+     * Sets system properties for native libraries that processing depends on.
+     */
+    protected static void setNativeLibraryPaths() {
+        // on osx, the native libraries
+        String base = "/Users/christo/src/christo/processing/libraries";
+        System.setProperty("gstreamer.library.path", base +"/video/library/macosx64");
+        System.setProperty("gstreamer.plugin.path", base +"/video/library/macosx64/plugins/");
     }
 
     @Override
@@ -207,7 +218,6 @@ public class ProcessingBase extends PApplet {
      * @param transforms
      */
     protected void applyTransforms(List<Transform> transforms) {
-        // TODO clean these up to use PMatrix forms
         for (Transform t : transforms) {
             Map<String, Float> params = t.getParameters();
             if (t.is(TRANSLATE)) {
@@ -227,5 +237,11 @@ public class ProcessingBase extends PApplet {
 
     protected Point modelToScreen(Point p) {
         return new Point((int) screenX(p.getX(), p.getY()), (int) screenY(p.getX(), p.getY()));
+    }
+
+    protected Rect calculateScreenBox(Segment segment) {
+        Stream<PixelPoint> pixels = segment.getPixels().stream();
+        Stream<Point> screenPoints = pixels.map((PixelPoint pp) -> modelToScreen(pp.getPoint()));
+        return segment.getBoundingBox(screenPoints);
     }
 }

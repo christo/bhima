@@ -252,8 +252,7 @@ public class BhimaSup extends DragonMind implements Dragon {
      * @param args relayed to Processing entry point.
      */
     public static void main(String[] args) {
-        System.setProperty("gstreamer.library.path", "/Users/christo/src/christo/processing/libraries/video/library/macosx64");
-        System.setProperty("gstreamer.plugin.path", "/Users/christo/src/christo/processing/libraries/video/library//macosx64/plugins/");
+        setNativeLibraryPaths();
         PApplet.main(BhimaSup.class, args);
     }
 

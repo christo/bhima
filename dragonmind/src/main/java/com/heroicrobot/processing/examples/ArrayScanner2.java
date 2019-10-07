@@ -815,8 +815,7 @@ public class ArrayScanner2 extends DragonMind {
         logger.warn("starting");
         // TODO fix dependency on Processing native libs
         //System.setProperty("jogl.debug", "true");
-        System.setProperty("gstreamer.library.path", "/Users/christo/src/christo/processing/libraries/video/library/macosx64");
-        System.setProperty("gstreamer.plugin.path", "/Users/christo/src/christo/processing/libraries/video/library//macosx64/plugins/");
+        setNativeLibraryPaths();
 
         PApplet.main(ArrayScanner2.class, args);
     }

@@ -31,7 +31,6 @@ import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.chromosundrift.bhima.dragonmind.model.Transform.Type;
 import static com.chromosundrift.bhima.geometry.Knapp.ZAG_ZIG;
@@ -546,12 +545,6 @@ public class MapEditor extends DragonMind {
         }
     }
 
-    private Rect calculateScreenBox(Segment segment) {
-        Stream<PixelPoint> pixels = segment.getPixels().stream();
-        Stream<Point> screenPoints = pixels.map((PixelPoint pp) -> modelToScreen(pp.getPoint()));
-        return segment.getBoundingBox(screenPoints);
-    }
-
     private void drawSegmentImage(Segment segment) {
         Optional<String> scanId = segment.getMappingId();
         scanId.ifPresent(sId -> {
@@ -897,7 +890,6 @@ public class MapEditor extends DragonMind {
             List<PixelPoint> pixels = segment.getPixels();
             split.setPixels(pixels.subList(pixelIndex, pixels.size()));
             segment.setPixels(pixels.subList(0, pixelIndex));
-
             config.getPixelMap().add(split);
         } else if (k == DELETE_POINT) {
             // delete pixel
@@ -968,7 +960,6 @@ public class MapEditor extends DragonMind {
             config.addGlobalTranslateY(dt);
         }
 
-        // aka plus key
         if (k == META_GLOBAL_SCALE_UP) {
             config.multiplyGlobalScale(1.01);
         }
@@ -983,13 +974,14 @@ public class MapEditor extends DragonMind {
 
     private void printHelp() {
         logger.info("Keyboard Shortcuts:");
-        keys.entrySet().forEach((Map.Entry kv) -> logger.info(kv.getKey() + " '" + kv.getValue() + "'"));
+        keys.forEach((key, val) -> logger.info(key + " '" + val + "'"));
     }
 
     public static void main(String[] args) {
         logger.info("Map Editor system startup");
-        System.setProperty("gstreamer.library.path", "/Users/christo/src/christo/processing/libraries/video/library/macosx64");
-        System.setProperty("gstreamer.plugin.path", "/Users/christo/src/christo/processing/libraries/video/library//macosx64/plugins/");
+        // TODO replace OS-specific paths with app-relative paths based on OS
+        setNativeLibraryPaths();
         PApplet.main(MapEditor.class, args);
     }
+
 }
