@@ -44,6 +44,8 @@ import static org.apache.commons.lang3.StringUtils.defaultString;
  */
 public class MapEditor extends DragonMind {
 
+    private static Logger logger = LoggerFactory.getLogger(MapEditor.class);
+
     // TODO UI that doesn't suck by putting this into a JPanel (?): processing.opengl.PSurfaceJOGL
 
     // TODO add right wing back
@@ -82,8 +84,14 @@ public class MapEditor extends DragonMind {
     private static final char SHIFT_RESET_VIEW = ' ';
 
     private static final Map<String, Character> keys = new TreeMap<>();
+    private static final String NUMBERS = "123456789";
+    private static final int[] POWERS = new int[NUMBERS.length()];
 
     static {
+        for (int i = 0; i < POWERS.length; i++) {
+            POWERS[i] = (int) Math.pow(2, i);;
+            logger.info("2 to the {} is {}", i, POWERS[i]);
+        }
         keys.put("help", HELP);
         keys.put("add point", ADD_POINT);
         keys.put("delete point", DELETE_POINT);
@@ -117,7 +125,6 @@ public class MapEditor extends DragonMind {
 
     private static final int FRAMES_PER_UI_REDRAW = 10;
 
-    private static Logger logger = LoggerFactory.getLogger(MapEditor.class);
     private static final float MOUSE_ZOOM_SPEED = 0.001f;
 
     /**
@@ -145,7 +152,7 @@ public class MapEditor extends DragonMind {
     /**
      * The rotation step in radians
      */
-    private float theta = PI / 200;
+    private final float THETA = PI / 200;
 
     /**
      * The LED to highlight in the editor.
@@ -156,7 +163,6 @@ public class MapEditor extends DragonMind {
      * Whether to show strips in different colours.
      */
     private boolean rainbow;
-
 
     /**
      * Whether or not to show scan images if they are available in the usual place on disk.
@@ -274,6 +280,9 @@ public class MapEditor extends DragonMind {
         drawSegments(generatedDragon);
     }
 
+    /**
+     * Elastic band from the centre of the view to the rendered model in case haywire and not find.
+     */
     private void drawLineFromViewToModel() {
         pushStyle();
         strokeWeight(50);
@@ -653,8 +662,10 @@ public class MapEditor extends DragonMind {
                 });
 
             } else {
-                logger.debug("started dragging a point");
-                handlePointAt(mouseX, mouseY, pp -> draggingPixelPoint = pp);
+                handlePointAt(mouseX, mouseY, pp -> {
+                    logger.debug("started dragging a point {} {} {}", mouseX, mouseY, pp);
+                    draggingPixelPoint = pp;
+                });
             }
         }
     }
@@ -685,12 +696,11 @@ public class MapEditor extends DragonMind {
         }
     }
 
-    private void handlePointAt(int sx, int sy, Consumer<PixelPoint> pointConsumer) {
+    private void handlePointAt(final int sx, final int sy, final Consumer<PixelPoint> pointConsumer) {
         // TODO double check we include viewzoom and viewshift here for mouse point selection
         withAllTransforms(getSelectedSegment(), s -> {
             // now only calculate pointer distances for current segment points if the pointer is in the bounding box
-            Rect rect = calculateScreenBox(s);
-            if (rect.contains(sx, sy)) {
+            if (calculateScreenBox(s).contains(sx, sy)) {
                 final Point sPoint = new Point(sx, sy);
                 final Comparator<PixelPoint> distanceToMouse = (o1, o2) ->
                         Float.compare(
@@ -706,12 +716,12 @@ public class MapEditor extends DragonMind {
     }
 
     /**
-     * Finds the pixelIndex for the given segment-pixelpoint pair
+     * Finds in the segment the given pixelpoint and returns its zero-based ordinal or -1 if absent.
      *
      * @param segment the segment.
      * @param pp      the pixel point.
      */
-    private int getIndexFor(Segment segment, PixelPoint pp) {
+    private static int getIndexFor(Segment segment, PixelPoint pp) {
         int index = 0;
         for (PixelPoint pixel : segment.getPixels()) {
             if (pixel.equals(pp)) {
@@ -761,32 +771,10 @@ public class MapEditor extends DragonMind {
     }
 
     private void handleStepSizeKey(char k) {
-        if (k == '1') {
-            dt = 1;
-        }
-        if (k == '2') {
-            dt = 2;
-        }
-        if (k == '3') {
-            dt = 4;
-        }
-        if (k == '4') {
-            dt = 8;
-        }
-        if (k == '5') {
-            dt = 16;
-        }
-        if (k == '6') {
-            dt = 32;
-        }
-        if (k == '7') {
-            dt = 64;
-        }
-        if (k == '8') {
-            dt = 128;
-        }
-        if (k == '9') {
-            dt = 256;
+        int i = NUMBERS.indexOf(k);
+        if (i >= 0) {
+            dt = POWERS[i];
+            logger.info("setting dt to {}", dt);
         }
     }
 
@@ -834,10 +822,10 @@ public class MapEditor extends DragonMind {
 
         // segment rotation
         if (k == ROTATE_SEGMENT_CW) {
-            segment.rotate(theta * dt);
+            segment.rotate(THETA * dt);
         }
         if (k == ROTATE_SEGMENT_CCW) {
-            segment.rotate(-theta * dt);
+            segment.rotate(-THETA * dt);
         }
         if (k == SHIFT_PIXEL_NUMBERING_UP) {
             segment.setPixelIndexBase(segment.getPixelIndexBase() + 1);

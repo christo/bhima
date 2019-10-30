@@ -39,8 +39,8 @@ public class ProcessingBase extends PApplet {
     protected static void setNativeLibraryPaths() {
         // on osx, the native libraries
         String base = "/Users/christo/src/christo/processing/libraries";
-        System.setProperty("gstreamer.library.path", base +"/video/library/macosx64");
-        System.setProperty("gstreamer.plugin.path", base +"/video/library/macosx64/plugins/");
+        System.setProperty("gstreamer.library.path", base + "/video/library/macosx64");
+        System.setProperty("gstreamer.plugin.path", base + "/video/library/macosx64/plugins/");
     }
 
     @Override
@@ -235,6 +235,12 @@ public class ProcessingBase extends PApplet {
         return new Rect(modelToScreen(r.getMinMin()), modelToScreen(r.getMaxMax()));
     }
 
+    /**
+     * Returns the screen coordinates of the given modelspace point.
+     *
+     * @param p the point in model space.
+     * @return the screenspace projection of p.
+     */
     protected Point modelToScreen(Point p) {
         return new Point((int) screenX(p.getX(), p.getY()), (int) screenY(p.getX(), p.getY()));
     }
