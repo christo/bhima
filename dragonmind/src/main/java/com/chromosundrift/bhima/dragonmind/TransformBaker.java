@@ -24,9 +24,6 @@ import static java.util.stream.Collectors.toList;
  */
 public class TransformBaker extends DragonMind {
 
-
-    // TODO test this class using a simple config with one segment.
-
     @Override
     public void setup() {
 
