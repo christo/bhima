@@ -9,18 +9,13 @@ import java.io.IOException;
 import static java.util.stream.Collectors.toList;
 
 /**
- * Wherein the Config's Pixels are transformed and then returned and stored in a new file
- * with equivalent post-transform pixel data values and the list of transforms is empty. The
- * resulting space is no longer registered with the original scan source image. This reflects
- * a temporary project to move the Dragon model into a synthetic geometry, rather than the
- * apparent layout in its warped dragon-winding way. The dragon scales are effectively arrayed
- * as a diamond grid (like cyclone fencing) rectangle albeit with an oft-quirky wiring route.
- * <p>
- * The resulting pixel maps reflect a close approximation of the rectangular diamond grid, all
- * in the same pixel space. Screen space is one measly transform away. The next step is to get
- * all the pixels to snap to their correct position with some expectation of the need to tweak
- * the map editor to ensure it can make it easy to edit aliasing errors in the "snap to" operation.
- * This class is not expected to be needed after that data cleansing operation has completed.
+ * Transitional utility to get Config's pixels into their post-transform space by applying
+ * the last transform for each segment and saving back the screenspace values for the pixels
+ * into the pixel map. The modelToScreen() implementation in Processing seems to only apply
+ * the inverse transform from the top of the matrix stack in order to get from model space to
+ * screen space so sucessive baking operations are required to complete the transform.
+ *
+ * This thing will probably be deleted soon.
  */
 public class TransformBaker extends DragonMind {
 
