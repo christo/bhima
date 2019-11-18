@@ -18,6 +18,10 @@ public final class Transform {
         return baked;
     }
 
+    public boolean isUnbaked() {
+        return !baked;
+    }
+
     public void setBaked(boolean baked) {
         this.baked = baked;
     }

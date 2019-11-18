@@ -193,7 +193,7 @@ public class ProcessingBase extends PApplet {
         boolean gotPixels = false;
         for (Segment segment : pixelMap) {
             pushMatrix();
-            applyTransforms(segment.getTransforms());
+            segment.getTransforms().stream().filter(Transform::isUnbaked).forEach(this::applyTransform);
             for (PixelPoint pixel : segment.getPixels()) {
                 int x = (int) screenX(pixel.getX(), pixel.getY());
                 int y = (int) screenY(pixel.getX(), pixel.getY());
@@ -210,18 +210,6 @@ public class ProcessingBase extends PApplet {
             throw new IllegalStateException("No pixels found for config!");
         }
         return new Rect(minx, miny, maxx, maxy);
-    }
-
-    /**
-     * Invokes Processing matrix transforms that correspond to the given list such
-     * that subsequent drawing operations occur in the new coordinate space.
-     *
-     * @param transforms
-     */
-    protected void applyTransforms(List<Transform> transforms) {
-        for (Transform t : transforms) {
-            applyTransform(t);
-        }
     }
 
     protected void applyTransform(Transform t) {
@@ -261,6 +249,6 @@ public class ProcessingBase extends PApplet {
     }
 
     protected void applyGlobalTransforms(Config c) {
-        applyTransforms(c.getBackground().getTransforms());
+        c.getBackground().getTransforms().forEach(this::applyTransform);
     }
 }

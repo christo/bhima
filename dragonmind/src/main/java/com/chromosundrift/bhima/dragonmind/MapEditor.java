@@ -226,8 +226,8 @@ public class MapEditor extends DragonMind {
                 .addSegment(3, pw, ph, ZAG_ZIG)
                 .addSegment(3, exceptions, pw, ph, ZAG_ZIG)
                 .addSegment(3, exceptions, pw, ph, ZAG_ZIG)
-//                .addSegment(3, pw, ph, ZAG_ZIG)
-//                .addSegment(2, pw, ph, ZAG_ZIG)
+                //                .addSegment(3, pw, ph, ZAG_ZIG)
+                //                .addSegment(2, pw, ph, ZAG_ZIG)
                 //.addSegment(2, pw, ph, ZAG_ZIG)
                 .build();
         generatedDragon = dragonBuilder.build();
@@ -312,7 +312,6 @@ public class MapEditor extends DragonMind {
 
     /**
      * Summary of important mapping info across the segments, e.g. strip number clashes
-     *
      */
     private PGraphics drawSegmentSummary() {
         PGraphics graphics = createGraphics(width, height);
@@ -459,13 +458,7 @@ public class MapEditor extends DragonMind {
                 pushMatrix();
                 pushStyle();
                 noFill();
-                if (!segment.getTransforms().isEmpty()) {
-                    // restore the segment in its location by applying the transforms to the points
-                    List<Transform> transforms = segment.getTransforms()
-                            .stream().filter(t -> !t.isBaked()).collect(Collectors.toList());
-                    applyTransforms(transforms);
-                }
-
+                segment.getTransforms().stream().filter(Transform::isUnbaked).forEach(this::applyTransform);
                 // draw it
                 Rect r = segment.getPixels().size() > 0 ? calculateScreenBox(segment) : NULL_RECT;
 
@@ -678,7 +671,7 @@ public class MapEditor extends DragonMind {
     private void withAllTransforms(Segment segment, Consumer<Segment> go) {
         applyZoom();
         applyGlobalTransforms();
-        applyTransforms(segment.getTransforms().stream().filter(t -> !t.isBaked()).collect(Collectors.toList()));
+        segment.getTransforms().stream().filter(Transform::isUnbaked).forEach(this::applyTransform);
         go.accept(segment);
     }
 
