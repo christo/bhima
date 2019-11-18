@@ -5,6 +5,7 @@ import com.chromosundrift.bhima.api.ProgramInfo;
 import com.chromosundrift.bhima.dragonmind.DragonMind;
 import com.chromosundrift.bhima.dragonmind.NearDeathExperience;
 import com.chromosundrift.bhima.dragonmind.model.Config;
+import com.chromosundrift.bhima.dragonmind.model.Transform;
 import com.chromosundrift.bhima.dragonmind.model.Wiring;
 import com.chromosundrift.bhima.dragonmind.web.DragonmindServer;
 import org.slf4j.Logger;
@@ -144,7 +145,7 @@ public class BhimaSup extends DragonMind implements Dragon {
 
             // BHIMA DRAGON MAPPING BULLSHIT FROM HERE ON
             pushMatrix();
-            applyTransforms(config.getBackground().getTransforms());
+            applyGlobalTransforms(config);
 
             // TODO: dynamically perform this scaling function into the video frame (full width, vertically centred)
 
@@ -156,7 +157,8 @@ public class BhimaSup extends DragonMind implements Dragon {
             config.getPixelMap().forEach(segment -> {
                 if (segment.getEnabled() && !segment.getIgnored()) {
                     pushMatrix();
-                    applyTransforms(segment.getTransforms());
+                    final List<Transform> transforms = segment.getTransforms();
+                    transforms.stream().filter(t -> !t.isBaked()).forEach(this::applyTransform);
                     mapSurfaceToPixels(mainSrc, segment);
 
                     int bright = color(255, 0, 0, 30);

@@ -14,6 +14,14 @@ public final class Transform {
     public static final Transform ID_SCALE = scale(1, 1);
     public static final Transform ID_ROTATE = rotate(0);
 
+    public boolean isBaked() {
+        return baked;
+    }
+
+    public void setBaked(boolean baked) {
+        this.baked = baked;
+    }
+
     // TODO this whole thing needs to be rethought
     public enum Type {
 
@@ -81,6 +89,8 @@ public final class Transform {
     private String type;
 
     private Map<String, Float> parameters;
+
+    private boolean baked;
 
     public boolean is(Type type) {
         return this.type.equals(type.name);

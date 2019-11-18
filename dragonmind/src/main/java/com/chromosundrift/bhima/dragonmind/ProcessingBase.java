@@ -1,5 +1,6 @@
 package com.chromosundrift.bhima.dragonmind;
 
+import com.chromosundrift.bhima.dragonmind.model.Config;
 import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
 import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.chromosundrift.bhima.dragonmind.model.Transform;
@@ -219,19 +220,23 @@ public class ProcessingBase extends PApplet {
      */
     protected void applyTransforms(List<Transform> transforms) {
         for (Transform t : transforms) {
-            Map<String, Float> params = t.getParameters();
-            if (t.is(TRANSLATE)) {
-                translate(params.get("x"), params.get("y"));
-            } else if (t.is(SCALE)) {
-                scale(params.get("x"), params.get("y"));
-            } else if (t.is(ROTATE)) {
-                // radians
-                rotate(params.get("z"));
-            }
+            applyTransform(t);
         }
     }
 
-    protected Rect modelToScreen(Rect r) {
+    protected void applyTransform(Transform t) {
+        Map<String, Float> params = t.getParameters();
+        if (t.is(TRANSLATE)) {
+            translate(params.get("x"), params.get("y"));
+        } else if (t.is(SCALE)) {
+            scale(params.get("x"), params.get("y"));
+        } else if (t.is(ROTATE)) {
+            // radians
+            rotate(params.get("z"));
+        }
+    }
+
+    protected final Rect modelToScreen(Rect r) {
         return new Rect(modelToScreen(r.getMinMin()), modelToScreen(r.getMaxMax()));
     }
 
@@ -241,13 +246,21 @@ public class ProcessingBase extends PApplet {
      * @param p the point in model space.
      * @return the screenspace projection of p.
      */
-    protected Point modelToScreen(Point p) {
-        return new Point((int) screenX(p.getX(), p.getY()), (int) screenY(p.getX(), p.getY()));
+    protected final Point modelToScreen(Point p) {
+        return modelToScreen(p.getX(), p.getY());
     }
 
-    protected Rect calculateScreenBox(Segment segment) {
+    protected final Point modelToScreen(int x, int y) {
+        return new Point((int) screenX(x, y), (int) screenY(x, y));
+    }
+
+    protected final Rect calculateScreenBox(Segment segment) {
         Stream<PixelPoint> pixels = segment.getPixels().stream();
         Stream<Point> screenPoints = pixels.map((PixelPoint pp) -> modelToScreen(pp.getPoint()));
         return segment.getBoundingBox(screenPoints);
+    }
+
+    protected void applyGlobalTransforms(Config c) {
+        applyTransforms(c.getBackground().getTransforms());
     }
 }

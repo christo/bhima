@@ -1,0 +1,46 @@
+{
+  "project" : "Bhima 2018",
+  "version" : "1.0",
+  "cameraMask" : [ [ 0.0, 0.0 ], [ 1920.0, 0.0 ], [ 1920.0, 1080.0 ], [ 0.0, 1080.0 ] ],
+  "background" : {
+    "opacity" : 1.0,
+    "transforms" : [ ]
+  },
+  "pixelMap" : [ {
+    "segment" : "only segment",
+    "description" : "small grid",
+    "enabled" : true,
+    "ignored" : false,
+    "background" : {
+      "opacity" : 1.0
+    },
+    "pixelIndexBase" : 0,
+    "transforms" : [ {
+      "type" : "translate",
+      "parameters" : {
+        "x" : 1494.0,
+        "y" : 575.0
+      },
+      "baked" : false
+    }, {
+      "type" : "scale",
+      "parameters" : {
+        "x" : 1.2667701,
+        "y" : 1.2667701
+      },
+      "baked" : false
+    }, {
+      "type" : "rotate",
+      "parameters" : {
+        "z" : 1.5707964
+      },
+      "baked" : false
+    } ],
+    "pixels" : [
+      [ 1, 1, 0, 0 ], [ 1, 2, 10, 0 ], [ 1, 3, 20, 0 ], [ 1, 4, 30, 0 ], [ 1, 5, 40, 0 ],
+      [ 1, 6, 0, 10 ], [ 1, 7, 10, 10 ], [ 1, 8, 20, 10 ], [ 1, 9, 30, 10 ], [ 1, 10, 40, 10 ],
+      [ 1, 11, 0, 20 ], [ 1, 12, 10, 20 ], [ 1, 13, 20, 20 ], [ 1, 14, 30, 20 ], [ 1, 15, 40, 20 ],
+      [ 1, 16, 0, 30 ], [ 1, 17, 10, 30 ], [ 1, 18, 20, 30 ], [ 1, 19, 30, 30 ], [ 1, 20, 40, 30 ],
+      [ 1, 21, 0, 40 ], [ 1, 22, 10, 40 ], [ 1, 23, 20, 40 ], [ 1, 24, 30, 40 ], [ 1, 25, 40, 40 ] ]
+  } ]
+}

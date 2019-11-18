@@ -23,6 +23,7 @@ import processing.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -89,7 +90,8 @@ public class MapEditor extends DragonMind {
 
     static {
         for (int i = 0; i < POWERS.length; i++) {
-            POWERS[i] = (int) Math.pow(2, i);;
+            POWERS[i] = (int) Math.pow(2, i);
+            ;
             logger.info("2 to the {} is {}", i, POWERS[i]);
         }
         keys.put("help", HELP);
@@ -184,6 +186,7 @@ public class MapEditor extends DragonMind {
     private PGraphics viewInfo;
     private boolean showSegmentLabels = true;
     private RainbowPalette rainbowPalette;
+    private Map<Segment,List<Transform>> appliedTransforms;
 
     public void settings() {
         fullScreen(P2D);
@@ -364,8 +367,8 @@ public class MapEditor extends DragonMind {
         scale(viewZoom);
     }
 
-    private void applyGlobalTransforms() {
-        applyTransforms(config.getBackground().getTransforms());
+    protected void applyGlobalTransforms() {
+        applyGlobalTransforms(config);
     }
 
     /**
@@ -462,7 +465,8 @@ public class MapEditor extends DragonMind {
                 noFill();
                 if (!segment.getTransforms().isEmpty()) {
                     // restore the segment in its location by applying the transforms to the points
-                    List<Transform> transforms = segment.getTransforms();
+                    List<Transform> transforms = segment.getTransforms()
+                            .stream().filter(t -> !t.isBaked()).collect(Collectors.toList());
                     applyTransforms(transforms);
                 }
 
@@ -678,7 +682,7 @@ public class MapEditor extends DragonMind {
     private final void withAllTransforms(Segment segment, Consumer<Segment> go) {
         applyZoom();
         applyGlobalTransforms();
-        applyTransforms(segment.getTransforms());
+        applyTransforms(segment.getTransforms().stream().filter(t -> !t.isBaked()).collect(Collectors.toList()));
         go.accept(segment);
     }
 
