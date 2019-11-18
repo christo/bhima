@@ -13,7 +13,8 @@ import static java.util.stream.Collectors.toList;
  * the last transform for each segment and saving back the screenspace values for the pixels
  * into the pixel map. The modelToScreen() implementation in Processing seems to only apply
  * the inverse transform from the top of the matrix stack in order to get from model space to
- * screen space so sucessive baking operations are required to complete the transform.
+ * screen space so sucessive baking operations on only one transform per segment are required
+ * to complete the baking.
  *
  * This thing will probably be deleted soon.
  */
