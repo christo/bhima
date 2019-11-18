@@ -23,7 +23,6 @@ import processing.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -91,7 +90,6 @@ public class MapEditor extends DragonMind {
     static {
         for (int i = 0; i < POWERS.length; i++) {
             POWERS[i] = (int) Math.pow(2, i);
-            ;
             logger.info("2 to the {} is {}", i, POWERS[i]);
         }
         keys.put("help", HELP);
@@ -186,7 +184,6 @@ public class MapEditor extends DragonMind {
     private PGraphics viewInfo;
     private boolean showSegmentLabels = true;
     private RainbowPalette rainbowPalette;
-    private Map<Segment,List<Transform>> appliedTransforms;
 
     public void settings() {
         fullScreen(P2D);
@@ -316,7 +313,6 @@ public class MapEditor extends DragonMind {
     /**
      * Summary of important mapping info across the segments, e.g. strip number clashes
      *
-     * @return
      */
     private PGraphics drawSegmentSummary() {
         PGraphics graphics = createGraphics(width, height);
@@ -679,7 +675,7 @@ public class MapEditor extends DragonMind {
      * means the points in the segment are renderable from a reset matrix starting point or their model and screen
      * space coordinates can be meaningfully interacted with.
      */
-    private final void withAllTransforms(Segment segment, Consumer<Segment> go) {
+    private void withAllTransforms(Segment segment, Consumer<Segment> go) {
         applyZoom();
         applyGlobalTransforms();
         applyTransforms(segment.getTransforms().stream().filter(t -> !t.isBaked()).collect(Collectors.toList()));
