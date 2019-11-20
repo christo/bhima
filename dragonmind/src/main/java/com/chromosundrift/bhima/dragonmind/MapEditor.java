@@ -7,8 +7,6 @@ import com.chromosundrift.bhima.dragonmind.model.Transform;
 import com.chromosundrift.bhima.dragonmind.model.Wiring;
 import com.chromosundrift.bhima.geometry.Point;
 import com.chromosundrift.bhima.geometry.Rect;
-import mouse.transformed2d.MouseTransformed;
-import mouse.transformed2d.PAppletTransformAdapter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.slf4j.Logger;
@@ -138,7 +136,10 @@ public class MapEditor extends DragonMind {
     private Config config;
     private Wiring wiring;
 
-    private boolean drawGeneratedDragon = true;
+    /** Whether or not to draw the generated grid/dragon */
+    private boolean drawGeneratedDragon = false;
+
+    /** Holds a cache of the per-pixel background images to reduce IO */
     private final CachingImageLoader loader = new CachingImageLoader(300);
     private PImage bg;
 
@@ -177,6 +178,7 @@ public class MapEditor extends DragonMind {
     private float viewShiftX = 0;
     private float viewShiftY = 0;
     private float viewZoom = 1;
+
     private PixelPoint draggingPixelPoint = null;
     private Config generatedDragon;
     private PGraphics segmentInfo;
@@ -186,7 +188,7 @@ public class MapEditor extends DragonMind {
     private RainbowPalette rainbowPalette;
 
     public void settings() {
-        fullScreen(P2D);
+        fullScreen(JAVA2D); // P2D doesn't support setMatrix() which we need for point dragging
         // size(1920, 1080, P2D);
         pixelDensity(2);
         smooth();
@@ -237,7 +239,6 @@ public class MapEditor extends DragonMind {
         super.setup();
         background(220);
         rainbowPalette = new RainbowPalette();
-        mouseTransformed = new MouseTransformed(new PAppletTransformAdapter(this), this);
     }
 
     @Override
@@ -625,20 +626,18 @@ public class MapEditor extends DragonMind {
     @Override
     public void mouseDragged(MouseEvent event) {
         if (event.isShiftDown()) {
+            // we are shifting the whole view
             float newViewShiftX = viewShiftX + mouseX - pmouseX;
             float newViewShiftY = viewShiftY + mouseY - pmouseY;
             // TODO range checking for zoom and shift
             viewShiftX = newViewShiftX;
             viewShiftY = newViewShiftY;
         } else if (event.isControlDown()) {
-            // maybe dragging a pixel
+            // are we already dragging a pixel?
             if (draggingPixelPoint != null) {
                 logger.debug("continuing to drag pixelPoint " + draggingPixelPoint);
                 // note we assume the draggingPixelPoint is in the selected segment (upheld elsewhere)
                 withAllTransforms(getSelectedSegment(), s -> {
-                    // FIXME this is still not tracking the mouse correctly
-                    // (word on the street is that getMatrix() only grabs the top of the matrix stack)
-                    // consider: https://github.com/AlexPoupakis/mouse2DTransformations/blob/master/Mouse2DTransformations/src/template/library/MouseTransformed.java
 
                     // invert the matrix so we can apply it to the mouse position and get target in-model points
                     PMatrix m = getMatrix().get();
