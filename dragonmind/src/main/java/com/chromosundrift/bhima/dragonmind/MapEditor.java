@@ -46,9 +46,6 @@ public class MapEditor extends DragonMind {
 
     // TODO UI that doesn't suck by putting this into a JPanel (?): processing.opengl.PSurfaceJOGL
 
-    // TODO add right wing back
-    // TODO LHS manual mirroring
-
     // KEYBOARD SHORTCUTS:
 
     private static final char HELP = '?';
@@ -259,7 +256,7 @@ public class MapEditor extends DragonMind {
             applyGlobalTransforms();
             drawBackground();
             drawGlobalBoundingBox();
-            drawSegments(config);
+            drawSegments(config.getPixelMap());
 
         } catch (RuntimeException e) {
             // TODO fix hack; split causes modification under iteration
@@ -278,7 +275,7 @@ public class MapEditor extends DragonMind {
     }
 
     private void drawGeneratedDragon() {
-        drawSegments(generatedDragon);
+        drawSegments(generatedDragon.getPixelMap());
     }
 
     /**
@@ -449,10 +446,9 @@ public class MapEditor extends DragonMind {
     /**
      * Draw only enabled segments, ignored segments are more transparent.
      *
-     * @param config the config from which the segments are to be drawn.
+     * @param pixelMap the list of {@link Segment Segments} to draw.
      */
-    private void drawSegments(Config config) {
-        List<Segment> pixelMap = config.getPixelMap();
+    private void drawSegments(List<Segment> pixelMap) {
         for (int i = 0; i < pixelMap.size(); i++) {
             Segment segment = pixelMap.get(i);
             if (segment.getEnabled()) {
@@ -689,7 +685,6 @@ public class MapEditor extends DragonMind {
     }
 
     private void handlePointAt(final int sx, final int sy, final Consumer<PixelPoint> pointConsumer) {
-        // TODO double check we include viewzoom and viewshift here for mouse point selection
         withAllTransforms(getSelectedSegment(), s -> {
             // now only calculate pointer distances for current segment points if the pointer is in the bounding box
             if (calculateScreenBox(s).contains(sx, sy)) {
@@ -949,7 +944,6 @@ public class MapEditor extends DragonMind {
         if (k == META_GLOBAL_SCALE_RESET) {
             config.setGlobalScale(Type.SCALE.id);
         }
-        // TODO fit to screen by scale and translate; use modelX etc.
     }
 
     private void printHelp() {
