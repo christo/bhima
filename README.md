@@ -8,7 +8,6 @@ Quesions etc. to [bhima@chromosundrift.com](mailto:bhima@chromosundrift.com)
 
 * Multiple map model - bundle background and pixelMap into its own node
 * enable proper GUI by creating outer swing frame with PApplet component
-* fix bug: drag points is incorrectly scaled
 * Dynamic runtime config of segment wiring
 * editing of modular maps include rotation, translation, arbitrary quad-skew with retained local coordinates
 * test video mapped onto wing surface
