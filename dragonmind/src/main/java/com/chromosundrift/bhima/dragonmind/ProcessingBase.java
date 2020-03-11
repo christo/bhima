@@ -6,7 +6,6 @@ import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.chromosundrift.bhima.dragonmind.model.Transform;
 import com.chromosundrift.bhima.geometry.Point;
 import com.chromosundrift.bhima.geometry.Rect;
-import mouse.transformed2d.MouseTransformed;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
@@ -25,9 +24,10 @@ import static com.chromosundrift.bhima.dragonmind.model.Transform.Type.*;
 public class ProcessingBase extends PApplet {
 
     private static final Logger logger = LoggerFactory.getLogger(ProcessingBase.class);
+    private static final String GSTREAMER_LIBRARY_PATH = "gstreamer.library.path";
+    private static final String GSTREAMER_PLUGIN_PATH = "gstreamer.plugin.path";
 
     private final ExecutorService offloader;
-    protected MouseTransformed mouseTransformed;
 
     public ProcessingBase(int offloaderThreads) {
         offloader = Executors.newFixedThreadPool(offloaderThreads);
@@ -36,12 +36,20 @@ public class ProcessingBase extends PApplet {
 
     /**
      * Sets system properties for native libraries that processing depends on.
+     * Set these for the Java runtime with the -D option
      */
     protected static void setNativeLibraryPaths() {
-        // on osx, the native libraries
-        String base = "/Users/christo/src/christo/processing/libraries";
-        System.setProperty("gstreamer.library.path", base + "/video/library/macosx64");
-        System.setProperty("gstreamer.plugin.path", base + "/video/library/macosx64/plugins/");
+        String pLibBase = "/Users/christo/src/christo/processing/libraries";
+        String os = "macosx64";
+        sysPropDefault(GSTREAMER_LIBRARY_PATH, pLibBase + "/video/library/" + os);
+        sysPropDefault(GSTREAMER_PLUGIN_PATH, pLibBase + "/video/library/" + os + "/plugins/");
+    }
+
+    private static void sysPropDefault(String key, String value) {
+        if (!System.getProperties().containsKey(key)) {
+            logger.warn("Fallback sysprop {} = {}", key, value);
+            System.setProperty(key, value);
+        }
     }
 
     @Override
@@ -96,7 +104,6 @@ public class ProcessingBase extends PApplet {
         crossHair(point.getX(), point.getY(), size);
     }
 
-    // TODO pull out the duplication here
     protected void outlinedText(String label, float v1, float v2, float v3, float v4) {
         pushStyle();
         // poor man's outline
@@ -212,7 +219,7 @@ public class ProcessingBase extends PApplet {
         return new Rect(minx, miny, maxx, maxy);
     }
 
-    protected void applyTransform(Transform t) {
+    protected final void applyTransform(Transform t) {
         Map<String, Float> params = t.getParameters();
         if (t.is(TRANSLATE)) {
             translate(params.get("x"), params.get("y"));

@@ -5,6 +5,7 @@ import com.chromosundrift.bhima.api.ProgramInfo;
 import com.chromosundrift.bhima.dragonmind.DragonMind;
 import com.chromosundrift.bhima.dragonmind.NearDeathExperience;
 import com.chromosundrift.bhima.dragonmind.model.Config;
+import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.chromosundrift.bhima.dragonmind.model.Transform;
 import com.chromosundrift.bhima.dragonmind.model.Wiring;
 import com.chromosundrift.bhima.dragonmind.web.DragonmindServer;
@@ -20,10 +21,16 @@ import processing.event.MouseEvent;
 import processing.video.Movie;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.lang.Runtime.getRuntime;
 import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toSet;
 
 // TODO receive NDI stream for display
 // TODO make window bigger and doing view scaling to fit the correct aspect ratio centred and fit.
@@ -34,6 +41,7 @@ import static java.util.Collections.emptyList;
 public class BhimaSup extends DragonMind implements Dragon {
 
     private static final Logger logger = LoggerFactory.getLogger(BhimaSup.class);
+    private static final int CABINET_PORT_INDEX_BASE = 1;
 
     private static int INNER_WIDTH = 400;
     private static int INNER_HEIGHT = 100;
@@ -91,24 +99,43 @@ public class BhimaSup extends DragonMind implements Dragon {
     }
 
     @Override
+    public Map<String, Set<Integer>> getEffectiveWiring() {
+        Map<String, Set<Integer>> effective = new HashMap<>();
+        config.getPixelMap().forEach(s -> {
+            // cabinet ports are 1-based indexed
+            effective.put(s.getName(), s.getPixels().stream().map(
+                    pp -> pp.getStrip() + CABINET_PORT_INDEX_BASE).collect(toSet())
+            );
+        });
+        return effective;
+    }
+
+    @Override
     public void settings() {
         size(INNER_WIDTH, INNER_HEIGHT);
+        mesg = "LOVE   OVER   FEAR";
     }
 
     @Override
     public void setup() {
         super.setup();
         xpos = width;
-
+        AtomicBoolean doVideo = new AtomicBoolean(true);
         if (args != null) {
-            if (args.length > 0 && args[0].equals("-server") || args.length > 1 && args[1].equals("-server")) {
-                server = new DragonmindServer();
-                server.start(this);
-                getRuntime().addShutdownHook(new Thread(() -> {
-                    server.stop();
-                    logger.info("Server shutdown complete");
-                }, "Dragonmind Server Shutdown Hook"));
-            }
+            Arrays.stream(args).filter(s -> s.startsWith("-")).forEach(arg -> {
+                if (arg.equals("-server")) {
+                    server = new DragonmindServer();
+                    server.start(this);
+                    getRuntime().addShutdownHook(new Thread(() -> {
+                        server.stop();
+                        logger.info("Server shutdown complete");
+                    }, "Dragonmind Server Shutdown Hook"));
+                } else if (arg.equals("-novideo")) {
+                    logger.info("Video disabled");
+                    doVideo.set(false);
+                }
+            });
+
         } else {
             logger.error("Processing!!!! why is args null!?");
         }
@@ -117,9 +144,12 @@ public class BhimaSup extends DragonMind implements Dragon {
 
         background(0);
 
-        moviePlayer = new MoviePlayer();
-        moviePlayer.setup(this); // FIXME this composition linkage causes ambiguous state space in lifecycle
-
+        if (doVideo.get()) {
+            moviePlayer = new MoviePlayerImpl();
+            moviePlayer.setup(this); // FIXME this composition linkage causes ambiguous state space in lifecycle
+        } else {
+            moviePlayer = new MoviePlayer.NullMoviePlayer();
+        }
         try {
             config = loadConfigFromFirstArgOrDefault();
         } catch (IOException e) {
@@ -156,17 +186,7 @@ public class BhimaSup extends DragonMind implements Dragon {
             getPusherMan().ensureReady();
             config.getPixelMap().forEach(segment -> {
                 if (segment.getEnabled() && !segment.getIgnored()) {
-                    pushMatrix();
-                    final List<Transform> transforms = segment.getTransforms();
-                    transforms.stream().filter(t -> !t.isBaked()).forEach(this::applyTransform);
-                    mapSurfaceToPixels(mainSrc, segment);
-
-                    int bright = color(255, 0, 0, 30);
-                    int color = color(170, 170, 170, 30);
-                    int strongFg = color(255, 30);
-                    // draw the pixelpoints into the current view
-                    drawModelPoints(segment.getPixels(), 20, false, emptyList(), -1, bright, color, strongFg, false, segment.getPixelIndexBase());
-                    popMatrix();
+                    drawSegment(mainSrc, segment);
                 }
             });
             popMatrix();
@@ -177,6 +197,21 @@ public class BhimaSup extends DragonMind implements Dragon {
             super.die(e.getMessage(), e);
         }
 
+    }
+
+    private void drawSegment(PImage mainSrc, Segment segment) {
+        pushMatrix();
+        final List<Transform> transforms = segment.getTransforms();
+        transforms.stream().filter(t -> !t.isBaked()).forEach(this::applyTransform);
+        mapSurfaceToPixels(mainSrc, segment);
+
+        int bright = color(255, 0, 0, 30);
+        int color = color(170, 170, 170, 30);
+        int strongFg = color(255, 30);
+
+        // draw the pixelpoints into the current view
+        drawModelPoints(segment.getPixels(), 20, false, emptyList(), -1, bright, color, strongFg, false, segment.getPixelIndexBase());
+        popMatrix();
     }
 
     private PImage scrollText(PImage pImage) {
@@ -194,7 +229,6 @@ public class BhimaSup extends DragonMind implements Dragon {
 
         float fontSize = (float) (15 - ((width - xpos) * 0.006));
         pg.textFont(mesgFont, fontSize);
-        mesg = "LOVE   OVER   FEAR";
         pg.text(mesg, xpos, 63);
         pg.endDraw();
 
@@ -203,25 +237,15 @@ public class BhimaSup extends DragonMind implements Dragon {
     }
 
     private PImage getPImage() {
+        PImage image;
         if (movieMode) {
-            return moviePlayer.draw(this, width, height);
+            image = moviePlayer.draw(this, width, height);
+        } else if (mouseMode) {
+            image = fullCrossHair(this, mouseX, mouseY, width, height);
         } else {
-            if (mouseMode) {
-                return fullCrossHair(this, mouseX, mouseY, width, height);
-            }
-            return cycleTestPattern(this, width, height);
+            image = cycleTestPattern(this, width, height);
         }
-    }
-
-    @Override
-    public void die(String what) {
-        // OMG WTF failing to load a movie file shuts down the sketch. No recovery options.
-        throw new NearDeathExperience(what);
-    }
-
-    @Override
-    public void die(String what, Exception e) {
-        throw new NearDeathExperience(what, e);
+        return image;
     }
 
     /**
@@ -259,13 +283,13 @@ public class BhimaSup extends DragonMind implements Dragon {
     }
 
     private static PImage cycleTestPattern(PApplet papp, int width, int height) {
-        long l1y = (System.currentTimeMillis() / 30) % height;
-        long l2x = (System.currentTimeMillis() / 100) % width;
+        final long l1y = (System.currentTimeMillis() / 30) % height;
+        final long l2x = (System.currentTimeMillis() / 100) % width;
         return fullCrossHair(papp, width - l2x, l1y, width, height);
     }
 
     private static PImage fullCrossHair(PApplet papp, long l2x, long l1y, int width, int height) {
-        PGraphics pg = papp.createGraphics(width, height);
+        final PGraphics pg = papp.createGraphics(width, height);
         pg.colorMode(RGB, 255);
         pg.beginDraw();
         pg.background(0, 0, 0);

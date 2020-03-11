@@ -12,6 +12,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static java.util.Arrays.asList;
 
@@ -85,6 +87,11 @@ public class DragonmindApplication extends Application<WebConfiguration> {
         public ProgramInfo runProgram(String id) {
             logger.warn("Dummy Dragon can't run programs");
             return getCurrentProgram();
+        }
+
+        @Override
+        public Map<String, Set<Integer>> getEffectiveWiring() {
+            return null;
         }
     }
 }

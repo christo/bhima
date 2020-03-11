@@ -4,6 +4,8 @@ import com.chromosundrift.bhima.dragonmind.model.Config;
 import com.chromosundrift.bhima.dragonmind.model.Wiring;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public interface Dragon {
 
@@ -18,4 +20,6 @@ public interface Dragon {
     List<ProgramInfo> getPrograms();
 
     ProgramInfo runProgram(String id);
+
+    Map<String, Set<Integer>> getEffectiveWiring();
 }

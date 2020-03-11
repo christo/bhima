@@ -1,11 +1,11 @@
 document.addEventListener('init', function(event) {
   var page = event.target;
 
-  if (page.id === 'home') {
-
     page.querySelector('#menu_button').onclick = function() {
       document.querySelector('#menu').open();
     };
+
+  if (page.id === 'home') {
 
     //The postchange event listener is used for changing the dots when the carousel is changed
     page.querySelector('#carousel').addEventListener("postchange", function() {
@@ -37,6 +37,16 @@ document.addEventListener('init', function(event) {
       });
 
       carousel[0].refresh();
+    });
+  } else if (page.id === 'wiring') {
+    $.get("api/bhima/effectiveWiring", function(data) {
+        var ports = $("#portList");
+        ports.empty();
+        for (s in data) {
+            var item = '<li><div class="port circle">'+s+ ' : '+data[s]+'</div></li>'
+            ports[0].innerHTML += '\n' + item;
+        }
+        ports[0].refresh && ports[0].refresh();
     });
   }
 
@@ -78,7 +88,7 @@ function openControl() {
 }
 
 function openWiring() {
-    document.querySelector("#myNavigator").pushPage('wiring.html');
+    document.querySelector("#myNavigator").pushPage('wiring_splitter.html');
 }
 
 function goBack() {

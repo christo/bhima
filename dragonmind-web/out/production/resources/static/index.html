@@ -57,6 +57,14 @@
                 <div class="username" id="choose_control">Control</div>
             </ons-col>
         </ons-row>
+        <!--
+        <ons-row class="user_cover">
+            <ons-col>
+                <div class="user_thumbnail"><ons-icon icon="fa-plus-circle"></ons-icon></div>
+                <div class="username" id="username_5">Add Program</div>
+            </ons-col>
+        </ons-row>
+        -->
         <style type="text/css">
       .user_cover {
         padding: 0px 40px;
@@ -516,6 +524,12 @@
                 </ons-if>
             </div>
         </ons-toolbar>
+
+        <div >
+            <ul id="portList">
+                <!-- TODO fill in configured ports here -->
+            </ul>
+        </div>
 
         <ons-select id="choose-sel" onchange="editSelects(event)">
             <option value="basic">Tail tip</option>

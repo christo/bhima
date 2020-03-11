@@ -77,6 +77,7 @@ public class MapEditor extends DragonMind {
     private static final char META_GLOBAL_SCALE_DOWN = '-';
     private static final char META_GLOBAL_SCALE_RESET = '0';
     private static final char SHIFT_RESET_VIEW = ' ';
+    private static final char TOGGLE_GRID = 'G';
 
     private static final Map<String, Character> keys = new TreeMap<>();
     private static final String NUMBERS = "123456789";
@@ -135,6 +136,7 @@ public class MapEditor extends DragonMind {
 
     /** Whether or not to draw the generated grid/dragon */
     private boolean drawGeneratedDragon = false;
+    private boolean drawGrid = false;
 
     /** Holds a cache of the per-pixel background images to reduce IO */
     private final CachingImageLoader loader = new CachingImageLoader(300);
@@ -183,6 +185,8 @@ public class MapEditor extends DragonMind {
     private PGraphics viewInfo;
     private boolean showSegmentLabels = true;
     private RainbowPalette rainbowPalette;
+    private float gridOffsetX = 0; // TODO figure out the grid offset, reuse from generated dragon
+    private float gridOffsetY = 0;
 
     public void settings() {
         fullScreen(JAVA2D); // P2D doesn't support setMatrix() which we need for point dragging
@@ -255,7 +259,10 @@ public class MapEditor extends DragonMind {
             pushMatrix();
             applyGlobalTransforms();
             drawBackground();
-            drawGlobalBoundingBox();
+            Rect boundingBox = drawGlobalBoundingBox();
+            if (drawGrid) {
+                drawGrid(boundingBox);
+            }
             drawSegments(config.getPixelMap());
 
         } catch (RuntimeException e) {
@@ -272,6 +279,31 @@ public class MapEditor extends DragonMind {
             popMatrix();
             drawUi();
         }
+    }
+
+    private void drawGrid(Rect boundingBox) {
+        float gridDx = 10; // TODO replace placeholders
+        float gridDy = 10;
+        // TODO use the screenspace bounding box for top as well as bottom and draw the grid like the bounding box
+        pushMatrix();
+        translate(gridOffsetX, gridOffsetY);
+        // get topleftmost point on grid line
+        float startX = gridOffsetX % gridDx;
+        float startY = gridOffsetY % gridDy;
+        // calculate gradients to project lines
+        // diamond grid has half-offset x resulting in doubly steep gradient
+        float crissGradient = gridDy/gridDx * 2;
+        float crossGradient = -crissGradient;
+        // criss-cross
+        // y = ax + c => x = (y - c)/a
+        int bottomY = boundingBox.getMaxMax().getY();
+        float xProjectionAtBottom = (bottomY - gridOffsetX)/crissGradient;
+        pushStyle();
+        stroke(44, 130, 166);
+        strokeWeight(0.5f);
+        line(startX, startY, xProjectionAtBottom, bottomY);
+        popStyle();
+        popMatrix();
     }
 
     private void drawGeneratedDragon() {
@@ -367,7 +399,7 @@ public class MapEditor extends DragonMind {
     /**
      * Draws a box around the entire configured map.
      */
-    private void drawGlobalBoundingBox() {
+    private Rect drawGlobalBoundingBox() {
         pushStyle();
         fill(255, 255, 0, 20);
         stroke(200, 255, 0);
@@ -379,6 +411,7 @@ public class MapEditor extends DragonMind {
         rect(rect);
         popMatrix();
         popStyle();
+        return rect;
     }
 
     /**

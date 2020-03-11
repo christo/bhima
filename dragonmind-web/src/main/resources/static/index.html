@@ -511,19 +511,29 @@
 
 <!-- Wiring page -->
 
+<template id="wiring_splitter.html">
+    <ons-page id="wiring_splitter">
+        <ons-splitter>
+            <ons-splitter-side id="menu" page="menu.html" side="left" width="220px" collapse swipeable></ons-splitter-side>
+            <ons-splitter-content id="content" page="wiring.html"></ons-splitter-content>
+        </ons-splitter>
+    </ons-page>
+</template>
+
 <template id="wiring.html">
     <ons-page id="wiring">
-        <ons-toolbar class="wiring_toolbar" modifier="transparent" inline>
-            <div class="left">
-                <ons-if platform="android"><ons-back-button>Back</ons-back-button></ons-if>
-            </div>
+        <ons-toolbar>
+            <div class="left"><ons-toolbar-button id="menu_button"><ons-icon icon="fa-bars"></ons-icon></ons-toolbar-button></div>
             <div class="center pagetitle">WIRING</div>
             <div class="right">
-                <ons-if platform="android">
-                    <ons-toolbar-button><ons-icon icon="ion-android-more-vertical"></ons-icon></ons-toolbar-button>
-                </ons-if>
+                <ons-toolbar-button><ons-icon icon="ion-android-more-vertical"></ons-icon></ons-toolbar-button>
             </div>
         </ons-toolbar>
+        <div >
+            <ul id="portList">
+                <!-- TODO fill in configured ports here -->
+            </ul>
+        </div>
 
         <ons-select id="choose-sel" onchange="editSelects(event)">
             <option value="basic">Tail tip</option>

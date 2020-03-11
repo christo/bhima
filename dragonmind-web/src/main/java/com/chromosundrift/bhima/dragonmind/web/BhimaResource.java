@@ -2,6 +2,7 @@ package com.chromosundrift.bhima.dragonmind.web;
 
 import com.chromosundrift.bhima.api.Dragon;
 import com.chromosundrift.bhima.api.ProgramInfo;
+import com.chromosundrift.bhima.dragonmind.model.Wiring;
 import com.codahale.metrics.annotation.Timed;
 
 import javax.ws.rs.FormParam;
@@ -11,6 +12,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Path("/bhima")
 @Produces(MediaType.APPLICATION_JSON)
@@ -27,6 +30,13 @@ public class BhimaResource {
     @Path("/status")
     public String getStatus() {
         return dragon.getStatus();
+    }
+
+    @GET
+    @Timed
+    @Path("/effectiveWiring")
+    public Map<String, Set<Integer>> getEffectiveWiring() {
+        return dragon.getEffectiveWiring();
     }
 
     @GET

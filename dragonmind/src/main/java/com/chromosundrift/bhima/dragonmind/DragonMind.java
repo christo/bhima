@@ -289,4 +289,15 @@ public class DragonMind extends ProcessingBase {
             logger.debug(mesg);
         }
     }
+
+    @Override
+    public void die(String what) {
+        // OMG WTF failing to load a movie file shuts down the sketch. No recovery options.
+        throw new NearDeathExperience(what);
+    }
+
+    @Override
+    public void die(String what, Exception e) {
+        throw new NearDeathExperience(what, e);
+    }
 }
