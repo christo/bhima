@@ -20,8 +20,8 @@ Quesions etc. to [bhima@chromosundrift.com](mailto:bhima@chromosundrift.com)
 * Java application
     * Processing used as application API
     * Pixelpusher LED controllers drive lights
-    * embedded Dropwizard web app
-    * mobile web app uses Onsen ui framework
+    * Embedded Dropwizard web app
+    * Mobile web app uses Onsen UI framework
 * Gradle build
 * "API" module contains common code and interfaces 
 
@@ -35,10 +35,11 @@ Quesions etc. to [bhima@chromosundrift.com](mailto:bhima@chromosundrift.com)
 * add instructions and status for stick slurper to mobile web app so people can add content
 * add video file uploader
 * add more system status info 
-* security
+* security - authentication
 
 ### Main System
 
+* effect: rotozoomer (tesselation, kaliedoscope)
 * performance tuning for rpi target (try pi4, it's probably memory bound)
 * parametised geometric algorithms (e.g. sacred geometry shiz) using pixelpusher processing library
 * effect: mirrorball sparkle scales
