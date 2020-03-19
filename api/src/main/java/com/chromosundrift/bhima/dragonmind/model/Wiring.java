@@ -88,22 +88,25 @@ public class Wiring {
      * @throws IOException in the event of json or file issues.
      */
     public static void main(String[] args) throws IOException {
-        Wiring wiring = new Wiring(DEFAULT_NUM_PORTS);
         Config config = Config.load("dragonmind-mini.config.json");
-        // check invariant that all segment names are unique
+
         List<Segment> segments = config.getPixelMap();
-        if (segments.stream().map(Segment::getName).distinct().count() != segments.size()) {
-            throw new RuntimeException("nonunique segment detected");
+
+        if (config.duplicatedSegmentNames()) {
+            throw new IllegalStateException("nonunique segment name detected");
         }
+
+        Wiring wiring = new Wiring(DEFAULT_NUM_PORTS);
+        // TODO flatmap this shit
         segments.stream().filter(s -> s.getEnabled() && !s.getIgnored()).forEach(segment -> {
 
             String name = segment.getName();
-            logger.info("segment {}", name);
+            logger.info("generating identity wiring for segment {}", name);
             Map<Integer, Integer> stripMap = new TreeMap<>();
             segment.getEffectiveStripNumbers().forEach(st -> stripMap.put(st, st));
             wiring.segments.put(name, stripMap);
-
         });
         wiring.save();
     }
+
 }

@@ -347,4 +347,13 @@ public final class Config {
         setGlobalTranslate(translate);
     }
 
+    /**
+     * Helper to check soft invariant - segment names should be unique.
+     *
+     * @return true only if there are two or more segments with precisely the same name.
+     */
+    boolean duplicatedSegmentNames() {
+        List<Segment> segments = this.getPixelMap();
+        return segments.stream().map(Segment::getName).distinct().count() != segments.size();
+    }
 }
