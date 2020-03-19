@@ -86,7 +86,6 @@ public class MapEditor extends DragonMind {
     static {
         for (int i = 0; i < POWERS.length; i++) {
             POWERS[i] = (int) Math.pow(2, i);
-            logger.info("2 to the {} is {}", i, POWERS[i]);
         }
         keys.put("help", HELP);
         keys.put("add point", ADD_POINT);
