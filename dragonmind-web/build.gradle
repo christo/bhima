@@ -8,7 +8,6 @@ repositories {
 	mavenCentral()
 }
 
-
 dependencies {
     // TODO remove direct jetty dependency and use dropwizard instead
 //	implementation('org.glassfish.jersey.containers:jersey-container-jetty-http:2.27')

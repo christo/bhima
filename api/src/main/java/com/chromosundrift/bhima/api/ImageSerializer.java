@@ -22,7 +22,7 @@ public class ImageSerializer extends StdSerializer<BufferedImage> {
      * @param img
      * @param gen
      * @param provider
-     * @throws IOException
+     * @throws IOException not really.
      */
     @Override
     public void serialize(BufferedImage img, JsonGenerator gen, SerializerProvider provider) throws IOException {
@@ -31,7 +31,7 @@ public class ImageSerializer extends StdSerializer<BufferedImage> {
         gen.writeString(encoded);
     }
 
-    public static String imgToString(BufferedImage img) throws IOException {
+    static String imgToString(BufferedImage img) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(img, "jpg", baos);
         return Base64.getEncoder().encodeToString(baos.toByteArray());

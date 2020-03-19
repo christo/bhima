@@ -2,6 +2,7 @@ package com.chromosundrift.bhima.dragonmind.web;
 
 import com.chromosundrift.bhima.api.Dragon;
 import com.chromosundrift.bhima.api.ProgramInfo;
+import com.chromosundrift.bhima.api.SystemInfo;
 import com.chromosundrift.bhima.dragonmind.model.Wiring;
 import com.codahale.metrics.annotation.Timed;
 
@@ -15,6 +16,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Main REST resource.
+ */
 @Path("/bhima")
 @Produces(MediaType.APPLICATION_JSON)
 public class BhimaResource {
@@ -58,5 +62,12 @@ public class BhimaResource {
     @Path("/runProgram")
     public ProgramInfo runProgram(@FormParam("id") String id) {
         return dragon.runProgram(id);
+    }
+
+    @GET
+    @Timed
+    @Path("/systemInfo")
+    public SystemInfo getSystemInfo() {
+        return dragon.getSystemInfo();
     }
 }

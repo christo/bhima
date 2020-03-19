@@ -2,6 +2,7 @@ package com.chromosundrift.bhima.dragonmind.program;
 
 import com.chromosundrift.bhima.api.Dragon;
 import com.chromosundrift.bhima.api.ProgramInfo;
+import com.chromosundrift.bhima.api.SystemInfo;
 import com.chromosundrift.bhima.dragonmind.DragonMind;
 import com.chromosundrift.bhima.dragonmind.NearDeathExperience;
 import com.chromosundrift.bhima.dragonmind.model.Config;
@@ -49,7 +50,6 @@ public class BhimaSup extends DragonMind implements Dragon {
     private boolean movieMode = true; // TODO convert to curerntProgram
     private boolean mouseMode = false;
 
-
     private Config config;
     private Wiring wiring;
 
@@ -63,10 +63,14 @@ public class BhimaSup extends DragonMind implements Dragon {
     private String mesg;
     private MoviePlayer moviePlayer;
 
-
     @Override
     public String getStatus() {
         return "running"; // TODO implement status
+    }
+
+    @Override
+    public SystemInfo getSystemInfo() {
+        return null;
     }
 
     @Override

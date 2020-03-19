@@ -7,13 +7,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Root domain model for Bhima.
+ */
 public interface Dragon {
 
-    public String getStatus();
+    String getStatus();
 
-    public Config getConfig();
+    SystemInfo getSystemInfo();
 
-    public Wiring getWiring();
+    Config getConfig();
+
+    Wiring getWiring();
 
     ProgramInfo getCurrentProgram();
 

@@ -20,8 +20,11 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.TreeMap;
 import java.util.stream.Stream;
 
 import static com.chromosundrift.bhima.api.ProgramInfo.NULL_PROGRAM_INFO;
@@ -34,6 +37,8 @@ import static java.util.stream.Collectors.toList;
 public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProgram, MoviePlayer {
 
     private static final Logger logger = LoggerFactory.getLogger(MoviePlayerImpl.class);
+    public static final int THUMBNAIL_WIDTH = 400;
+    public static final int THUMBNAIL_HEIGHT = 100;
 
     private long movieCyclePeriodMs = 1000 * 60 * 5;
 
@@ -46,6 +51,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
     private Movie movie = null;
     private List<String> builtInVideos;
     private DragonMind mind;
+    private float fps;
 
     @Override
     public void settings(DragonMind mind) {
@@ -84,7 +90,10 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
 
     private ProgramInfo getMovieProgramInfo(BufferedImage bi, String f) {
         String name = f.substring(f.lastIndexOf('/') + 1, f.length() - 4);
-        return new ProgramInfo(f, name, "Movie", bi);
+        Map<String, String> settings = new HashMap<>();
+        settings.put("FPS", Float.toString(fps));
+        settings.put("muted", Boolean.toString(mute));
+        return new ProgramInfo(f, name, "Movie", bi, settings);
     }
 
     @Override
@@ -144,17 +153,11 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
     }
 
     private void generateInfo(String s, File thumbnailFile) {
-        ProgramInfo programInfo = toProgramInfo(s, 0, 0, 400, 100);
         try {
-            objectmapper.writeValue(thumbnailFile, programInfo);
+            objectmapper.writeValue(thumbnailFile, toProgramInfo(s, 0, 0, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT));
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    @Override
-    public void mouseClicked(DragonMind mind) {
-        super.mouseClicked(mind);
     }
 
     @Override
@@ -172,7 +175,11 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
         return super.draw(mind, width, height);
     }
 
-
+    /**
+     * Changes the cvrrently running movie if it's time.
+     *
+     * @param mind the DragonMind.
+     */
     void keepFreshMovie(DragonMind mind) {
         long now = System.currentTimeMillis();
         boolean loopMovie = movie == null || (movie.duration() * 1000) < movieCyclePeriodMs;
@@ -215,10 +222,9 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
     private Movie setupMovie(DragonMind mind, String movieFile) {
         logger.info("setting up movie " + movieFile);
         Movie movie = new Movie(mind, movieFile);
-        //movie.speed(1f);
-        float playFps = Math.min(movie.frameRate, 30);
-        logger.debug("playing back {} at {} FPS (native framerate is {})", movieFile, movie.frameRate, playFps);
-        movie.frameRate(playFps);
+        fps = Math.min(movie.frameRate, 30);
+        logger.debug("playing back {} at {} FPS (native framerate is {})", movieFile, fps, movie.frameRate);
+        movie.frameRate(fps);
         movie.volume(mute ? 0f : 1f);
         movie.loop();
         return movie;
