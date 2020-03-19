@@ -7,16 +7,39 @@ Quesions etc. to [bhima@chromosundrift.com](mailto:bhima@chromosundrift.com)
 ## Summary
 
 * Software-controlled LED surface for the dragon bus
-* Video player
+    * Video player
 * Video import from USB
 * Mobile web app for primary control
+* semi-automatic pixel point detection within a camera field
+* Config file generator for pixelpushers.
+* deployment script for config files
+
+
+## Architecture
+
+* Java application
+    * Processing used as application API
+    * Pixelpusher LED controllers drive lights
+    * embedded Dropwizard web app
+    * mobile web app uses Onsen ui framework
+* Gradle build
+* "API" module contains common code and interfaces 
+
+---
 
 ## TODO
 
-* Mobile web app
-    * add instructions and status for stick slurper to mobile web app so people can add content
-    * add video file uploader
-    * add more system status info 
+### Mobile web app
+    
+* add front-end for GET /systemInfo - show stuff
+* add instructions and status for stick slurper to mobile web app so people can add content
+* add video file uploader
+* add more system status info 
+* security
+
+### Main System
+
+* performance tuning for rpi target (try pi4, it's probably memory bound)
 * parametised geometric algorithms (e.g. sacred geometry shiz) using pixelpusher processing library
 * effect: mirrorball sparkle scales
 * test shape-aware algorithms, non-rectangular edges e.g. shaded dragon body
@@ -29,16 +52,8 @@ Quesions etc. to [bhima@chromosundrift.com](mailto:bhima@chromosundrift.com)
 * test full logical layout with 7.5k LEDs
 * test ideas: audio-input, accelerometer input, theremin-style control field?
 
-## Features
-
-* semi-automatic pixel point detection within a camera field
-* Config file generator for pixelpushers.
-* deployment script for config files
-* dragonmind processing module
 
 ## Random Notes
-
-* use processing sketch *pixelpusher_tester* for running test patterns.
 
 The WS2811 LED strips we are using on Bhima use colour order "grb" (green, red, blue) but the per-strip start colour
 (used if the config option `blank_strips_on_idle=1` and when no data is available "for a while") is specified in the
