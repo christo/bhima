@@ -21,7 +21,7 @@ import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
  * <p>
  * The patch panel has ports numbered from 1 to n.
  */
-@SuppressWarnings({"WeakerAccess", "unused"})
+@SuppressWarnings({"WeakerAccess"})
 @JsonInclude(NON_EMPTY)
 @JsonPropertyOrder({"numPorts", "segments"})
 public class Wiring {
@@ -88,7 +88,7 @@ public class Wiring {
      * @throws IOException in the event of json or file issues.
      */
     public static void main(String[] args) throws IOException {
-        Wiring wiring = new Wiring(24);
+        Wiring wiring = new Wiring(DEFAULT_NUM_PORTS);
         Config config = Config.load("dragonmind-mini.config.json");
         // check invariant that all segment names are unique
         List<Segment> segments = config.getPixelMap();
