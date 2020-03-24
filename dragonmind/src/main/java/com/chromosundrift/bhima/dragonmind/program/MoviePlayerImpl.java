@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.TreeMap;
 import java.util.stream.Stream;
 
 import static com.chromosundrift.bhima.api.ProgramInfo.NULL_PROGRAM_INFO;
@@ -147,7 +146,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
             if (!thumbnailFile.exists()) {
                 generateInfo(s, thumbnailFile);
             } else {
-                logger.info("reusing disk info for {}", s);
+                logger.info("reusing cached info for {}", s);
             }
         });
     }
