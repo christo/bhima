@@ -3,9 +3,7 @@ package com.chromosundrift.bhima.dragonmind.program;
 import com.chromosundrift.bhima.api.ProgramInfo;
 import com.chromosundrift.bhima.dragonmind.DragonMind;
 import processing.core.PGraphics;
-import processing.core.PImage;
 
-import java.util.Arrays;
 import java.util.List;
 
 import static com.chromosundrift.bhima.api.ProgramInfo.NULL_PROGRAM_INFO;

@@ -100,8 +100,6 @@ public class TestPattern extends DragonMind {
     }
 
     public static void main(String[] args) {
-        // TODO fix dependency on Processing native libs
-        //System.setProperty("jogl.debug", "true");
         setNativeLibraryPaths();
         PApplet.main(TestPattern.class, args);
     }
