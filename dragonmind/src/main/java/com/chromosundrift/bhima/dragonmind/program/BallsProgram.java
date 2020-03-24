@@ -7,7 +7,7 @@ import processing.core.PGraphics;
 
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -23,7 +23,7 @@ public class BallsProgram extends AbstractDragonProgram implements DragonProgram
     @Override
     public void setup(DragonMind mind) {
         this.mind = mind;
-        t=0;
+        t = 0;
         balls = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             balls.add(new Ball(r.nextInt(mind.width), r.nextInt(mind.height)));
@@ -59,24 +59,24 @@ public class BallsProgram extends AbstractDragonProgram implements DragonProgram
 
     @Override
     public List<ProgramInfo> getProgramInfos(int x, int y, int w, int h) {
-        ProgramInfo programInfo = myProgramInfo(x, y, w, h);
-        return Arrays.asList(programInfo);
-    }
-
-    private ProgramInfo myProgramInfo(int x, int y, int w, int h) {
         PGraphics graphics = draw(mind, w, h);
         BufferedImage thumbnail = imageToBufferedImage(graphics.getImage(), x, y, w, h);
-        return new ProgramInfo(BallsProgram.class.getName(), NAME, TYPE_SKETCH, thumbnail);
+        String id = BallsProgram.class.getName();
+        ProgramInfo programInfo = new ProgramInfo(id, NAME, TYPE_SKETCH, thumbnail);
+        return Collections.singletonList(programInfo);
     }
 
     /**
      * Restarts.
+     *
      * @param id ignored
      * @return the ProgramInfo.
      */
     @Override
     public ProgramInfo runProgram(String id) {
-        t=0;
-        return myProgramInfo(0, 0, 400, 100);
+        t = 0;
+        PGraphics graphics = draw(mind, 400, 100);
+        BufferedImage thumbnail = imageToBufferedImage(graphics.getImage(), 0, 0, 400, 100);
+        return new ProgramInfo(BallsProgram.class.getName(), NAME, TYPE_SKETCH, thumbnail);
     }
 }

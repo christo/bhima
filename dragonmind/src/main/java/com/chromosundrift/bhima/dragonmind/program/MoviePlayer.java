@@ -7,24 +7,13 @@ import processing.core.PGraphics;
 import java.util.List;
 
 import static com.chromosundrift.bhima.api.ProgramInfo.NULL_PROGRAM_INFO;
-import static java.util.Arrays.asList;
+import static java.util.Collections.singletonList;
 
-public interface MoviePlayer {
-    void settings(DragonMind mind);
-
-    void setup(DragonMind mind);
-
-    void mouseClicked(DragonMind mind);
-
-    PGraphics draw(DragonMind mind, int width, int height);
+public interface MoviePlayer extends DragonProgram {
 
     ProgramInfo getCurrentProgramInfo(int inx, int iny, int innerWidth, int innerHeight);
 
-    List<ProgramInfo> getProgramInfos(int inx, int iny, int innerWidth, int innerHeight);
-
-    ProgramInfo runProgram(String id);
-
-    public class NullMoviePlayer implements MoviePlayer {
+    class NullMoviePlayer implements MoviePlayer {
 
         PGraphics screenBuffer = new PGraphics();
 
@@ -54,7 +43,7 @@ public interface MoviePlayer {
 
         @Override
         public List<ProgramInfo> getProgramInfos(int inx, int iny, int innerWidth, int innerHeight) {
-            return asList(NULL_PROGRAM_INFO);
+            return singletonList(NULL_PROGRAM_INFO);
         }
 
         @Override
