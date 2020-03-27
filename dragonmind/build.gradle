@@ -42,15 +42,15 @@ dependencies {
 
     runtime group: 'org.jogamp.jogl', name: 'jogl-all', version: '2.3.2'
 
-    compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
     implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
     implementation group: 'ch.qos.logback', name: 'logback-access', version: '1.2.3'
 
     //compile 'org.slf4j:slf4j-jdk14:1.7.26'
-    compile group: 'commons-io', name: 'commons-io', version: '2.6'
-    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
-    compile group: 'org.apache.commons', name: 'commons-collections4', version: '4.2'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.6'
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
+    implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.2'
 
     compile ":G4P:"
     //runtime fileTree(dir: 'lib', include: '*.jar')
@@ -84,10 +84,10 @@ dependencies {
     runtime ":jogl-all:natives-windows-amd64"
     runtime ":jogl-all:natives-windows-i586"
 
-    testCompile group: 'junit', name: 'junit', version: '4.12'
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
 
-    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.6'
-    compile "com.fasterxml.jackson.core:jackson-databind:2.9.7"
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.6'
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.9.7"
 }
 
 task getDeps(type: Copy) {

@@ -12,17 +12,17 @@ dependencies {
     // This dependency is used internally, and not exposed to consumers on their own compile classpath.
     //implementation 'com.google.guava:guava:27.1-jre'
 
-    compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
-    compile group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
-    compile group: 'ch.qos.logback', name: 'logback-access', version: '1.2.3'
+    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+    implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
+    implementation group: 'ch.qos.logback', name: 'logback-access', version: '1.2.3'
 
-    compile 'org.slf4j:slf4j-api:1.7.26'
+    implementation 'org.slf4j:slf4j-api:1.7.26'
 
-    compile 'com.fasterxml.jackson.core:jackson-core:2.9.6'
-    compile "com.fasterxml.jackson.core:jackson-databind:2.9.7"
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.9.6'
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.9.7"
 
-    compile group: 'commons-io', name: 'commons-io', version: '2.6'
-    compile group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
+    implementation group: 'commons-io', name: 'commons-io', version: '2.6'
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
 
     testImplementation 'junit:junit:4.12'
 
