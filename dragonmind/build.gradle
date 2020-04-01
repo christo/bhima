@@ -3,10 +3,16 @@ plugins {
     id 'application'
 }
 
-mainClassName = "com.chromosundrift.bhima.dragonmind.program.BhimaSup"
-applicationDefaultJvmArgs = ["-Dgreeting.language=en"]
+application {
+    mainClassName = "com.chromosundrift.bhima.dragonmind.program.BhimaSup"
+    applicationDefaultJvmArgs = ["-Dgreeting.language=en"]
 
-sourceCompatibility = 1.8
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
 
 repositories {
 
@@ -18,71 +24,73 @@ repositories {
 
 dependencies {
 
-    compile project(':api')
-    compile project(':dragonmind-web')
+    implementation project(':api')
+    implementation project(':dragonmind-web')
 
     // these need to point to where processing libraries are stored
     // default on mac is ~/Documents/Processing
-    compile files('lib/PixelPusher.jar')
-    //compile ':video:'
-//    runtime files('lib/jna.jar')
-//    runtime files('lib/glvideo.jar')
-    compile ':gstreamer-java:'
-    runtime ':jna:'
+    implementation files('lib/PixelPusher.jar')
+    //implementation ':video:'
+//    runtimeOnly files('lib/jna.jar')
+//    runtimeOnly files('lib/glvideo.jar')
+    implementation ':gstreamer-java:'
+    runtimeOnly ':jna:'
     // TODO copy all these into lib
-    runtime files('../../processing/libraries/video/library/macosx64/libgstreamer-0.10.dylib')
+    runtimeOnly files('../../processing/libraries/video/library/macosx64/libgstreamer-0.10.dylib')
 
-    compile(group: 'org.processing', name: 'core', version: '3.3.7')
-    compile('org.processing:video:3.2.3') {
+    implementation(group: 'org.processing', name: 'core', version: '3.3.7')
+    implementation('org.processing:video:3.2.3') {
         exclude group: 'net.java.dev.jna'
         exclude group: 'com.googlecode.gstreamer-java'
     }
 
-    //runtime group: 'org.freedesktop.gstreamer', name: 'gst1-java-core', version: '0.9.1'
+    //runtimeOnly group: 'org.freedesktop.gstreamer', name: 'gst1-java-core', version: '0.9.1'
 
-    runtime group: 'org.jogamp.jogl', name: 'jogl-all', version: '2.3.2'
+    runtimeOnly group: 'org.jogamp.jogl', name: 'jogl-all-main', version: '2.3.2'
+    runtimeOnly group: 'org.jogamp.gluegen', name: 'gluegen-rt-main', version: '2.3.2'
 
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'
     implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
     implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
     implementation group: 'ch.qos.logback', name: 'logback-access', version: '1.2.3'
 
-    //compile 'org.slf4j:slf4j-jdk14:1.7.26'
+    //implementation 'org.slf4j:slf4j-jdk14:1.7.26'
     implementation group: 'commons-io', name: 'commons-io', version: '2.6'
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
     implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.2'
 
-    compile ":G4P:"
-    //runtime fileTree(dir: 'lib', include: '*.jar')
+    implementation ":G4P:"
+    //runtimeOnly fileTree(dir: 'lib', include: '*.jar')
 
     // TODO add database for playlists or program plans etc.
-    //compile group: 'com.h2database', name: 'h2', version: '1.4.199'
+    //implementation group: 'com.h2database', name: 'h2', version: '1.4.199'
 
-    runtime ":gluegen-rt:2.3.2"
-    runtime ":gluegen-rt:natives-android-aarch64"
-    runtime ":gluegen-rt:natives-android-armv6"
-    runtime ":gluegen-rt:natives-linux-amd64"
-    runtime ":gluegen-rt:natives-linux-armv6"
-    runtime ":gluegen-rt:natives-linux-armv6hf"
-    runtime ":gluegen-rt:natives-linux-i586"
-    runtime ":gluegen-rt:natives-macosx-universal"
-    runtime ":gluegen-rt:natives-solaris-amd64"
-    runtime ":gluegen-rt:natives-solaris-i586"
-    runtime ":gluegen-rt:natives-windows-amd64"
-    runtime ":gluegen-rt:natives-windows-i586"
 
-    runtime ":jogl-all:2.3.2"
-    runtime ":jogl-all:natives-android-aarch64"
-    runtime ":jogl-all:natives-android-armv6"
-    runtime ":jogl-all:natives-linux-amd64"
-    runtime ":jogl-all:natives-linux-armv6"
-    runtime ":jogl-all:natives-linux-armv6hf"
-    runtime ":jogl-all:natives-linux-i586"
-    runtime ":jogl-all:natives-macosx-universal"
-    runtime ":jogl-all:natives-solaris-amd64"
-    runtime ":jogl-all:natives-solaris-i586"
-    runtime ":jogl-all:natives-windows-amd64"
-    runtime ":jogl-all:natives-windows-i586"
+//    runtimeOnly ":gluegen-rt:2.3.2"
+//    runtimeOnly ":gluegen-rt:natives-android-aarch64"
+//    runtimeOnly ":gluegen-rt:natives-android-armv6"
+//    runtimeOnly ":gluegen-rt:natives-linux-amd64"
+//    runtimeOnly ":gluegen-rt:natives-linux-armv6"
+//    runtimeOnly ":gluegen-rt:natives-linux-armv6hf"
+//    runtimeOnly ":gluegen-rt:natives-linux-i586"
+//    runtimeOnly ":gluegen-rt:natives-macosx-universal"
+//    runtimeOnly ":gluegen-rt:natives-solaris-amd64"
+//    runtimeOnly ":gluegen-rt:natives-solaris-i586"
+//    runtimeOnly ":gluegen-rt:natives-windows-amd64"
+//    runtimeOnly ":gluegen-rt:natives-windows-i586"
+//
+//    runtimeOnly ":jogl-all:2.3.2"
+//    runtimeOnly ":jogl-all:natives-android-aarch64"
+//    runtimeOnly ":jogl-all:natives-android-armv6"
+//    runtimeOnly ":jogl-all:natives-linux-amd64"
+//    runtimeOnly ":jogl-all:natives-linux-armv6"
+//    runtimeOnly ":jogl-all:natives-linux-armv6hf"
+//    runtimeOnly ":jogl-all:natives-linux-i586"
+//    runtimeOnly ":jogl-all:natives-macosx-universal"
+//    runtimeOnly ":jogl-all:natives-solaris-amd64"
+//    runtimeOnly ":jogl-all:natives-solaris-i586"
+//    runtimeOnly ":jogl-all:natives-windows-amd64"
+//    runtimeOnly ":jogl-all:natives-windows-i586"
 
     testImplementation group: 'junit', name: 'junit', version: '4.12'
 

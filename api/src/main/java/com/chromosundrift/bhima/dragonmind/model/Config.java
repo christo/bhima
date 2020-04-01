@@ -37,7 +37,7 @@ public final class Config {
 
     private static final Logger logger = LoggerFactory.getLogger(Config.class);
 
-    public final static String DEFAULT_CONFIG_FILE = "dragonmind.config.json";
+    public final static String DEFAULT_CONFIG_FILE = "dragonmind-mini.config.json";
 
     /**
      * Name

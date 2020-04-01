@@ -7,6 +7,7 @@ import com.chromosundrift.bhima.dragonmind.model.Config;
 import com.chromosundrift.bhima.dragonmind.model.Wiring;
 import io.dropwizard.Application;
 import io.dropwizard.assets.AssetsBundle;
+import io.dropwizard.configuration.ResourceConfigurationSourceProvider;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import org.slf4j.Logger;
@@ -21,7 +22,7 @@ import static java.util.Arrays.asList;
 /**
  * Dropwizard web application base class for Dragonmind Web.
  */
-public class DragonmindApplication extends Application<WebConfiguration> {
+public class DragonmindApplication extends Application<DragonWebConfig> {
 
     private static final Logger logger = LoggerFactory.getLogger(DragonmindApplication.class);
     private Dragon dragon;
@@ -36,12 +37,13 @@ public class DragonmindApplication extends Application<WebConfiguration> {
     }
 
     @Override
-    public void initialize(Bootstrap<WebConfiguration> bootstrap) {
+    public void initialize(Bootstrap<DragonWebConfig> bootstrap) {
+        bootstrap.setConfigurationSourceProvider(new ResourceConfigurationSourceProvider());
         bootstrap.addBundle(new AssetsBundle("/static/", "/", "index.html"));
     }
 
     @Override
-    public void run(WebConfiguration configuration,
+    public void run(DragonWebConfig configuration,
                     Environment environment) {
 
         // TODO replace these with real ones:

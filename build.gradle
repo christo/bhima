@@ -25,4 +25,4 @@ subprojects {
     }
 }
 
-project(':api')
+project(':dragonmind')

@@ -29,6 +29,15 @@ Quesions etc. to [bhima@chromosundrift.com](mailto:bhima@chromosundrift.com)
 
 ## TODO
 
+* add to SystemInfo:
+    * performance metrics: e.g. render time
+    * led drivers connected, latency?
+    * temperatures?
+    * database size and disk usage
+    * uptime
+    * network info
+    * runtime info e.g. os, ram usage etc.
+
 ### Mobile web app
     
 * add front-end for GET /systemInfo - show stuff
@@ -39,6 +48,8 @@ Quesions etc. to [bhima@chromosundrift.com](mailto:bhima@chromosundrift.com)
 
 ### Main System
 
+* gamma curve configuration
+* move test pattern into its own Program
 * effect: rotozoomer (tesselation, kaliedoscope)
 * performance tuning for rpi target (try pi4, it's probably memory bound)
 * parametised geometric algorithms (e.g. sacred geometry shiz) using pixelpusher processing library

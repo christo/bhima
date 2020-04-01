@@ -39,7 +39,7 @@ import static java.util.stream.Collectors.toSet;
 /**
  * Loads and plays video on Bhima configured by file.
  */
-public class BhimaSup extends DragonMind implements Dragon {
+public final class BhimaSup extends DragonMind implements Dragon {
 
     private static final Logger logger = LoggerFactory.getLogger(BhimaSup.class);
     private static final int CABINET_PORT_INDEX_BASE = 1;
@@ -125,23 +125,28 @@ public class BhimaSup extends DragonMind implements Dragon {
         super.setup();
         xpos = width;
         AtomicBoolean doVideo = new AtomicBoolean(true);
+        AtomicBoolean doServer = new AtomicBoolean(true);
         if (args != null) {
             Arrays.stream(args).filter(s -> s.startsWith("-")).forEach(arg -> {
-                if (arg.equals("-server")) {
-                    server = new DragonmindServer();
-                    server.start(this);
-                    getRuntime().addShutdownHook(new Thread(() -> {
-                        server.stop();
-                        logger.info("Server shutdown complete");
-                    }, "Dragonmind Server Shutdown Hook"));
+                if (arg.equals("-noserver")) {
+                    logger.info("Server disabbled");
+                    doServer.set(false);
                 } else if (arg.equals("-novideo")) {
                     logger.info("Video disabled");
                     doVideo.set(false);
                 }
             });
-
         } else {
-            logger.error("Processing!!!! why is args null!?");
+            logger.info("No command line args available from Processing");
+        }
+
+        if (doServer.get())  {
+            server = new DragonmindServer();
+            server.start(this);
+            getRuntime().addShutdownHook(new Thread(() -> {
+                server.stop();
+                logger.info("Server shutdown complete");
+            }, "Dragonmind Server Shutdown Hook"));
         }
 
         mesgFont = loadFont("HelveticaNeue-CondensedBlack-16.vlw");
@@ -245,9 +250,9 @@ public class BhimaSup extends DragonMind implements Dragon {
         if (movieMode) {
             image = moviePlayer.draw(this, width, height);
         } else if (mouseMode) {
-            image = fullCrossHair(this, mouseX, mouseY, width, height);
+            image = TestPattern.fullCrossHair(this, mouseX, mouseY, width, height);
         } else {
-            image = cycleTestPattern(this, width, height);
+            image = TestPattern.cycleTestPattern(this, width, height);
         }
         return image;
     }
@@ -282,35 +287,9 @@ public class BhimaSup extends DragonMind implements Dragon {
      * @param args relayed to Processing entry point.
      */
     public static void main(String[] args) {
+        logger.info("starting {} with args {}", BhimaSup.class.getName(), args);
         setNativeLibraryPaths();
         PApplet.main(BhimaSup.class, args);
-    }
-
-    private static PImage cycleTestPattern(PApplet papp, int width, int height) {
-        final long l1y = (System.currentTimeMillis() / 30) % height;
-        final long l2x = (System.currentTimeMillis() / 100) % width;
-        return fullCrossHair(papp, width - l2x, l1y, width, height);
-    }
-
-    private static PImage fullCrossHair(PApplet papp, long l2x, long l1y, int width, int height) {
-        final PGraphics pg = papp.createGraphics(width, height);
-        pg.colorMode(RGB, 255);
-        pg.beginDraw();
-        pg.background(0, 0, 0);
-        pg.noStroke();
-        pg.fill(0, 0, 0);
-        pg.rect(0, 0, width, height);
-        pg.strokeWeight(2);
-        pg.stroke(0, 0, 255);
-        pg.line(0, l1y, width, l1y);
-        pg.strokeWeight(6);
-        pg.stroke(255, 255, 0);
-        pg.line(l2x, 0, l2x, height);
-        pg.strokeWeight(2);
-        pg.stroke(255, 0, 0);
-        pg.line(l2x, 0, l2x, height);
-        pg.endDraw();
-        return pg;
     }
 
 }
