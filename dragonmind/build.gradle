@@ -1,5 +1,4 @@
 plugins {
-    id 'java'
     id 'application'
 }
 
@@ -33,7 +32,7 @@ dependencies {
     //implementation ':video:'
 //    runtimeOnly files('lib/jna.jar')
 //    runtimeOnly files('lib/glvideo.jar')
-    implementation ':gstreamer-java:'
+    runtimeOnly ':gstreamer-java:'
     runtimeOnly ':jna:'
     // TODO copy all these into lib
     runtimeOnly files('../../processing/libraries/video/library/macosx64/libgstreamer-0.10.dylib')
@@ -50,9 +49,9 @@ dependencies {
     runtimeOnly group: 'org.jogamp.gluegen', name: 'gluegen-rt-main', version: '2.3.2'
 
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'
-    implementation group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
-    implementation group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
-    implementation group: 'ch.qos.logback', name: 'logback-access', version: '1.2.3'
+    runtimeOnly group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
+    runtimeOnly group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
+    runtimeOnly group: 'ch.qos.logback', name: 'logback-access', version: '1.2.3'
 
     //implementation 'org.slf4j:slf4j-jdk14:1.7.26'
     implementation group: 'commons-io', name: 'commons-io', version: '2.6'
