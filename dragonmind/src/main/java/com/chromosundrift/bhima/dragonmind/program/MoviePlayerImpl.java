@@ -5,7 +5,7 @@ import com.chromosundrift.bhima.api.ImageSerializer;
 import com.chromosundrift.bhima.api.ProgramInfo;
 import com.chromosundrift.bhima.dragonmind.DragonMind;
 import com.chromosundrift.bhima.dragonmind.NearDeathExperience;
-import com.chromosundrift.bhima.dragonmind.StickSlurper;
+import com.chromosundrift.bhima.dragonmind.VideoLurker;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -41,7 +41,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
 
     private long movieCyclePeriodMs = 1000 * 60 * 5;
 
-    private StickSlurper videoMonitor;
+    private VideoLurker videoLurker;
     private ObjectMapper objectmapper;
 
     private boolean mute = false;
@@ -135,9 +135,10 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
         module.addDeserializer(BufferedImage.class, new ImageDeserializer());
         objectmapper.registerModule(module);
         generateInfos(builtInVideos);
-        videoMonitor = new StickSlurper();
-        videoMonitor.start();
-        getRuntime().addShutdownHook(new Thread(() -> videoMonitor.stop(), "StickSlurper Shutdown Hook"));
+        // TODO linux
+        videoLurker = new VideoLurker("/Volumes", "bhima");
+        videoLurker.start();
+        getRuntime().addShutdownHook(new Thread(() -> videoLurker.stop(), "VideoLurker Shutdown Hook"));
     }
 
     private void generateInfos(List<String> videoFiles) {
@@ -185,7 +186,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
         if (currentVideoStartMs + movieCyclePeriodMs < now && loopMovie) {
             logger.info("time to load new movie");
             currentVideoIndex++;
-            List<File> media = videoMonitor.getMedia();
+            List<File> media = videoLurker.getMedia();
 
             try {
                 Movie newMovie = null;
@@ -207,7 +208,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
                 logger.info("New movie loaded OK");
             } catch (NearDeathExperience e) {
                 logger.warn("Movie loading failed. Dodging death.");
-                videoMonitor.excludeMovieFile(media.get(currentVideoIndex).getName());
+                videoLurker.excludeMovieFile(media.get(currentVideoIndex).getName());
             }
         }
     }
@@ -236,7 +237,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
      * @return the list of movie infos.
      */
     public List<ProgramInfo> getProgramInfos(int x, int y, int w, int h) {
-        List<File> media = videoMonitor.getMedia();
+        List<File> media = videoLurker.getMedia();
         Stream<String> filenames = media.size() > 0
                 ? media.stream().map(File::getName)
                 : builtInVideos.stream();

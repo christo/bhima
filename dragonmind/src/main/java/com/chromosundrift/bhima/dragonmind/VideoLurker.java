@@ -8,46 +8,62 @@ import java.io.FileFilter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Executors;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
+
 /**
- * Watches for specific mounted filesystem and slurps everything in /bhima/ reading the contents as
+ * Watches for specific mounted filesystem and slurps everything in the configured directory, reading the contents as
  * animations to play.
  */
-public class StickSlurper {
+public class VideoLurker {
 
-    private static final Logger logger = LoggerFactory.getLogger(StickSlurper.class);
-    private static final String EXCLUDE_DIRS = "(Macintosh HD|Time Machine Backups|com.apple.TimeMachine.localsnapshots)";
-    private static final String VIDEO_DIR = "bhima";
+    private static final Logger logger = LoggerFactory.getLogger(VideoLurker.class);
+    private static final String OSX_EXCLUDES = "(Macintosh HD|Time Machine Backups|com.apple.TimeMachine.localsnapshots)";
+    private final String usbStickDir;
 
-    private final File baseDir = new File("/Volumes");
+    public VideoLurker(String baseDirName, String videoDirName) {
+        baseDir = new File(baseDirName);
+        usbStickDir = videoDirName;
+        dirWatcher = newSingleThreadScheduledExecutor(r -> new Thread(r, "Video Lurker"));
+    }
 
-    private final ScheduledExecutorService dirWatcher = Executors.newSingleThreadScheduledExecutor(r ->
-            new Thread(r, "Dir Watcher"));
+    private final File baseDir;
+
+    private final ScheduledExecutorService dirWatcher;
 
     private List<File> dirs = Collections.synchronizedList(new ArrayList<>());
 
-    List<String> dudMovies = new ArrayList<>();
-
-    private final FileFilter okMovies = f -> !dudMovies.contains(f.getName()) && f.isFile() && !f.getName().matches("(^\\..*|.*\\.mov$)");
+    private Set<String> duds = new HashSet<>();
 
     /**
-     * Gets a fresh list of directories called {@link #VIDEO_DIR} in USB drives wherein we expect to find video files.
+     * Matches only movie files we think we can play, not on the duds list.
+     */
+    private final FileFilter okMovies = f -> !duds.contains(f.getName()) &&
+            f.isFile() &&
+            f.canRead() &&
+            !f.getName().startsWith(".") &&
+            !f.getName().toLowerCase().endsWith(".json") &&
+            !f.getName().toLowerCase().endsWith(".mov");
+
+    /**
+     * Gets a fresh list of directories called {@link #usbStickDir} in USB drives wherein we expect to find video files.
      *
      * @return the list of directories.
      */
     private List<File> getMediaDirs() {
         List<File> newDirs = new ArrayList<>();
         if (baseDir.isDirectory()) {
-            File[] drives = baseDir.listFiles(file -> file.isDirectory() && !file.getName().matches(EXCLUDE_DIRS));
+            File[] drives = baseDir.listFiles(file -> file.isDirectory() && !file.getName().matches(OSX_EXCLUDES));
             if (drives != null) {
                 for (File drive : drives) {
-                    File[] bhimas = drive.listFiles(f -> f.isDirectory() && f.getName().equalsIgnoreCase(VIDEO_DIR));
+                    File[] bhimas = drive.listFiles(f -> f.isDirectory() && f.getName().equalsIgnoreCase(usbStickDir));
                     if (bhimas != null && bhimas.length > 0) {
                         newDirs.addAll(Arrays.asList(bhimas));
                     }
@@ -81,7 +97,6 @@ public class StickSlurper {
         List<File> media = new ArrayList<>();
         for (File dir : dirs) {
             if (dir.exists() && dir.isDirectory()) {
-                // TODO should filter out non-video files. Don't know right now what file extensions work.
                 List<File> files = Arrays.asList(Objects.requireNonNull(dir.listFiles(okMovies)));
                 media.addAll(files);
                 logger.info("added {} files from {}", files.size(), dir.getAbsolutePath());
@@ -94,7 +109,7 @@ public class StickSlurper {
 
     public void excludeMovieFile(String filename) {
         logger.info("excluding movie {}", filename);
-        dudMovies.add(filename);
+        duds.add(filename);
     }
 
 }
