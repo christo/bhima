@@ -156,7 +156,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
         try {
             objectmapper.writeValue(thumbnailFile, toProgramInfo(s, 0, 0, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT));
         } catch (IOException e) {
-            e.printStackTrace();
+            logger.warn("Can't generate file {} due to IOException {}", thumbnailFile.getName(), e.getMessage());
         }
     }
 
@@ -176,7 +176,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
     }
 
     /**
-     * Changes the cvrrently running movie if it's time.
+     * Changes the currently running movie if it's time.
      *
      * @param mind the DragonMind.
      */
@@ -190,6 +190,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
 
             try {
                 Movie newMovie = null;
+                // TODO migrate to using VideoLurker for all, removing built-in videos concept
                 if (media.size() > 0) {
                     logger.info("Loading new movie from media library");
                     currentVideoIndex %= media.size();
@@ -260,12 +261,12 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
         Movie thisMovie = null;
         try {
             thisMovie = setupMovie(mind, filename);
+            // either 8s from beginning or if movie is shorter, the half-way point
             float secs = Math.min(thisMovie.duration()/2, 8f);
             thisMovie.jump(secs); // take thumbnail from secs into the movie
             thisMovie.loadPixels();
             return getProgramInfo(thisMovie, x, y, w, h);
         } catch (RuntimeException re) {
-            // TODO maybe catch NearDeathExperience and exclude the movie like above
             logger.error("cannot generate thumbnail for {}", filename, re);
             return getMovieProgramInfo(NULL_PROGRAM_INFO.getThumbnail(), filename);
         } finally {
