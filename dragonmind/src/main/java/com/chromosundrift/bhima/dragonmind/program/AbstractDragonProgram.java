@@ -1,6 +1,8 @@
 package com.chromosundrift.bhima.dragonmind.program;
 
 import com.chromosundrift.bhima.dragonmind.DragonMind;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import processing.core.PGraphics;
 import processing.core.PImage;
 
@@ -9,6 +11,9 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 
 public abstract class AbstractDragonProgram implements DragonProgram {
+
+    private static final Logger logger = LoggerFactory.getLogger(AbstractDragonProgram.class);
+
     public static final String TYPE_SKETCH = "Sketch";
 
     /**
@@ -19,6 +24,7 @@ public abstract class AbstractDragonProgram implements DragonProgram {
     }
 
     protected static BufferedImage imageToBufferedImage(Image image, int x, int y, int w, int h) {
+        logger.debug("Having to convert a weird image implementation to a BufferedImage");
         BufferedImage bi = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = bi.createGraphics();
         g2d.drawImage(image, x, y, w, h, null);

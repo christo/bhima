@@ -4,29 +4,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileFilter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import static java.util.concurrent.Executors.newSingleThreadScheduledExecutor;
+import static java.util.stream.Collectors.toList;
 
 /**
- * Watches for specific mounted filesystem and slurps everything in the configured directory, reading the contents as
+ * Watches for specific mounted filesystems and slurps everything in the configured directory, reading the contents as
  * animations to play.
  */
-public class VideoLurker {
+public class VideoLurker extends MediaSource {
 
     private static final Logger logger = LoggerFactory.getLogger(VideoLurker.class);
     private static final String OSX_EXCLUDES = "(Macintosh HD|Time Machine Backups|com.apple.TimeMachine.localsnapshots)";
     private final String usbStickDir;
+    private final File baseDir;
 
     public VideoLurker(String baseDirName, String videoDirName) {
         baseDir = new File(baseDirName);
@@ -34,26 +32,13 @@ public class VideoLurker {
         dirWatcher = newSingleThreadScheduledExecutor(r -> new Thread(r, "Video Lurker"));
     }
 
-    private final File baseDir;
-
     private final ScheduledExecutorService dirWatcher;
 
     private List<File> dirs = Collections.synchronizedList(new ArrayList<>());
 
-    private Set<String> duds = new HashSet<>();
 
     /**
-     * Matches only movie files we think we can play, not on the duds list.
-     */
-    private final FileFilter okMovies = f -> !duds.contains(f.getName()) &&
-            f.isFile() &&
-            f.canRead() &&
-            !f.getName().startsWith(".") &&
-            !f.getName().toLowerCase().endsWith(".json") &&
-            !f.getName().toLowerCase().endsWith(".mov");
-
-    /**
-     * Gets a fresh list of directories called {@link #usbStickDir} in USB drives wherein we expect to find video files.
+     * Gets a fresh list of video files based on the following pattern:
      *
      * @return the list of directories.
      */
@@ -72,13 +57,12 @@ public class VideoLurker {
         } else {
             logger.error("can't find video dirs in {} dir", baseDir.getName());
         }
-        // FIXME inelegant
         dirs.clear();
         dirs.addAll(newDirs);
         if (dirs.size() == 0) {
             logger.info("Media dirs: None");
         } else {
-            logger.info("Media dirs: {}", dirs.stream().map(File::getAbsolutePath).collect(Collectors.toList()));
+            logger.info("Media dirs: {}", dirs.stream().map(File::getAbsolutePath).collect(toList()));
         }
         return dirs;
     }
@@ -93,23 +77,25 @@ public class VideoLurker {
         dirWatcher.shutdown();
     }
 
-    public List<File> getMedia() {
-        List<File> media = new ArrayList<>();
+    @Override
+    public List<String> getMedia() {
+        List<String> media = new ArrayList<>();
         for (File dir : dirs) {
+            // double check it's still there
+            final String dirname = dir.getAbsolutePath();
             if (dir.exists() && dir.isDirectory()) {
-                List<File> files = Arrays.asList(Objects.requireNonNull(dir.listFiles(okMovies)));
-                media.addAll(files);
-                logger.info("added {} files from {}", files.size(), dir.getAbsolutePath());
+                try {
+                    final List<String> files = collectFilenames(dir.toPath(), 2);
+                    media.addAll(files);
+                    logger.info("added {} files from {}", files.size(), dirname);
+                } catch (IOException e) {
+                    logger.warn("Unable to read media dir {}", dirname);
+                }
             } else {
-                logger.warn("dir not good: {}", dir.getPath());
+                logger.warn("skipping bad dir: {}", dirname);
             }
         }
         return media;
-    }
-
-    public void excludeMovieFile(String filename) {
-        logger.info("excluding movie {}", filename);
-        duds.add(filename);
     }
 
 }

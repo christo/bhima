@@ -140,7 +140,7 @@ public final class BhimaSup extends DragonMind implements Dragon {
             logger.info("No command line args available from Processing");
         }
 
-        if (doServer.get())  {
+        if (doServer.get()) {
             server = new DragonmindServer();
             server.start(this);
             getRuntime().addShutdownHook(new Thread(() -> {
@@ -279,6 +279,12 @@ public final class BhimaSup extends DragonMind implements Dragon {
         if (key == ' ') {
             movieMode = !movieMode;
         }
+    }
+
+    @Override
+    public void fail(String msg) {
+        logger.error("Turning off movie mode because: {}", msg);
+        movieMode = false;
     }
 
     /**

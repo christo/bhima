@@ -2,3 +2,5 @@ build
 out
 .gradle
 test.jpg
+/video/
+/old-video/

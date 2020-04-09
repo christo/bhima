@@ -226,11 +226,11 @@ public class DragonMind extends ProcessingBase {
         setLed(pp, color(0), indexBase);
     }
 
-    private void setLed(PixelPoint pp, int colour, int indexBase) {
-        PusherMan pusherMan = getPusherMan();
+    private void setLed(final PixelPoint pp, int colour, int indexBase) {
+        final PusherMan pusherMan = getPusherMan();
         pusherMan.ensureReady();
         if (pusherMan.isReady()) {
-            Strip strip = getActualStrip(pp);
+            final Strip strip = getActualStrip(pp);
             int pixNum = pp.getPixel() - indexBase;
             if (strip != null && pixNum >= 0) {
                 strip.setPixel(colour, pixNum);
@@ -238,8 +238,8 @@ public class DragonMind extends ProcessingBase {
         }
     }
 
-    private Strip getActualStrip(PixelPoint pp) {
-        List<Strip> strips = pusherMan.getStrips();
+    private Strip getActualStrip(final PixelPoint pp) {
+        final List<Strip> strips = pusherMan.getStrips();
         int actualStripNum = pp.getStrip();
         if (strips.size() > actualStripNum && actualStripNum >= 0) {
             return strips.get(actualStripNum);
@@ -299,5 +299,15 @@ public class DragonMind extends ProcessingBase {
     @Override
     public void die(String what, Exception e) {
         throw new NearDeathExperience(what, e);
+    }
+
+    /**
+     * Programs may call this to indicate the system should give up on them. Subclasses may override this if they
+     * care.
+     *
+     * @param msg explain what happened to the end user.
+     */
+    public void fail(String msg) {
+        // do nothing
     }
 }
