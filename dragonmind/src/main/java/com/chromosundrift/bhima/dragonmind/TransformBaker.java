@@ -15,7 +15,7 @@ import static java.util.stream.Collectors.toList;
  * the inverse transform from the top of the matrix stack in order to get from model space to
  * screen space so sucessive baking operations on only one transform per segment are required
  * to complete the baking.
- *
+ * <p>
  * This thing will probably be deleted soon.
  */
 public class TransformBaker extends DragonMind {

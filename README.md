@@ -29,6 +29,13 @@ Quesions etc. to [bhima@chromosundrift.com](mailto:bhima@chromosundrift.com)
 
 ## TODO
 
+* build: gradle build should make an executable that runs on linux for default config.
+    * decide where the default built-in video directory goes and remove the list of default videos, then prune the 
+    actual video directory to include only known good videos. Then make software load every video found at runtime 
+    in that dir as a built in video.
+    * confirm linux 64 bit native libs result in running video (paths etc)
+    * make VideoLurker work on linux filesystem config - use ubuntu usb stick auto mount point to watch
+* make system console log (show on mobile app / front panel)
 * add to SystemInfo:
     * performance metrics: e.g. render time
     * led drivers connected, latency?

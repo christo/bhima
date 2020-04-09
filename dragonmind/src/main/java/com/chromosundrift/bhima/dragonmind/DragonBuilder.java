@@ -87,14 +87,15 @@ public class DragonBuilder extends AbstractSegmentBuilder {
 
     /**
      * Crazy.
-     * @param x panel origin x coordinate.
-     * @param y panel origin y coordinate.
-     * @param nLedX number of points in the x axis.
-     * @param nLedY number of points in the y axis.
-     * @param dx distance in x axis between pixels.
-     * @param dy distance in y axis between pixels.
+     *
+     * @param x            panel origin x coordinate.
+     * @param y            panel origin y coordinate.
+     * @param nLedX        number of points in the x axis.
+     * @param nLedY        number of points in the y axis.
+     * @param dx           distance in x axis between pixels.
+     * @param dy           distance in y axis between pixels.
      * @param includePoint function to decide if the point should be created (as opposed to skipped).
-     * @param knapp the weft of the wiring.
+     * @param knapp        the weft of the wiring.
      * @return the pixels arrayed in a regular diamond grid.
      */
     public List<PixelPoint> generatePanel(int x, int y, int nLedX, int nLedY, int dx, int dy, Function<PanelPoint, Boolean> includePoint, Knapp knapp) {

@@ -152,7 +152,7 @@ public class CirclePacker extends PApplet {
         }
 
         private boolean onScreen() {
-            return CirclePacker.this.onScreen(x,y,r);
+            return CirclePacker.this.onScreen(x, y, r);
         }
 
         private boolean intersects(Circle circle) {

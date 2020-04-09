@@ -133,11 +133,15 @@ public class MapEditor extends DragonMind {
     private Config config;
     private Wiring wiring;
 
-    /** Whether or not to draw the generated grid/dragon */
+    /**
+     * Whether or not to draw the generated grid/dragon
+     */
     private boolean drawGeneratedDragon = false;
     private boolean drawGrid = false;
 
-    /** Holds a cache of the per-pixel background images to reduce IO */
+    /**
+     * Holds a cache of the per-pixel background images to reduce IO
+     */
     private final CachingImageLoader loader = new CachingImageLoader(300);
     private PImage bg;
 
@@ -207,9 +211,7 @@ public class MapEditor extends DragonMind {
         int pw = 70 - margin;
         Function<DragonBuilder.PanelPoint, Boolean> exceptions = pp -> {
             if (pp.panelNumber == 10) {
-                if (pp.x == 9 && pp.y == 9) {
-                    return false;
-                }
+                return pp.x != 9 || pp.y != 9;
             } else if (pp.panelNumber == 11) {
                 // TODO add exceptions for panel 11
                 return true;
@@ -291,12 +293,12 @@ public class MapEditor extends DragonMind {
         float startY = gridOffsetY % gridDy;
         // calculate gradients to project lines
         // diamond grid has half-offset x resulting in doubly steep gradient
-        float crissGradient = gridDy/gridDx * 2;
+        float crissGradient = gridDy / gridDx * 2;
         float crossGradient = -crissGradient;
         // criss-cross
         // y = ax + c => x = (y - c)/a
         int bottomY = boundingBox.getMaxMax().getY();
-        float xProjectionAtBottom = (bottomY - gridOffsetX)/crissGradient;
+        float xProjectionAtBottom = (bottomY - gridOffsetX) / crissGradient;
         pushStyle();
         stroke(44, 130, 166);
         strokeWeight(0.5f);

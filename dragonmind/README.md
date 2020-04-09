@@ -34,27 +34,3 @@ that the pixelpusher-based mirroring puts on us means that software-defined mirr
 There is an optional background image that can be placed for each segment (again, quad warp may not be implemented for
 the image).
 
-
-## Scan Notes
-
-The following scans were done today (roughly in time order)
-
-strip num (scan strip num = port - 1): description
-17: Right neck (there is no left)
-0: Left tail
-1: Left headmost single panel, dodgy w/ 100 ish lights, missing other two due to door
-2: Left second headmost trio
-3: Left third headmost trio
-4: Left second headmost trio 
-5: Right third headmost trio
-6: Right second headmost trio
-7: Right headmost trio
-8: Right fourth headmost trio
-12: Right fifth headmost trio, curving up and thinning
-20: Right tail tip 4 panels (several scans)
-
-from earlier scans:
-left wing bottom
-left wing top
-right wing bottom (slightly dodgy)
-right wing top
