@@ -40,4 +40,6 @@ public interface DragonProgram {
      * {@link #getProgramInfos(int, int, int, int)} call.
      */
     ProgramInfo runProgram(String id);
+
+    ProgramInfo getCurrentProgramInfo(int inx, int iny, int innerWidth, int innerHeight);
 }

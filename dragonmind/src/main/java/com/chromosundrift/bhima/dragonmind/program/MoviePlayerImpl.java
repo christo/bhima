@@ -3,7 +3,10 @@ package com.chromosundrift.bhima.dragonmind.program;
 import com.chromosundrift.bhima.api.ImageDeserializer;
 import com.chromosundrift.bhima.api.ImageSerializer;
 import com.chromosundrift.bhima.api.ProgramInfo;
+import com.chromosundrift.bhima.dragonmind.CompositeMedia;
 import com.chromosundrift.bhima.dragonmind.DragonMind;
+import com.chromosundrift.bhima.dragonmind.LocalVideos;
+import com.chromosundrift.bhima.dragonmind.MediaSource;
 import com.chromosundrift.bhima.dragonmind.NearDeathExperience;
 import com.chromosundrift.bhima.dragonmind.VideoLurker;
 import com.fasterxml.jackson.core.Version;
@@ -33,7 +36,7 @@ import static java.util.stream.Collectors.toList;
 /**
  * Plays one or more movies.
  */
-public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProgram, MoviePlayer {
+public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProgram {
 
     private static final Logger logger = LoggerFactory.getLogger(MoviePlayerImpl.class);
     public static final int THUMBNAIL_WIDTH = 400;
@@ -41,14 +44,14 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
 
     private long movieCyclePeriodMs = 1000 * 60 * 5;
 
-    private VideoLurker videoLurker;
+    private MediaSource mediaSource;
     private ObjectMapper objectmapper;
 
     private boolean mute = false;
     private int currentVideoIndex = -1;
     private long currentVideoStartMs = 0;
     private Movie movie = null;
-    private List<String> builtInVideos;
+//    private List<String> builtInVideos;
     private DragonMind mind;
 
     /**
@@ -88,11 +91,11 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
     }
 
     private ProgramInfo getMovieProgramInfo(BufferedImage bi, String f) {
-        String name = f.substring(f.lastIndexOf('/') + 1, f.length() - 4);
+        String niceName = f.substring(f.lastIndexOf('/') + 1, f.length() - 4);
         Map<String, String> settings = new HashMap<>();
         settings.put("FPS", Float.toString(fps));
         settings.put("muted", Boolean.toString(mute));
-        return new ProgramInfo(f, name, "Movie", bi, settings);
+        return new ProgramInfo(f, niceName, "Movie", bi, settings);
     }
 
     @Override
@@ -101,44 +104,29 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
             throw new NullPointerException();
         }
         this.mind = mind;
-
-        builtInVideos = Arrays.asList(
-                "video/mushroom-moments.m4v",
-                "video/flying-food.m4v",
-                "video/zebra-trippin.m4v",
-                "video/train-mirror.m4v",
-                "video/chemical.m4v",
-                "video/geometrix.m4v",
-                "video/ink-tank.m4v",
-                "video/red-dots.m4v",
-                "video/cosmology.m4v",
-                "video/electric-sheep.m4v",
-                "video/inner-space.m4v",
-                "video/candy-crush.m4v",
-                "video/laser-mountain.m4v",
-                "video/kaliedoscope.mp4",
-                "video/frostyloop.mp4",
-                "video/pink-star.mp4",
-                "video/better-fire.m4v",
-                "video/golden-cave.m4v",
-                "video/colour-ink.m4v",
-                "video/clouds.m4v",
-                "video/quick-threads.m4v",
-                "video/dots-waves.m4v",
-                "video/candy-stripes.mp4",
-                "video/diamonds.m4v",
-                "video/aztec-rug.m4v"
-        );
         objectmapper = new ObjectMapper();
         SimpleModule module = new SimpleModule("ImageSerializer", new Version(1, 0, 0, null, null, null));
         module.addSerializer(BufferedImage.class, new ImageSerializer());
         module.addDeserializer(BufferedImage.class, new ImageDeserializer());
         objectmapper.registerModule(module);
-        generateInfos(builtInVideos);
+        LocalVideos localVideos = null;
+        try {
+            localVideos = new LocalVideos("video"); // TODO get into config
+            final List<String> media = localVideos.getMedia();
+            generateInfos(media);
+        } catch (IOException e) {
+            logger.error("Cannot initialise local video list");
+        }
+
         // TODO OSX-specific, fix for linux
-        videoLurker = new VideoLurker("/Volumes", "bhima");
+        VideoLurker videoLurker = new VideoLurker("/Volumes", "bhima");
         videoLurker.start();
         getRuntime().addShutdownHook(new Thread(() -> videoLurker.stop(), "VideoLurker Shutdown Hook"));
+        if (localVideos == null) {
+            mediaSource = videoLurker;
+        } else {
+            mediaSource = new CompositeMedia(videoLurker, localVideos);
+        }
     }
 
     private void generateInfos(List<String> videoFiles) {
@@ -186,19 +174,12 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
         if (currentVideoStartMs + movieCyclePeriodMs < now && loopMovie) {
             logger.debug("time to load new movie");
             currentVideoIndex++;
-            List<String> media = videoLurker.getMedia();
+
+            List<String> media = mediaSource.getMedia();
 
             try {
-                List<String> movieSource;
-                if (media.size() > 0) {
-                    movieSource = media;
-                    logger.info("Loading next movie from dynamic library");
-                } else {
-                    logger.info("Loading next movie from built-ins");
-                    movieSource = builtInVideos;
-                }
-                currentVideoIndex %= movieSource.size();
-                final String movieFile = movieSource.get(currentVideoIndex);
+                currentVideoIndex %= media.size();
+                final String movieFile = media.get(currentVideoIndex);
                 Movie newMovie = setupMovie(mind, movieFile);
                 currentVideoStartMs = now;
                 if (movie != null) {
@@ -208,10 +189,11 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
                 logger.debug("New movie loaded OK");
             } catch (NearDeathExperience e) {
                 logger.warn("Movie loading failed. Dodging death.");
-                if (!media.isEmpty()) {
-                    videoLurker.excludeMovieFile(media.get(currentVideoIndex));
+
+                if (!mediaSource.getMedia().isEmpty()) {
+                    mediaSource.excludeMovieFile(media.get(currentVideoIndex));
                 } else {
-                    final String msg = "Built-in videos failed and there's no USB stick. Mama!";
+                    final String msg = "No videos available";
                     logger.error(msg);
                     mind.fail(msg);
                 }
@@ -243,11 +225,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
      * @return the list of movie infos.
      */
     public List<ProgramInfo> getProgramInfos(int x, int y, int w, int h) {
-        List<String> media = videoLurker.getMedia();
-        Stream<String> filenames = media.size() > 0
-                ? media.stream()
-                : builtInVideos.stream();
-        return filenames.map(this::loadProgramInfo).collect(toList());
+        return mediaSource.getMedia().stream().map(this::loadProgramInfo).collect(toList());
     }
 
     private ProgramInfo loadProgramInfo(String filename) {
@@ -287,14 +265,18 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
         Stream<ProgramInfo> stream = getProgramInfos(0, 0, 400, 100).stream();
         Optional<ProgramInfo> opi = stream.filter(pi -> pi.getId().equals(id)).findFirst();
         if (opi.isPresent()) {
-            Movie newMovie = setupMovie(mind, id);
-            if (movie != null) {
-                movie.dispose();
-            }
-            movie = newMovie;
-            currentVideoStartMs = System.currentTimeMillis();
+            switchToMovie(id);
         }
         return opi.orElse(NULL_PROGRAM_INFO);
+    }
+
+    private void switchToMovie(String id) {
+        Movie newMovie = setupMovie(mind, id);
+        if (movie != null) {
+            movie.dispose();
+        }
+        movie = newMovie;
+        currentVideoStartMs = System.currentTimeMillis();
     }
 }
 

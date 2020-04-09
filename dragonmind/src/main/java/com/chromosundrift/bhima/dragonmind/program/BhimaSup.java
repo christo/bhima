@@ -61,7 +61,7 @@ public final class BhimaSup extends DragonMind implements Dragon {
     private float xpos = 0;
     private PFont mesgFont;
     private String mesg;
-    private MoviePlayer moviePlayer;
+    private DragonProgram moviePlayer;
 
     @Override
     public String getStatus() {
@@ -157,7 +157,7 @@ public final class BhimaSup extends DragonMind implements Dragon {
             moviePlayer = new MoviePlayerImpl();
             moviePlayer.setup(this); // FIXME this composition linkage causes ambiguous state space in lifecycle
         } else {
-            moviePlayer = new MoviePlayer.NullMoviePlayer();
+            moviePlayer = new NullProgram();
         }
         try {
             config = loadConfigFromFirstArgOrDefault();

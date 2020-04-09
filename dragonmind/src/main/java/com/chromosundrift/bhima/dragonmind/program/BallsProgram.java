@@ -51,7 +51,6 @@ public class BallsProgram extends AbstractDragonProgram implements DragonProgram
         return pg;
     }
 
-
     @Override
     public void mouseClicked(DragonMind mind) {
         attract = !attract;
@@ -59,17 +58,21 @@ public class BallsProgram extends AbstractDragonProgram implements DragonProgram
 
     @Override
     public List<ProgramInfo> getProgramInfos(int x, int y, int w, int h) {
+        return Collections.singletonList(getCurrentProgramInfo(x, y, w, h));
+    }
+
+    @Override
+    public ProgramInfo getCurrentProgramInfo(int x, int y, int w, int h) {
         PGraphics graphics = draw(mind, w, h);
         BufferedImage thumbnail = imageToBufferedImage(graphics.getImage(), x, y, w, h);
         String id = BallsProgram.class.getName();
-        ProgramInfo programInfo = new ProgramInfo(id, NAME, TYPE_SKETCH, thumbnail);
-        return Collections.singletonList(programInfo);
+        return new ProgramInfo(id, NAME, TYPE_SKETCH, thumbnail);
     }
 
     /**
      * Restarts.
      *
-     * @param id ignored
+     * @param id currently ignored
      * @return the ProgramInfo.
      */
     @Override

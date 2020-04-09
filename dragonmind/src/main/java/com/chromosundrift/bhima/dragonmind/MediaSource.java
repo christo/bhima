@@ -29,7 +29,7 @@ public abstract class MediaSource {
         duds.add(filename);
     }
 
-    abstract List<String> getMedia() throws IOException;
+    public abstract List<String> getMedia();
 
     /**
      * Fetch a list of file names of all regular files under the given root to the given depth.
@@ -42,14 +42,16 @@ public abstract class MediaSource {
     protected List<String> collectFilenames(Path root, int depth) throws IOException {
         return Files.find(root, depth, this::fileOk, FOLLOW_LINKS)
                 .map(Path::toString)
+                .sorted()
                 .collect(toList());
     }
 
     private boolean fileOk(Path p, BasicFileAttributes bfa) {
-        return !p.endsWith(".json") &&
+        String filename = p.toString();
+        return !filename.endsWith(".json") &&
                 bfa.isRegularFile() &&
-                !p.startsWith(".") &&
-                !p.endsWith(".mov") &&
+                !filename.startsWith(".") &&
+                !filename.endsWith(".mov") &&
                 p.toFile().canRead() &&
                 !duds.contains(p.toString());
     }
