@@ -33,8 +33,6 @@ import static java.lang.Runtime.getRuntime;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toSet;
 
-// TODO receive NDI stream for display
-// TODO make window bigger and doing view scaling to fit the correct aspect ratio centred and fit.
 
 /**
  * Loads and plays video on Bhima configured by file.
@@ -185,8 +183,6 @@ public final class BhimaSup extends DragonMind implements Dragon {
             // BHIMA DRAGON MAPPING BULLSHIT FROM HERE ON
             pushMatrix();
             applyGlobalTransforms(config);
-
-            // TODO: dynamically perform this scaling function into the video frame (full width, vertically centred)
 
             // manual trasform fixup for getting the whole dragon in-frame with the video panel
             translate(-2.28f * width, -2.40f * height);

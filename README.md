@@ -70,6 +70,7 @@ Quesions etc. to [bhima@chromosundrift.com](mailto:bhima@chromosundrift.com)
 * all GUI image scaling with overlay rendering properly registered
 * test full logical layout with 7.5k LEDs
 * test ideas: audio-input, accelerometer input, theremin-style control field?
+* VJ proposal: implement NDI stream sink for display
 
 
 ## Random Notes

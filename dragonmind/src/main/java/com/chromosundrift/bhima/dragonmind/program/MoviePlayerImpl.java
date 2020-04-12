@@ -22,7 +22,6 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,20 +37,19 @@ import static java.util.stream.Collectors.toList;
  */
 public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProgram {
 
-    private static final Logger logger = LoggerFactory.getLogger(MoviePlayerImpl.class);
     public static final int THUMBNAIL_WIDTH = 400;
     public static final int THUMBNAIL_HEIGHT = 100;
 
-    private long movieCyclePeriodMs = 1000 * 60 * 5;
+    private static final Logger logger = LoggerFactory.getLogger(MoviePlayerImpl.class);
+    private static final String VIDEO_DIR_NAME = "video";
 
+    private long movieCyclePeriodMs = 1000 * 60 * 5;
     private MediaSource mediaSource;
     private ObjectMapper objectmapper;
-
     private boolean mute = false;
     private int currentVideoIndex = -1;
     private long currentVideoStartMs = 0;
     private Movie movie = null;
-//    private List<String> builtInVideos;
     private DragonMind mind;
 
     /**
@@ -111,7 +109,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
         objectmapper.registerModule(module);
         LocalVideos localVideos = null;
         try {
-            localVideos = new LocalVideos("video"); // TODO get into config
+            localVideos = new LocalVideos(VIDEO_DIR_NAME);
             final List<String> media = localVideos.getMedia();
             generateInfos(media);
         } catch (IOException e) {
@@ -121,7 +119,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
         // TODO OSX-specific, fix for linux
         VideoLurker videoLurker = new VideoLurker("/Volumes", "bhima");
         videoLurker.start();
-        getRuntime().addShutdownHook(new Thread(() -> videoLurker.stop(), "VideoLurker Shutdown Hook"));
+        getRuntime().addShutdownHook(new Thread(videoLurker::stop, "VideoLurker Shutdown Hook"));
         if (localVideos == null) {
             mediaSource = videoLurker;
         } else {
