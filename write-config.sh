@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# writes pixelpusher config files to mounted USB sticks
+
 # note only works on mac
 unmount() {
     #diskutil unmountDisk $1 

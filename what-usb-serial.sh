@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# finds serial port devices on OSX using heuristics
+
 # $1 = egrep options
 # $2 = pattern
 # $3 = message

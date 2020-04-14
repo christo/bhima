@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 
+# generate pixel pusher config file for the given pixel pusher number
+
 import sys
 import time
 from datetime import date
