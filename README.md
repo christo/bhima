@@ -1,8 +1,8 @@
 # Bhima
 
-Code, docs and config for Burning Seed camp _Dragon Heart_ artcar bus, _Bhima_. #burningman #artcar
+Code, docs and config for Burning Seed camp _Bhima the Dragon_ artcar bus, _Bhima_. #burningseed #burningman #artcar
 
-Quesions etc. to [bhima@chromosundrift.com](mailto:bhima@chromosundrift.com)
+Questions etc. to [bhima@chromosundrift.com](mailto:bhima@chromosundrift.com)
 
 ## Summary
 
@@ -20,15 +20,14 @@ Quesions etc. to [bhima@chromosundrift.com](mailto:bhima@chromosundrift.com)
 * Java application
     * Processing used as application API
     * Pixelpusher LED controllers drive lights
-    * Embedded Dropwizard web app
-    * Mobile web app uses Onsen UI framework
-* Gradle build
 * "API" module contains common code and interfaces 
 
 ---
 
 ## TODO
 
+* make work with jdk11 (jee modules removed, jaxb etc.)
+    * ? can we upgrade dropwizard to fix this?
 * build: gradle build should make an executable that runs on linux for default config.
     * decide where the default built-in video directory goes and remove the list of default videos, then prune the 
     actual video directory to include only known good videos. Then make software load every video found at runtime 
