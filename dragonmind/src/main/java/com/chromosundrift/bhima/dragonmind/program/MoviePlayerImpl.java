@@ -174,27 +174,34 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
             currentVideoIndex++;
 
             List<String> media = mediaSource.getMedia();
+            if (media.size() != 0) {
+                try {
 
-            try {
-                currentVideoIndex %= media.size();
-                final String movieFile = media.get(currentVideoIndex);
-                Movie newMovie = setupMovie(mind, movieFile);
-                currentVideoStartMs = now;
-                if (movie != null) {
-                    movie.dispose();
-                }
-                movie = newMovie;
-                logger.debug("New movie loaded OK");
-            } catch (NearDeathExperience e) {
-                logger.warn("Movie loading failed. Dodging death.");
+                    currentVideoIndex %= media.size();
 
-                if (!mediaSource.getMedia().isEmpty()) {
-                    mediaSource.excludeMovieFile(media.get(currentVideoIndex));
-                } else {
-                    final String msg = "No videos available";
-                    logger.error(msg);
-                    mind.fail(msg);
+                    final String movieFile = media.get(currentVideoIndex);
+                    Movie newMovie = setupMovie(mind, movieFile);
+                    currentVideoStartMs = now;
+                    if (movie != null) {
+                        movie.dispose();
+                    }
+                    movie = newMovie;
+                    logger.debug("New movie loaded OK");
+                } catch (NearDeathExperience e) {
+                    logger.warn("Movie loading failed. Dodging death.");
+
+                    if (!mediaSource.getMedia().isEmpty()) {
+                        mediaSource.excludeMovieFile(media.get(currentVideoIndex));
+                    } else {
+                        final String msg = "No videos available";
+                        logger.error(msg);
+                        mind.fail(msg);
+                    }
                 }
+            } else {
+                final String msg = "No videos available";
+                logger.error(msg);
+                mind.fail(msg);
             }
         }
     }
@@ -207,7 +214,14 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
      */
     private Movie setupMovie(DragonMind mind, String movieFile) {
         logger.info("setting up movie {}", movieFile);
-        Movie movie = new Movie(mind, movieFile);
+
+        Movie movie = null;
+        try {
+            movie = new Movie(mind, movieFile);
+        } catch (UnsatisfiedLinkError e) {
+            logger.error("ULE: Probably native libraries or lib paths are missing or wrong.");
+            throw e;
+        }
         fps = Math.min(movie.frameRate, 30);
         logger.debug("playing back {} at {} FPS (native framerate is {})", movieFile, fps, movie.frameRate);
         movie.frameRate(fps);

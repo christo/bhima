@@ -14,6 +14,7 @@ import processing.core.PImage;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,6 +29,7 @@ public class ProcessingBase extends PApplet {
     private static final String GSTREAMER_PLUGIN_PATH = "gstreamer.plugin.path";
 
     private final ExecutorService offloader;
+    public static final String OSX = "mac os x";
 
     public ProcessingBase(int offloaderThreads) {
         offloader = Executors.newFixedThreadPool(offloaderThreads);
@@ -39,10 +41,22 @@ public class ProcessingBase extends PApplet {
      * Set these for the Java runtime with the -D option
      */
     protected static void setNativeLibraryPaths() {
-        String pLibBase = "/Users/christo/src/christo/processing/libraries";
-        String os = "macosx64";
-        sysPropDefault(GSTREAMER_LIBRARY_PATH, pLibBase + "/video/library/" + os);
-        sysPropDefault(GSTREAMER_PLUGIN_PATH, pLibBase + "/video/library/" + os + "/plugins/");
+        final Properties sysProp = System.getProperties();
+        if (!sysProp.contains(GSTREAMER_LIBRARY_PATH) || !sysProp.contains(GSTREAMER_PLUGIN_PATH)) {
+            logger.info("Not setting native library paths, already set by system properties");
+        } else {
+            final String osname = sysProp.getProperty("os.name", "unknown").toLowerCase();
+            String os;
+            String pLibBase;
+            if (osname.equals(OSX)) {
+                os = "macosx64";
+                pLibBase = "/Users/christo/src/christo/processing/libraries";
+                sysPropDefault(GSTREAMER_LIBRARY_PATH, pLibBase + "/video/library/" + os);
+                sysPropDefault(GSTREAMER_PLUGIN_PATH, pLibBase + "/video/library/" + os + "/plugins/");
+            } else if (osname.matches(".+n[iu]x\\b]")) {
+                logger.info("operating system name is {} - don't know how to set native library paths", osname);
+            }
+        }
     }
 
     private static void sysPropDefault(String key, String value) {
