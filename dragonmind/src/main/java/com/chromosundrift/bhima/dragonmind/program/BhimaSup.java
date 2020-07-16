@@ -33,7 +33,6 @@ import static java.lang.Runtime.getRuntime;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toSet;
 
-
 /**
  * Loads and plays video on Bhima configured by file.
  */
@@ -45,7 +44,7 @@ public final class BhimaSup extends DragonMind implements Dragon {
     private static int INNER_WIDTH = 400;
     private static int INNER_HEIGHT = 100;
 
-    private boolean movieMode = true; // TODO convert to curerntProgram
+    private boolean movieMode = true; // TODO convert to currentProgram
     private boolean mouseMode = false;
 
     private Config config;
@@ -127,7 +126,7 @@ public final class BhimaSup extends DragonMind implements Dragon {
         if (args != null) {
             Arrays.stream(args).filter(s -> s.startsWith("-")).forEach(arg -> {
                 if (arg.equals("-noserver")) {
-                    logger.info("Server disabbled");
+                    logger.info("Server disabled");
                     doServer.set(false);
                 } else if (arg.equals("-novideo")) {
                     logger.info("Video disabled");
@@ -153,7 +152,7 @@ public final class BhimaSup extends DragonMind implements Dragon {
 
         if (doVideo.get()) {
             moviePlayer = new MoviePlayerImpl();
-            moviePlayer.setup(this); // FIXME this composition linkage causes ambiguous state space in lifecycle
+            moviePlayer.setup(this); // FIXME this composition linkage causes ambiguous state in lifecycle
         } else {
             moviePlayer = new NullProgram();
         }

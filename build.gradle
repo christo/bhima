@@ -1,3 +1,4 @@
+
 allprojects {
     task hello {
         doLast { task ->
@@ -5,6 +6,7 @@ allprojects {
         }
     }
 }
+
 subprojects {
 
     group 'com.chromosundrift'
@@ -12,8 +14,9 @@ subprojects {
 
     apply plugin: 'java'
 
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
+    // Processing seems wedged on Java 1.8 but maybe let's try upgrading later?
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 
     repositories {
         mavenCentral()
@@ -21,7 +24,9 @@ subprojects {
     }
 
     dependencies {
-        testImplementation 'junit:junit:4.12'
+        // not putting anything here right now because root project isn't java project
+        // and there's not really enough reuse benefit to putting java specific stuff
+        // so far from its point of usage. So subprojects define their own for now.
     }
 }
 

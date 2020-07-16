@@ -14,6 +14,11 @@ Questions etc. to [bhima@chromosundrift.com](mailto:bhima@chromosundrift.com)
 * Config file generator for pixelpushers.
 * deployment script for config files
 
+## Installation
+
+* Installation on Linux relies on libgstreamer being installed (normal on ubuntu) as well as a gstreamer plugin (seemingly not installed by default) which can be installed with:
+    
+    sudo apt install gstreamer1.0-libav ubuntu-restricted-extras
 
 ## Architecture
 

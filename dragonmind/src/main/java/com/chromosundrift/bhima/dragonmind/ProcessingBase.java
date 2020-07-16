@@ -42,23 +42,35 @@ public class ProcessingBase extends PApplet {
      */
     protected static void setNativeLibraryPaths() {
         final Properties sysProp = System.getProperties();
-        if (!sysProp.contains(GSTREAMER_LIBRARY_PATH) || !sysProp.contains(GSTREAMER_PLUGIN_PATH)) {
-            logger.info("Not setting native library paths, already set by system properties");
+        logger.info("setting gstreamer native library paths based on system properties");
+        final String osname = getOs();
+        String os;
+        if (osname.equals(OSX)) {
+            logger.info("OSX => assuming we're running in dev mode");
+            final String library = "/Users/christo/src/christo/bhima/dragonmind/processing-video-lib/video/library/macosx";
+            final String plugins = library + "/gstreamer-1.0";
+            sysPropDefault(GSTREAMER_LIBRARY_PATH, library);
+            sysPropDefault(GSTREAMER_PLUGIN_PATH, plugins);
+        } else if (osname.matches(".+n[iu]x\\b]")) {
+            logger.info("operating system name is {} - don't know how to set native library paths", osname);
         } else {
-            final String osname = sysProp.getProperty("os.name", "unknown").toLowerCase();
-            String os;
-            String pLibBase;
-            if (osname.equals(OSX)) {
-                os = "macosx64";
-                pLibBase = "/Users/christo/src/christo/processing/libraries";
-                sysPropDefault(GSTREAMER_LIBRARY_PATH, pLibBase + "/video/library/" + os);
-                sysPropDefault(GSTREAMER_PLUGIN_PATH, pLibBase + "/video/library/" + os + "/plugins/");
-            } else if (osname.matches(".+n[iu]x\\b]")) {
-                logger.info("operating system name is {} - don't know how to set native library paths", osname);
-            }
+            logger.warn("osname is '{}'; no idea how to set native library paths", osname);
         }
     }
 
+    /**
+     * Lowercase operating system name or "unknown".
+     */
+    public static String getOs() {
+        return System.getProperties().getProperty("os.name", "unknown").toLowerCase();
+    }
+
+    /**
+     * Sets system property key to value only if not already set.
+     *
+     * @param key   the key.
+     * @param value the value.
+     */
     private static void sysPropDefault(String key, String value) {
         if (!System.getProperties().containsKey(key)) {
             logger.warn("Fallback sysprop {} = {}", key, value);

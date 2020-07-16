@@ -1,101 +1,107 @@
 plugins {
     id 'application'
+    id 'org.unbroken-dome.test-sets' version '3.0.1'
 }
 
 application {
     mainClassName = "com.chromosundrift.bhima.dragonmind.program.BhimaSup"
     applicationDefaultJvmArgs = ["-Dgreeting.language=en"]
-
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 repositories {
-
-//    flatDir { dirs "${rootDir}/../../processing/libraries/video/library" }
-//    flatDir { dirs "${rootDir}/../../processing/libraries/PixelPusher/library" }
     flatDir { dirs "${projectDir}/lib" }
 }
-// TODO dep processing library PixelPusher.jar pixelpusher-java https://github.com/robot-head/PixelPusher-java locally and/or do a maven install of it from processing libraries
 
+testSets {
+    integrationTest {dirName = 'integration-test'}
+}
+
+check.dependsOn integrationTest
 dependencies {
+
+
 
     implementation project(':api')
     implementation project(':dragonmind-web')
 
-    // these need to point to where processing libraries are stored
-    // default on mac is ~/Documents/Processing
     implementation files('lib/PixelPusher.jar')
-    //implementation ':video:'
-//    runtimeOnly files('lib/jna.jar')
-//    runtimeOnly files('lib/glvideo.jar')
-    runtimeOnly ':gstreamer-java:'
-    runtimeOnly ':jna:'
-    // TODO copy all these into lib
-    runtimeOnly files('../../processing/libraries/video/library/macosx64/libgstreamer-0.10.dylib')
+
+    // TODO depend on binaries for processing and processing video in their source projects having been already built
+    // TODO depend on gluegen, jogl etc. as collected into the Processing project dir
 
     implementation(group: 'org.processing', name: 'core', version: '3.3.7')
-    implementation('org.processing:video:3.2.3') {
-        exclude group: 'net.java.dev.jna'
-        exclude group: 'com.googlecode.gstreamer-java'
-    }
 
-    //runtimeOnly group: 'org.freedesktop.gstreamer', name: 'gst1-java-core', version: '0.9.1'
+    //implementation files("${processingProject}/processing/core/core.jar")
 
+    /*
+    Processing Video Broken on Linux for Years
+    Due to https://github.com/processing/processing-video/issues/136 we have to use
+    https://github.com/processing/processing-video/releases/tag/r6-v2.0-beta4 which works with gstreamer 1.x which
+    is distributed with modern linux in place of long extinct gstreamer 0.10.x while the gstreamer native libs are
+    distributed with Processing Video for osx64, windows32 and windows64
+    The notably unoffical maven published jars for Processing and Procesing video are coversioned but the Processing
+    Video Library that is distributed through the built-in Processing Library feature uses independent version numbers
+    and these are reused across minor releases: 1.0 for the old one while the new one we need is numbered 2.0-beta4
+    and seems to be stuck in beta and only available on github. The summary is this dependency is a bit of an oddball.
+    It doesn't seem like a great idea to join the chorus of randoms who choose to release maven artifacts because the
+    Processing team have shown no inclination to adopt this conventional artifact distribution system, not least because
+    they built their own and it's probably only experienced engineers who want this dependency management stuff whereas
+    their target audience is creative coders who use their IDE and library manager. The maven release version number
+    can't even be guessed because the video library has no history of independent release.
+    Also, consistent with this shenanigans, as distributed, the primary video API video.jar has no version number on it
+    and no relevent version metadata in META-INF etc.
+
+    The long term plan is get off Processing Video (there's not much code here), perhaps just depend on
+    the gstreamer bindings directly but the short term plan is to depend on this beta and hope the thing is released
+    properly and the gradle build can suck less. The longer term plan is get off Processing as well.
+     */
+
+    // OSX native gstreamer lib, linux is distributed with gstreamer
+    // TODO try commenting this out - it's right but processing-video does manual dynamic native library loading
+    def videoLib = "processing-video-lib/video/library"
+    runtimeOnly files("${videoLib}/macosx64/libgstreamer-1.0.0.dylib")
+    // need to have all native libraries available for integration test without processing's manual resolution
+    integrationTestRuntimeOnly fileTree("${videoLib}/macosx64/") { include '*.dylib' }
+    testRuntimeOnly fileTree("${videoLib}/macosx64/") { include '*.dylib' }
+
+    runtimeOnly files("${videoLib}/gst1-java-core-1.1.0.jar")
+    implementation files("${videoLib}/jna.jar")
+
+    // TODO might need dev mode with linked source and source project for Processing Video
+    implementation files("${videoLib}/video.jar")
+
+    ////////////////////////
+
+    // think these are deps of processing
     runtimeOnly group: 'org.jogamp.jogl', name: 'jogl-all-main', version: '2.3.2'
     runtimeOnly group: 'org.jogamp.gluegen', name: 'gluegen-rt-main', version: '2.3.2'
 
+    // logging using slf4j api and logback implementation
     implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'
     runtimeOnly group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
     runtimeOnly group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
     runtimeOnly group: 'ch.qos.logback', name: 'logback-access', version: '1.2.3'
 
-    //implementation 'org.slf4j:slf4j-jdk14:1.7.26'
     implementation group: 'commons-io', name: 'commons-io', version: '2.6'
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.8.1'
     implementation group: 'org.apache.commons', name: 'commons-collections4', version: '4.2'
 
+    // Processing GUI library - used mainly by the mapper and with some regret
     implementation ":G4P:"
-    //runtimeOnly fileTree(dir: 'lib', include: '*.jar')
 
     // TODO add database for playlists or program plans etc.
     //implementation group: 'com.h2database', name: 'h2', version: '1.4.199'
 
-
-//    runtimeOnly ":gluegen-rt:2.3.2"
-//    runtimeOnly ":gluegen-rt:natives-android-aarch64"
-//    runtimeOnly ":gluegen-rt:natives-android-armv6"
-//    runtimeOnly ":gluegen-rt:natives-linux-amd64"
-//    runtimeOnly ":gluegen-rt:natives-linux-armv6"
-//    runtimeOnly ":gluegen-rt:natives-linux-armv6hf"
-//    runtimeOnly ":gluegen-rt:natives-linux-i586"
-//    runtimeOnly ":gluegen-rt:natives-macosx-universal"
-//    runtimeOnly ":gluegen-rt:natives-solaris-amd64"
-//    runtimeOnly ":gluegen-rt:natives-solaris-i586"
-//    runtimeOnly ":gluegen-rt:natives-windows-amd64"
-//    runtimeOnly ":gluegen-rt:natives-windows-i586"
-//
-//    runtimeOnly ":jogl-all:2.3.2"
-//    runtimeOnly ":jogl-all:natives-android-aarch64"
-//    runtimeOnly ":jogl-all:natives-android-armv6"
-//    runtimeOnly ":jogl-all:natives-linux-amd64"
-//    runtimeOnly ":jogl-all:natives-linux-armv6"
-//    runtimeOnly ":jogl-all:natives-linux-armv6hf"
-//    runtimeOnly ":jogl-all:natives-linux-i586"
-//    runtimeOnly ":jogl-all:natives-macosx-universal"
-//    runtimeOnly ":jogl-all:natives-solaris-amd64"
-//    runtimeOnly ":jogl-all:natives-solaris-i586"
-//    runtimeOnly ":jogl-all:natives-windows-amd64"
-//    runtimeOnly ":jogl-all:natives-windows-i586"
-
-    testImplementation group: 'junit', name: 'junit', version: '4.12'
-
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.6'
     implementation "com.fasterxml.jackson.core:jackson-databind:2.9.7"
+
+    // testCommon covers testImplementation and integrationTestImplementation
+    testImplementation group: 'junit', name: 'junit', version: '4.12'
+    testImplementation 'org.mockito:mockito-core:3.3.3'
+    integrationTestImplementation 'junit:junit:4.12'
+    integrationTestImplementation 'org.mockito:mockito-core:3.3.3'
 }
+
 
 task getDeps(type: Copy) {
     from sourceSets.main.runtimeClasspath

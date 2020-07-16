@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
-# usage deploy-dragonmind.sh [target machine]
+# takes the already built tar file in dragonmind/build/distributions/ 
+# and does a fresh (re)install of it on the given target machine
+# (or dragon.local if no target) to which we must be able to ssh
 
+# usage deploy-dragonmind.sh [target machine]
 
 # config
 
@@ -31,17 +34,20 @@ function ok() {
 
 #main
 
+deployable=dragonmind/build/distributions/dragonmind-*.tar
+echo -n locating deployable ${deployable} 
+test -f $deployable && ok || die
+
 echo build timestamp $unixtime
 echo -n verifying connectivity to $target_machine
 ping -c 1 $target_machine 2>&1 >/dev/null && ok || die
 echo -n testing ssh
 ssh $ssh_target mkdir -p $archive_dir && ok || die
-deployable=dragonmind/build/distributions/dragonmind-*.tar
 echo -n deploying $deployable
 rsync -q $deployable $ssh_target: && ok || die
 fname=`basename $deployable`
 echo -n syncing video dir
-rsync -qazu dragonmind/video $ssh_target:video && ok || die
+rsync -qazu dragonmind/video/ $ssh_target:video && ok || die
 ddir=`basename -s .tar $deployable`
 echo -n removing existing distribution directory $ddir
 ssh $ssh_target "test -d $ddir && rm -r \"$ddir\"" && ok

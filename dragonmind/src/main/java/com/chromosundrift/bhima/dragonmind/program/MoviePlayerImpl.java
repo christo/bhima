@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 
 import static com.chromosundrift.bhima.api.ProgramInfo.NULL_PROGRAM_INFO;
 import static java.lang.Runtime.getRuntime;
+import static java.lang.String.format;
 import static java.util.stream.Collectors.toList;
 
 /**
@@ -71,7 +72,13 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
         return getMovieProgramInfo(bi, m.filename);
     }
 
-    private BufferedImage getMovieImage(Movie m, int x, int y, int w, int h) {
+    BufferedImage getMovieImage(Movie m, int x, int y, int w, int h) {
+        if (m == null) {
+            throw new NullPointerException();
+        }
+        if (x < 0 || y < 0 || w < 0 || h < 0) {
+            throw new IllegalArgumentException(format("invalid dimensions: %d, %d, %d, %d", x, y, w, h));
+        }
         try {
             Image image = m.getImage();
             if (image == null) {
@@ -133,7 +140,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
             if (!thumb.exists()) {
                 generateInfo(s, thumb);
             } else {
-                logger.info("reusing cached info for {}", s);
+                logger.debug("reusing cached info for {}", s);
             }
         });
     }
@@ -218,12 +225,18 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
         Movie movie = null;
         try {
             movie = new Movie(mind, movieFile);
+            if (!movie.available()) {
+                // this is probably fatal
+                logger.warn("Movie not 'available': {}", movieFile);
+            }
         } catch (UnsatisfiedLinkError e) {
             logger.error("ULE: Probably native libraries or lib paths are missing or wrong.");
             throw e;
         }
         fps = Math.min(movie.frameRate, 30);
-        logger.debug("playing back {} at {} FPS (native framerate is {})", movieFile, fps, movie.frameRate);
+
+        logger.info("playing back {} at {} FPS (native framerate is {})", movie.filename, fps, movie.frameRate);
+
         movie.frameRate(fps);
         movie.volume(mute ? 0f : 1f);
         movie.loop();
@@ -267,6 +280,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
             return getMovieProgramInfo(NULL_PROGRAM_INFO.getThumbnail(), filename);
         } finally {
             if (thisMovie != null) {
+                // clean up any native resources
                 thisMovie.dispose();
             }
         }
