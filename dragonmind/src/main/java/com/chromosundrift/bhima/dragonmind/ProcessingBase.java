@@ -65,6 +65,10 @@ public class ProcessingBase extends PApplet {
         return System.getProperties().getProperty("os.name", "unknown").toLowerCase();
     }
 
+    public static boolean isLinux() {
+        return getOs().equalsIgnoreCase("linux");
+    }
+
     /**
      * Sets system property key to value only if not already set.
      *
@@ -130,6 +134,7 @@ public class ProcessingBase extends PApplet {
         crossHair(point.getX(), point.getY(), size);
     }
 
+    // TODO move these sorts of things into a drawing helper which takes an instance of a PApplet at construction
     protected void outlinedText(String label, float v1, float v2, float v3, float v4) {
         pushStyle();
         // poor man's outline

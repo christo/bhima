@@ -8,6 +8,7 @@ import com.chromosundrift.bhima.dragonmind.DragonMind;
 import com.chromosundrift.bhima.dragonmind.LocalVideos;
 import com.chromosundrift.bhima.dragonmind.MediaSource;
 import com.chromosundrift.bhima.dragonmind.NearDeathExperience;
+import com.chromosundrift.bhima.dragonmind.ProcessingBase;
 import com.chromosundrift.bhima.dragonmind.VideoLurker;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -109,11 +110,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
             throw new NullPointerException();
         }
         this.mind = mind;
-        objectmapper = new ObjectMapper();
-        SimpleModule module = new SimpleModule("ImageSerializer", new Version(1, 0, 0, null, null, null));
-        module.addSerializer(BufferedImage.class, new ImageSerializer());
-        module.addDeserializer(BufferedImage.class, new ImageDeserializer());
-        objectmapper.registerModule(module);
+        setupObjectMapper();
         LocalVideos localVideos = null;
         try {
             localVideos = new LocalVideos(VIDEO_DIR_NAME);
@@ -123,15 +120,25 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
             logger.error("Cannot initialise local video list");
         }
 
-        // TODO OSX-specific, fix for linux
-        VideoLurker videoLurker = new VideoLurker("/Volumes", "bhima");
+        String baseDir = ProcessingBase.isLinux()
+                ? String.format("/media/%s")
+                : "/Volumes";
+        VideoLurker videoLurker = new VideoLurker(baseDir, "bhima");
+
         videoLurker.start();
         getRuntime().addShutdownHook(new Thread(videoLurker::stop, "VideoLurker Shutdown Hook"));
-        if (localVideos == null) {
-            mediaSource = videoLurker;
-        } else {
-            mediaSource = new CompositeMedia(videoLurker, localVideos);
-        }
+
+        mediaSource = (localVideos == null)
+                ? videoLurker
+                : new CompositeMedia(videoLurker, localVideos);
+    }
+
+    private void setupObjectMapper() {
+        objectmapper = new ObjectMapper();
+        SimpleModule module = new SimpleModule("ImageSerializer", new Version(1, 0, 0, null, null, null));
+        module.addSerializer(BufferedImage.class, new ImageSerializer());
+        module.addDeserializer(BufferedImage.class, new ImageDeserializer());
+        objectmapper.registerModule(module);
     }
 
     private void generateInfos(List<String> videoFiles) {
