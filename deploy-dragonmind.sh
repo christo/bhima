@@ -41,17 +41,23 @@ test -f $deployable && ok || die
 echo build timestamp $unixtime
 echo -n verifying connectivity to $target_machine
 ping -c 1 $target_machine 2>&1 >/dev/null && ok || die
+
 echo -n testing ssh
 ssh $ssh_target mkdir -p $archive_dir && ok || die
+
 echo -n deploying $deployable
 rsync -q $deployable $ssh_target: && ok || die
 fname=`basename $deployable`
+
 echo -n syncing video dir
 rsync -qazu dragonmind/video/ $ssh_target:video && ok || die
 ddir=`basename -s .tar $deployable`
+
 echo -n removing existing distribution directory $ddir
 ssh $ssh_target "test -d $ddir && rm -r \"$ddir\"" && ok
+
 echo -n unarchiving $fname
 ssh $ssh_target tar -xf $fname && ok || die
+
 echo -n linking video dir
 ssh $ssh_target "ln -sf ~/video $ddir" && ok || die
