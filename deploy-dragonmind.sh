@@ -2,15 +2,15 @@
 
 # takes the already built tar file in dragonmind/build/distributions/ 
 # and does a fresh (re)install of it on the given target machine
-# (or dragon.local if no target) to which we must be able to ssh
+# (or silverbox.local if no target) to which we must be able to ssh
 
-# usage deploy-dragonmind.sh [target machine]
+# usage deploy-dragonmind.sh [<target machine> [<target user>]]
 
 # config
 
-target_machine=${1:-dragon.local}
+target_machine=${1:-silverbox.local}
 #target_machine=192.168.1.112
-target_username=christo
+target_username=${2:-bhima}
 deploy_dir=dragonmind
 archive_dir=archive
 
@@ -32,32 +32,44 @@ function ok() {
   printf " \\033[32mok\\033[0m\n"
 }
 
+# changes foreground colour so unexpected stdout from following command can be visually distnct
+function yy() {
+  printf " \\033[33m"
+}
 #main
 
 deployable=dragonmind/build/distributions/dragonmind-*.tar
 echo -n locating deployable ${deployable} 
+yy
 test -f $deployable && ok || die
 
 echo build timestamp $unixtime
-echo -n verifying connectivity to $target_machine
+echo -n verifying connectivity to $target_machine 
+yy
 ping -c 1 $target_machine 2>&1 >/dev/null && ok || die
 
-echo -n testing ssh
+echo -n testing ssh 
+yy
 ssh $ssh_target mkdir -p $archive_dir && ok || die
 
-echo -n deploying $deployable
+echo -n deploying $deployable 
+yy
 rsync -q $deployable $ssh_target: && ok || die
 fname=`basename $deployable`
 
-echo -n syncing video dir
+echo -n syncing video dir 
+yy
 rsync -qazu dragonmind/video/ $ssh_target:video && ok || die
 ddir=`basename -s .tar $deployable`
 
-echo -n removing existing distribution directory $ddir
-ssh $ssh_target "test -d $ddir && rm -r \"$ddir\"" && ok
+echo -n removing existing distribution directory $ddir 
+yy
+ssh $ssh_target "test -d $ddir && rm -r \"$ddir\"" && ok || die
 
-echo -n unarchiving $fname
+echo -n unarchiving $fname 
+yy
 ssh $ssh_target tar -xf $fname && ok || die
 
-echo -n linking video dir
+echo -n linking video dir 
+yy
 ssh $ssh_target "ln -sf ~/video $ddir" && ok || die
