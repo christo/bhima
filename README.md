@@ -16,9 +16,9 @@ Questions etc. to [bhima@chromosundrift.com](mailto:bhima@chromosundrift.com)
 
 ## Installation
 
-* Installation on Linux relies on libgstreamer being installed (normal on ubuntu) as well as a gstreamer plugin (seemingly not installed by default) which can be installed with:
+* Installation on Linux relies on java and libgstreamer being installed (normal on ubuntu) as well as a gstreamer plugin (seemingly not all installed by default) which can be installed with:
     
-    sudo apt install gstreamer1.0-libav ubuntu-restricted-extras
+    sudo apt install default-jdk gstreamer1.0-libav ubuntu-restricted-extras
 
 ## Architecture
 
@@ -27,6 +27,43 @@ Questions etc. to [bhima@chromosundrift.com](mailto:bhima@chromosundrift.com)
     * Pixelpusher LED controllers drive lights
 * "API" module contains common code and interfaces 
 
+## Building
+
+The main build tool is `gradle` with a root module and the following submodules:
+* api : common module that contains interfaces and commonly used components between `dragonmind` and `dragonmind-web`.
+* dragonmind : main implementation module for driving the dragon LEDs 
+* dragonmind-web : web app including mobile web app for control
+
+To build with gradle at the command line from the root:
+
+```
+gradle build
+```
+
+To run tests:
+
+```
+gradle test
+```
+
+To see other build targets (mostly standard gradle things):
+```
+gradle tasks
+```
+
+Building in IntelliJ should be a matter of maintaining synchronisation with gradle. Building with other IDEs is 
+assumed to work the same way.
+
+## Dependencies
+
+* processing : library for 2d graphics and application framework
+* processing-video : library that extends processing with the ability to process video files
+* junit : unit testing
+* slf4j : logging API
+* dropwizard : web api for dragonmind-web
+* onsen : js ui framework for dragonmind-web
+* jquery : js library
+
 ---
 
 ## TODO
@@ -34,9 +71,7 @@ Questions etc. to [bhima@chromosundrift.com](mailto:bhima@chromosundrift.com)
 * make work with jdk11 (jee modules removed, jaxb etc.)
     * ? can we upgrade dropwizard to fix this?
 * build: gradle build should make an executable that runs on linux for default config.
-    * decide where the default built-in video directory goes and remove the list of default videos, then prune the 
-    actual video directory to include only known good videos. Then make software load every video found at runtime 
-    in that dir as a built in video.
+    * decide where the default built-in video directory goes and remove the list of default videos, then prune the actual video directory to include only known good videos. Then make software load every video found at runtime in that dir as a built in video.
     * confirm linux 64 bit native libs result in running video (paths etc)
     * make VideoLurker work on linux filesystem config - use ubuntu usb stick auto mount point to watch
 * make system console log (show on mobile app / front panel)
