@@ -56,6 +56,7 @@ assumed to work the same way.
 
 ## Dependencies
 
+* java 1.8 : (back off this is imposed solely by processing which has been a total pain in the neck)
 * processing : library for 2d graphics and application framework
 * processing-video : library that extends processing with the ability to process video files
 * junit : unit testing
