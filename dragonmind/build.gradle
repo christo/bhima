@@ -1,6 +1,6 @@
 plugins {
     id 'application'
-    id 'org.unbroken-dome.test-sets' version '3.0.1'
+//    id 'org.unbroken-dome.test-sets' version '3.0.1'
 }
 
 application {
@@ -12,11 +12,11 @@ repositories {
     flatDir { dirs "${projectDir}/lib" }
 }
 
-testSets {
-    integrationTest {dirName = 'integration-test'}
-}
+//testSets {
+//    integrationTest {dirName = 'integration-test'}
+//}
 
-check.dependsOn integrationTest
+//check.dependsOn integrationTest
 dependencies {
 
 
@@ -39,7 +39,7 @@ dependencies {
     https://github.com/processing/processing-video/releases/tag/r6-v2.0-beta4 which works with gstreamer 1.x which
     is distributed with modern linux in place of long extinct gstreamer 0.10.x while the gstreamer native libs are
     distributed with Processing Video for osx64, windows32 and windows64
-    The notably unoffical maven published jars for Processing and Procesing video are coversioned but the Processing
+    The notably unofficial maven published jars for Processing and Processing video are co-versioned but the Processing
     Video Library that is distributed through the built-in Processing Library feature uses independent version numbers
     and these are reused across minor releases: 1.0 for the old one while the new one we need is numbered 2.0-beta4
     and seems to be stuck in beta and only available on github. The summary is this dependency is a bit of an oddball.
@@ -49,7 +49,7 @@ dependencies {
     their target audience is creative coders who use their IDE and library manager. The maven release version number
     can't even be guessed because the video library has no history of independent release.
     Also, consistent with this shenanigans, as distributed, the primary video API video.jar has no version number on it
-    and no relevent version metadata in META-INF etc.
+    and no relevant version metadata in META-INF etc.
 
     The long term plan is get off Processing Video (there's not much code here), perhaps just depend on
     the gstreamer bindings directly but the short term plan is to depend on this beta and hope the thing is released
@@ -61,7 +61,7 @@ dependencies {
     def videoLib = "processing-video-lib/video/library"
     runtimeOnly files("${videoLib}/macosx64/libgstreamer-1.0.0.dylib")
     // need to have all native libraries available for integration test without processing's manual resolution
-    integrationTestRuntimeOnly fileTree("${videoLib}/macosx64/") { include '*.dylib' }
+    //integrationTestRuntimeOnly fileTree("${videoLib}/macosx64/") { include '*.dylib' }
     testRuntimeOnly fileTree("${videoLib}/macosx64/") { include '*.dylib' }
 
     runtimeOnly files("${videoLib}/gst1-java-core-1.1.0.jar")
@@ -77,7 +77,7 @@ dependencies {
     runtimeOnly group: 'org.jogamp.gluegen', name: 'gluegen-rt-main', version: '2.3.2'
 
     // logging using slf4j api and logback implementation
-    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.26'
+    implementation group: 'org.slf4j', name: 'slf4j-api', version: '1.7.25'
     runtimeOnly group: 'ch.qos.logback', name: 'logback-classic', version: '1.2.3'
     runtimeOnly group: 'ch.qos.logback', name: 'logback-core', version: '1.2.3'
     runtimeOnly group: 'ch.qos.logback', name: 'logback-access', version: '1.2.3'
@@ -89,24 +89,21 @@ dependencies {
     // Processing GUI library - used mainly by the mapper and with some regret
     implementation ":G4P:"
 
-    // TODO add database for playlists or program plans etc.
-    //implementation group: 'com.h2database', name: 'h2', version: '1.4.199'
-
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-core', version: '2.9.6'
     implementation "com.fasterxml.jackson.core:jackson-databind:2.9.7"
 
     // testCommon covers testImplementation and integrationTestImplementation
     testImplementation group: 'junit', name: 'junit', version: '4.12'
     testImplementation 'org.mockito:mockito-core:3.3.3'
-    integrationTestImplementation 'junit:junit:4.12'
-    integrationTestImplementation 'org.mockito:mockito-core:3.3.3'
+//    integrationTestImplementation 'junit:junit:4.12'
+//    integrationTestImplementation 'org.mockito:mockito-core:3.3.3'
 }
 
 
-task getDeps(type: Copy) {
-    from sourceSets.main.runtimeClasspath
-    into 'lib/'
-}
+//task getDeps(type: Copy) {
+//    from sourceSets.main.runtimeClasspath
+//    into 'lib/'
+//}
 
 task printDeps(description: "yo know") {
     doLast {
