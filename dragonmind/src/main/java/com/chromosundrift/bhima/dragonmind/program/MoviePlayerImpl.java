@@ -1,15 +1,5 @@
 package com.chromosundrift.bhima.dragonmind.program;
 
-import com.chromosundrift.bhima.api.ImageDeserializer;
-import com.chromosundrift.bhima.api.ImageSerializer;
-import com.chromosundrift.bhima.api.ProgramInfo;
-import com.chromosundrift.bhima.dragonmind.CompositeMedia;
-import com.chromosundrift.bhima.dragonmind.DragonMind;
-import com.chromosundrift.bhima.dragonmind.LocalVideos;
-import com.chromosundrift.bhima.dragonmind.MediaSource;
-import com.chromosundrift.bhima.dragonmind.NearDeathExperience;
-import com.chromosundrift.bhima.dragonmind.ProcessingBase;
-import com.chromosundrift.bhima.dragonmind.VideoLurker;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.module.SimpleModule;
@@ -28,11 +18,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
-
-import static com.chromosundrift.bhima.api.ProgramInfo.NULL_PROGRAM_INFO;
 import static java.lang.Runtime.getRuntime;
 import static java.lang.String.format;
+import static java.lang.System.currentTimeMillis;
 import static java.util.stream.Collectors.toList;
+
+import com.chromosundrift.bhima.api.ImageDeserializer;
+import com.chromosundrift.bhima.api.ImageSerializer;
+import com.chromosundrift.bhima.api.ProgramInfo;
+import com.chromosundrift.bhima.dragonmind.CompositeMedia;
+import com.chromosundrift.bhima.dragonmind.DragonMind;
+import com.chromosundrift.bhima.dragonmind.LocalVideos;
+import com.chromosundrift.bhima.dragonmind.MediaSource;
+import com.chromosundrift.bhima.dragonmind.NearDeathExperience;
+import com.chromosundrift.bhima.dragonmind.VideoLurker;
+import static com.chromosundrift.bhima.api.ProgramInfo.NULL_PROGRAM_INFO;
+import static com.chromosundrift.bhima.dragonmind.ProcessingBase.isLinux;
 
 /**
  * Plays one or more movies.
@@ -120,8 +121,8 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
             logger.error("Cannot initialise local video list");
         }
 
-        String baseDir = ProcessingBase.isLinux()
-                ? String.format("/media/%s")
+        String baseDir = isLinux()
+                ? format("/media/%s", System.getProperty("user.name"))
                 : "/Volumes";
         VideoLurker videoLurker = new VideoLurker(baseDir, "bhima");
 
@@ -181,9 +182,8 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
      * @param mind the DragonMind.
      */
     void keepFreshMovie(DragonMind mind) {
-        long now = System.currentTimeMillis();
         boolean loopMovie = movie == null || (movie.duration() * 1000) < movieCyclePeriodMs;
-        if (currentVideoStartMs + movieCyclePeriodMs < now && loopMovie) {
+        if (currentVideoStartMs + movieCyclePeriodMs < currentTimeMillis() && loopMovie) {
             logger.debug("time to load new movie");
             currentVideoIndex++;
 
@@ -195,7 +195,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
 
                     final String movieFile = media.get(currentVideoIndex);
                     Movie newMovie = setupMovie(mind, movieFile);
-                    currentVideoStartMs = now;
+                    currentVideoStartMs = currentTimeMillis();
                     if (movie != null) {
                         movie.dispose();
                     }
@@ -295,21 +295,29 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
 
     @Override
     public ProgramInfo runProgram(String id) {
+        // note in our case id is a file name
         Stream<ProgramInfo> stream = getProgramInfos(0, 0, 400, 100).stream();
         Optional<ProgramInfo> opi = stream.filter(pi -> pi.getId().equals(id)).findFirst();
         if (opi.isPresent()) {
-            switchToMovie(id);
+            try {
+                switchToMovie(id);
+                return opi.get();
+            } catch (MovieException e) {
+                logger.warn("Can't run movie {} because something blew up", id);
+            }
+        } else {
+            logger.warn("Can't find program with id {}", id);
         }
-        return opi.orElse(NULL_PROGRAM_INFO);
+        return NULL_PROGRAM_INFO;
     }
 
-    private void switchToMovie(String id) {
-        Movie newMovie = setupMovie(mind, id);
+    private void switchToMovie(String file) throws MovieException {
+        Movie newMovie = setupMovie(mind, file);
         if (movie != null) {
             movie.dispose();
         }
         movie = newMovie;
-        currentVideoStartMs = System.currentTimeMillis();
+        currentVideoStartMs = currentTimeMillis();
     }
 }
 
