@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-# builds distribution then unpacks and runs it locally, assumes we are connected to the dragon
+# builds distribution then unpacks and runs it locally
+# assumes we are connected to the dragon
 
 set -vx 
 shopt -s failglob
