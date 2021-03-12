@@ -16,12 +16,15 @@ public class ImageSerializer extends StdSerializer<BufferedImage> {
         super(BufferedImage.class);
     }
 
+    static String imgToString(BufferedImage img) throws IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(img, "jpg", baos);
+        return Base64.getEncoder().encodeToString(baos.toByteArray());
+    }
+
     /**
      * Base64 encodes image as jpeg.
      *
-     * @param img
-     * @param gen
-     * @param provider
      * @throws IOException not really.
      */
     @Override
@@ -29,11 +32,5 @@ public class ImageSerializer extends StdSerializer<BufferedImage> {
         // very memory hungry - should make this fully streaming but right now it doesn't matter
         String encoded = imgToString(img);
         gen.writeString(encoded);
-    }
-
-    static String imgToString(BufferedImage img) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ImageIO.write(img, "jpg", baos);
-        return Base64.getEncoder().encodeToString(baos.toByteArray());
     }
 }
