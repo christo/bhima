@@ -6,8 +6,8 @@
 set -vx 
 shopt -s failglob
 
-#gradle clean
-gradle build
+gradle clean
+gradle distTar
 mkdir -p tmp
 rm -rf tmp/*
 tar xf dragonmind/build/distributions/dragonmind-*.tar -C tmp/
