@@ -730,7 +730,6 @@ public class ArrayScanner2 extends DragonMind {
     }
 
     private void drawCrossHair(Point point) {
-        // TODO matrix transform to get this overlay correct under map transforms
         stroke(crosshairColour);
         strokeWeight(1);
         // scale centroid from camera space to screen space
@@ -808,9 +807,6 @@ public class ArrayScanner2 extends DragonMind {
         nStrip = startStrip;
     }
 
-    /**
-     * TODO pull up into {@link ProcessingBase}
-     */
     public static void main(String[] args) {
         logger.warn("starting");
         // TODO fix dependency on Processing native libs
