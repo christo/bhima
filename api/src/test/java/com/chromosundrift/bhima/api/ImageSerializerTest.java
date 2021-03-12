@@ -8,7 +8,6 @@ import org.junit.Test;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.StringWriter;
@@ -33,8 +32,6 @@ public class ImageSerializerTest {
         g2d.fillOval(25, 25, 50, 50);
         g2d.dispose();
 
-        //        ImageIO.write(bi, "jpg", new File("generatedImage.jpg"));
-        //        ImageIO.write(bi, "png", new File("generatedImage.png"));
 
         ObjectMapper mapper = new ObjectMapper();
         SimpleModule module = new SimpleModule("ImageSerializer", new Version(1, 0, 0, null, null, null));
@@ -44,8 +41,6 @@ public class ImageSerializerTest {
         mapper.writeValue(w, bi);
         String encoded = w.toString();
         Assert.assertTrue("expected base 64 string: " + encoded, encoded.matches(BASE64_CHARS));
-        // TODO maybe assert it can be decoded as a jpg etc.
-
 
     }
 }
