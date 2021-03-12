@@ -33,7 +33,6 @@ public class MoviePlayerImplTest {
     }
 
     /**
-     * TODO move this somewhere it can do more damage.
      * @return a hopefully nonexplosive PApplet instance for testing dependents.
      */
     private static PApplet mockPApplet() {
