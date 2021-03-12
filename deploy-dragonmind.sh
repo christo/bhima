@@ -16,21 +16,14 @@ archive_dir=archive
 
 shopt -s failglob
 
+cd "$( dirname "${BASH_SOURCE[0]}" )"
+
+source functions.sh
+
 # convenience variables
 
 ssh_target=${target_username}@${target_machine}
 unixtime=`date +%s`
-
-# functions
-
-function die() {
-  printf "  \\033[31mfailed\\033[0m\n"
-  exit 1
-}
-
-function ok() {
-  printf " \\033[32mok\\033[0m\n"
-}
 
 # changes foreground colour so unexpected stdout from following command can be visually distnct
 function yy() {
