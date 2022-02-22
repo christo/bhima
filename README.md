@@ -56,19 +56,21 @@ assumed to work the same way.
 
 ## Dependencies
 
-* java 1.8 : (back off this is imposed solely by processing which has been a total pain in the neck)
+* java 1.8 : (back off! this is imposed solely by processing which has been a total pain in the neck)
 * processing : library for 2d graphics and application framework
 * processing-video : library that extends processing with the ability to process video files
 * junit : unit testing
 * slf4j : logging API
 * dropwizard : web api for dragonmind-web
 * onsen : js ui framework for dragonmind-web
-* jquery : js library
+* jquery : boomer js library
 
 ---
 
 ## TODO
 
+* global brightness control
+* renovate mobile web app
 * make work with jdk11 (jee modules removed, jaxb etc.)
     * ? can we upgrade dropwizard to fix this?
     * Will upgrading processing help this?
