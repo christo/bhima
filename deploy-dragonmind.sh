@@ -57,11 +57,11 @@ ddir=`basename -s .tar $deployable`
 
 echo -n removing existing distribution directory $ddir 
 yy
-ssh $ssh_target "test -d $ddir && rm -r \"$ddir\"" && ok || die
+ssh $ssh_target "mkdir -p $ddir && rm -r \"$ddir\"" && ok || die
 
 echo -n unarchiving $fname 
 yy
-ssh $ssh_target tar -xf $fname && ok || die
+ssh $ssh_target "tar -xf $fname" && ok || die
 
 echo -n linking video dir 
 yy
