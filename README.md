@@ -71,6 +71,7 @@ assumed to work the same way.
 
 * make work with jdk11 (jee modules removed, jaxb etc.)
     * ? can we upgrade dropwizard to fix this?
+    * Will upgrading processing help this?
 * build: gradle build should make an executable that runs on linux for default config.
     * decide where the default built-in video directory goes and remove the list of default videos, then prune the actual video directory to include only known good videos. Then make software load every video found at runtime in that dir as a built in video.
     * confirm linux 64 bit native libs result in running video (paths etc)
