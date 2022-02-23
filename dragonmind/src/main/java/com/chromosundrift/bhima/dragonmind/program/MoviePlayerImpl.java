@@ -233,7 +233,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
         try {
             movie = new Movie(mind, movieFile);
             if (!movie.available()) {
-                // this is probably fatal
+                // this is apparently often not fatal
                 logger.warn("Movie not 'available': {}", movieFile);
             }
         } catch (UnsatisfiedLinkError e) {
