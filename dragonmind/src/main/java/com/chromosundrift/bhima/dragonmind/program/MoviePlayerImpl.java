@@ -234,7 +234,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
             movie = new Movie(mind, movieFile);
             if (!movie.available()) {
                 // this is apparently often not fatal
-                logger.warn("Movie not 'available': {}", movieFile);
+                logger.warn("Movie not 'available()'; may still work: {}", movieFile);
             }
         } catch (UnsatisfiedLinkError e) {
             logger.error("ULE: Probably native libraries or lib paths are missing or wrong.");
