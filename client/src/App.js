@@ -26,7 +26,7 @@ import {
     Cable,
     ConnectedTv,
     DirectionsBus,
-    Image,
+    Image, LocalMovies,
     Movie,
     QuestionMark,
     Settings,
@@ -92,7 +92,7 @@ function bhimaFetch(name) {
  */
 const ProgramTypeIcon = (props) => {
     switch(props.type) {
-        case TYPE_MOVIE: return <Movie fontSize="large" className="programType" />;
+        case TYPE_MOVIE: return <LocalMovies fontSize="large" className="programType" />;
         case TYPE_ALGORITHM: return <Apps fontSize="large" className="programType" />;
         case TYPE_IMAGE: return <Image fontSize="large" className="programType" />;
         case TYPE_STREAM: return <ConnectedTv fontSize="large" className="programType" />;
@@ -197,8 +197,7 @@ const CurrentProgram = (props) => {
 }
 
 const ProgramCard = (props) => {
-    // TODO make clickable to show more info and run button, unshow on click out
-    const {program, onRun} = props;
+    const {program, setProgram} = props;
 
     let [open, setOpen] = React.useState(false);
 
@@ -210,7 +209,16 @@ const ProgramCard = (props) => {
     }
     const handleRun = () => {
         setOpen(false);
-        onRun(program);
+        let data = new FormData();
+        data.append("id", program.id);
+        fetch(getEndpoint("runProgram2?id=" + encodeURI(program.id)), {
+            method: 'POST',
+            headers: getHeaders()
+        }).then(res => res.json())
+            .then(() => {
+                setProgram(program);
+                window.scrollTo(0, 0);
+            });
     };
 
     return <React.Fragment>
@@ -231,7 +239,7 @@ const ProgramCard = (props) => {
 };
 
 const ProgramList = (props) => {
-    const {onRun} = props;
+    const {setProgram} = props;
     const [loaded, setLoaded] = useState(false);
     const [programs, setPrograms] = useState([]);
     const [error, setError] = useState(null);
@@ -255,7 +263,7 @@ const ProgramList = (props) => {
         return (
             <Stack spacing={2} sx={{margin: "auto"}}>
                 {programs.map(program => (
-                    <ProgramCard key={program.id} program={program} onRun={onRun}/>
+                    <ProgramCard key={program.id} program={program} setProgram={setProgram}/>
                 ))}
             </Stack>
         );
@@ -265,21 +273,12 @@ const ProgramList = (props) => {
 const HomePage = (props) => {
     const [program, setProgram] = useState(null);
 
-    const onRun = (aProgram) => {
-        let data = new FormData();
-        data.append("id", aProgram.id);
-        fetch(getEndpoint("runProgram2?id=" + encodeURI(aProgram.id)), {
-            method: 'POST',
-            headers: getHeaders()
-        }).then(res => res.json())
-            .then(() => setProgram(aProgram));
-    }
     return (
         <div className="page">
             <h3>Live</h3>
             <CurrentProgram program={program} setProgram={setProgram}/>
             <h3>All Programs</h3>
-            <ProgramList onRun={onRun}/>
+            <ProgramList setProgram={setProgram}/>
         </div>
     );
 };
