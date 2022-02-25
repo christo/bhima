@@ -15,7 +15,7 @@ export SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null &&
 # TODO rely on externally defined $PROCESSING_SKETCH_DIR
 export PROCESSING_SKETCH_DIR=$HOME/christo/processing
 
-# TODO update this when moving this scripts/
+# TODO move to scripts/ and update
 rsync -vazu --delete-after "$SCRIPT_DIR" $TIGER:src/christo
 rsync -vazu "$PROCESSING_SKETCH_DIR" $TIGER:src/christo
 rsync -vazu $HOME/.ivy2 $TIGER:

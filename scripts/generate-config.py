@@ -25,7 +25,7 @@ rainbow=(
     , "FF0000"
 )
 
-common="""
+common = """
 pixels=300
 group=1
 controller={0}
@@ -37,7 +37,7 @@ netmask=255.255.255.0
 gateway=192.168.0.1
 """[1:-1]
 
-perstrip="""
+perstrip = """
 start{0}={1}
 strip{0}=ws2811
 order{0}=grb

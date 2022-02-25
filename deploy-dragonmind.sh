@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
 
-# takes the already built tar file in dragonmind/build/distributions/ 
+# takes the already built tar file in dragonmind/build/distributions/
 # and does a fresh (re)install of it on the given target machine
 # (or silverbox.local if no target) to which we must be able to ssh
 
 # usage deploy-dragonmind.sh [<target machine> [<target user>]]
+
+# TODO move to scripts/
 
 # config
 

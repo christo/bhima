@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# TODO move to scripts/
+
 # for each file
 
 pushd dragonmind/video || exit

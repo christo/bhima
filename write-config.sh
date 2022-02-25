@@ -2,6 +2,8 @@
 
 # writes pixelpusher config files to mounted USB sticks
 
+# TODO move to scripts/
+
 # note only works on mac
 unmount() {
     #diskutil unmountDisk $1 

@@ -4,6 +4,8 @@
 # usage network-status.sh [<target machine> [<target user>]]
 # default machine: silverbox.local default user: bhima
 
+# TODO move to scripts/
+
 cd "$( dirname "${BASH_SOURCE[0]}" )"
 
 source functions.sh

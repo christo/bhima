@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# TODO move to scripts/
+
 rsync -vazu --delete-after christo@10.10.10.101:src/christo/bhima /Users/christo/src/christo/bhima-tiger/
 #rsync -vazu /Users/christo/src/christo/processing christo@10.10.10.101:src/christo
 #rsync -vazu christo@10.10.10.101:.ivy2 /Users/christo/.ivy2 

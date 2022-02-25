@@ -1,5 +1,7 @@
 # common functions to be sourced by other scripts
 
+# TODO move to scripts/
+
 function fail() {
   printf "  \\033[31mfailed\\033[0m\n"
 }

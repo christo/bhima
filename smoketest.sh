@@ -3,6 +3,8 @@
 # builds distribution then unpacks and runs it locally
 # assumes we are connected to the dragon
 
+# TODO move to scripts/
+
 set -vx 
 shopt -s failglob
 
