@@ -6,11 +6,13 @@ import com.chromosundrift.bhima.api.Settings;
 import com.chromosundrift.bhima.api.SystemInfo;
 import com.codahale.metrics.annotation.Timed;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +30,8 @@ public class BhimaResource {
     public BhimaResource(Dragon dragon) {
         this.dragon = dragon;
     }
+
+    // TODO create getComposite (?) to return everything except program list to reduce requests
 
     @GET
     @Timed
@@ -61,6 +65,13 @@ public class BhimaResource {
     @Timed
     @Path("/runProgram")
     public ProgramInfo runProgram(@FormParam("id") String id) {
+        return dragon.runProgram(id);
+    }
+
+    @POST
+    @Timed
+    @Path("/runProgram2")
+    public ProgramInfo runProgram2(@QueryParam("id") String id) {
         return dragon.runProgram(id);
     }
 
