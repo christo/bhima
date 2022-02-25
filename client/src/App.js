@@ -206,18 +206,13 @@ const ProgramCard = (props) => {
     }
     const handleCancel = () => {
         setOpen(false);
-        console.log("cancelling");
     }
     const handleRun = () => {
         setOpen(false);
         onRun(program);
     };
 
-    return <Paper className="program" onClick={handleOpen}>
-        <img className="thumbnail" alt={`thumbnail for ${program.name}`}
-             src={"data:image/jpg;charset=utf-8;base64," + program.thumbnail}/>
-        <ProgramTypeIcon type={program.type}/>
-        <span className="programName">{program.name}</span>
+    return <React.Fragment>
         <Dialog open={open} onClose={handleCancel}>
             <DialogTitle>{`Run ${program.name} now?`}</DialogTitle>
             <DialogActions>
@@ -225,7 +220,13 @@ const ProgramCard = (props) => {
                 <Button onClick={handleRun} autoFocus>Run</Button>
             </DialogActions>
         </Dialog>
-    </Paper>;
+        <Paper className="program" onClick={handleOpen}>
+            <img className="thumbnail" alt={`thumbnail for ${program.name}`}
+                 src={"data:image/jpg;charset=utf-8;base64," + program.thumbnail}/>
+            <ProgramTypeIcon type={program.type}/>
+            <span className="programName">{program.name}</span>
+        </Paper>
+    </React.Fragment>;
 };
 
 const ProgramList = (props) => {
