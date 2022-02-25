@@ -6,7 +6,7 @@ import processing.core.PGraphics;
 
 import java.util.List;
 
-import static com.chromosundrift.bhima.api.ProgramInfo.NULL_PROGRAM_INFO;
+import static com.chromosundrift.bhima.api.ProgramInfo.getNullProgramInfo;
 import static java.util.Collections.singletonList;
 
 public class NullProgram implements DragonProgram {
@@ -34,16 +34,16 @@ public class NullProgram implements DragonProgram {
 
     @Override
     public ProgramInfo getCurrentProgramInfo(int inx, int iny, int innerWidth, int innerHeight) {
-        return NULL_PROGRAM_INFO;
+        return ProgramInfo.getNullProgramInfo();
     }
 
     @Override
     public List<ProgramInfo> getProgramInfos(int inx, int iny, int innerWidth, int innerHeight) {
-        return singletonList(NULL_PROGRAM_INFO);
+        return singletonList(ProgramInfo.getNullProgramInfo());
     }
 
     @Override
     public ProgramInfo runProgram(String id) {
-        return NULL_PROGRAM_INFO;
+        return ProgramInfo.getNullProgramInfo();
     }
 }

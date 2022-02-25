@@ -1,5 +1,6 @@
 package com.chromosundrift.bhima.api;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -19,8 +20,13 @@ import static java.util.Collections.emptyMap;
  */
 @JsonInclude(NON_EMPTY)
 public final class ProgramInfo {
-    public static final ProgramInfo NULL_PROGRAM_INFO =
+    private static final ProgramInfo NULL_PROGRAM_INFO =
             new ProgramInfo("NULL", "no program", "dummy", generateNullImage(400, 100), emptyMap());
+
+    @JsonIgnore
+    public static ProgramInfo getNullProgramInfo() {
+        return NULL_PROGRAM_INFO;
+    }
 
     private String name;
     private String id;

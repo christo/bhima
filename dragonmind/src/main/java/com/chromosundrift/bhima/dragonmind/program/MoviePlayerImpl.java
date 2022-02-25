@@ -9,6 +9,8 @@ import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.video.Movie;
 
+import static processing.core.PConstants.PI;
+
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -32,7 +34,7 @@ import com.chromosundrift.bhima.dragonmind.LocalVideos;
 import com.chromosundrift.bhima.dragonmind.MediaSource;
 import com.chromosundrift.bhima.dragonmind.NearDeathExperience;
 import com.chromosundrift.bhima.dragonmind.VideoLurker;
-import static com.chromosundrift.bhima.api.ProgramInfo.NULL_PROGRAM_INFO;
+import static com.chromosundrift.bhima.api.ProgramInfo.getNullProgramInfo;
 import static com.chromosundrift.bhima.dragonmind.ProcessingBase.isLinux;
 
 /**
@@ -66,7 +68,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
     }
 
     public ProgramInfo getCurrentProgramInfo(int x, int y, int w, int h) {
-        return movie == null ? NULL_PROGRAM_INFO : getProgramInfo(movie, x, y, w, h);
+        return movie == null ? ProgramInfo.getNullProgramInfo() : getProgramInfo(movie, x, y, w, h);
     }
 
     private ProgramInfo getProgramInfo(Movie m, int x, int y, int w, int h) {
@@ -85,7 +87,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
             Image image = m.getImage();
             if (image == null) {
                 logger.warn("movie image is null!");
-                return NULL_PROGRAM_INFO.getThumbnail();
+                return ProgramInfo.getNullProgramInfo().getThumbnail();
             }
             if (image.getClass().isAssignableFrom(BufferedImage.class)) {
                 return (BufferedImage) image;
@@ -93,7 +95,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
             return imageToBufferedImage(image, x, y, w, h);
         } catch (RuntimeException e) {
             logger.warn("unable to get image (may be race condition in processing's native gstreamer stack)");
-            return NULL_PROGRAM_INFO.getThumbnail();
+            return getNullProgramInfo().getThumbnail();
         }
     }
 
@@ -284,7 +286,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
             return getProgramInfo(thisMovie, x, y, w, h);
         } catch (RuntimeException re) {
             logger.error("cannot generate thumbnail for {} because {}", filename, re.getMessage());
-            return getMovieProgramInfo(NULL_PROGRAM_INFO.getThumbnail(), filename);
+            return getMovieProgramInfo(ProgramInfo.getNullProgramInfo().getThumbnail(), filename);
         } finally {
             if (thisMovie != null) {
                 // clean up any native resources
@@ -308,7 +310,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
         } else {
             logger.warn("Can't find program with id {}", id);
         }
-        return NULL_PROGRAM_INFO;
+        return getNullProgramInfo();
     }
 
     private void switchToMovie(String file) throws MovieException {

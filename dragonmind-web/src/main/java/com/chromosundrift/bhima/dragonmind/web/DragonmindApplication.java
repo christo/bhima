@@ -83,7 +83,7 @@ public class DragonmindApplication extends Application<DragonWebConfig> {
 
 
     private static class DummyDragon implements Dragon {
-        private SystemInfo systeminfo = new SystemInfo(0, ProgramInfo.NULL_PROGRAM_INFO);
+        private SystemInfo systeminfo = new SystemInfo(0, ProgramInfo.getNullProgramInfo());
         private Settings settings = new Settings(1d, true, false);
 
         @Override
@@ -103,7 +103,7 @@ public class DragonmindApplication extends Application<DragonWebConfig> {
 
         @Override
         public ProgramInfo getCurrentProgram() {
-            return ProgramInfo.NULL_PROGRAM_INFO;
+            return ProgramInfo.getNullProgramInfo();
         }
 
         @Override

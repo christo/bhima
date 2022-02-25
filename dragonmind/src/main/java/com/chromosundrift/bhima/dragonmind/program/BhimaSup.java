@@ -96,7 +96,7 @@ public final class BhimaSup extends DragonMind implements Dragon {
     @Override
     public ProgramInfo getCurrentProgram() {
         if (!movieMode || moviePlayer == null) {
-            return ProgramInfo.NULL_PROGRAM_INFO;
+            return ProgramInfo.getNullProgramInfo();
         } else {
             return moviePlayer.getCurrentProgramInfo(inx, iny, INNER_WIDTH, INNER_HEIGHT);
         }
