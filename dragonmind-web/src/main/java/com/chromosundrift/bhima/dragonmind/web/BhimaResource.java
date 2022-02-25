@@ -3,7 +3,6 @@ package com.chromosundrift.bhima.dragonmind.web;
 import com.chromosundrift.bhima.api.Dragon;
 import com.chromosundrift.bhima.api.ProgramInfo;
 import com.chromosundrift.bhima.api.SystemInfo;
-import com.chromosundrift.bhima.dragonmind.model.Wiring;
 import com.codahale.metrics.annotation.Timed;
 
 import javax.ws.rs.FormParam;
