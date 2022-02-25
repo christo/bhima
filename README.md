@@ -69,9 +69,11 @@ assumed to work the same way.
 
 ## TODO
 
-* global brightness control
 * renovate mobile web app
-* make work with jdk11 (jee modules removed, jaxb etc.)
+* global brightness control
+* fix broken thumbnails (e.g. laser-mountain)
+* better thumbnails - find a better time offset
+* make work with recent jdk (jee modules were removed, jaxb etc.)
     * ? can we upgrade dropwizard to fix this?
     * Will upgrading processing help this?
 * build: gradle build should make an executable that runs on linux for default config.
