@@ -1,11 +1,13 @@
 document.addEventListener('init', function(event) {
-  var page = event.target;
+    const page = event.target;
+    let mb = page.querySelector('#menu_button');
+    if (mb != null) {
+        mb.onclick = function () {
+            document.querySelector('#menu').open();
+        };
+    }
 
-    page.querySelector('#menu_button').onclick = function() {
-      document.querySelector('#menu').open();
-    };
-
-  if (page.id === 'home') {
+  if (page.id === 'settings') {
 
     //The postchange event listener is used for changing the dots when the carousel is changed
     page.querySelector('#carousel').addEventListener("postchange", function() {
@@ -24,14 +26,14 @@ document.addEventListener('init', function(event) {
   } else if (page.id === 'control') {
     getCurrentProgram();
     $.get("api/bhima/programs", function(data) {
-      var carousel = $("#allPrograms");
+      const carousel = $("#allPrograms");
       carousel.empty();
       data.forEach(function(pi) {
-          var id = pi.id;
-          var name = pi.name;
-          var type = pi.type;
-          var thumbnail = pi.thumbnail;
-          var item = '<ons-carousel-item tappable id="'+ id +'" onclick="requestProgram(this.id)" class="programItem"><div>' + type + " " + name + "</div><img src='data:image/jpg;charset=utf-8;base64," + thumbnail + "'/></ons-carousel-item>";
+          const id = pi.id;
+          const name = pi.name;
+          const type = pi.type;
+          const thumbnail = pi.thumbnail;
+          const item = '<ons-carousel-item tappable id="'+ id +'" onclick="requestProgram(this.id)" class="programItem"><div>' + type + " " + name + "</div><img src='data:image/jpg;charset=utf-8;base64," + thumbnail + "'/></ons-carousel-item>";
           carousel[0].innerHTML += '\n' + item;
 
       });
@@ -40,10 +42,10 @@ document.addEventListener('init', function(event) {
     });
   } else if (page.id === 'wiring') {
     $.get("api/bhima/effectiveWiring", function(data) {
-        var ports = $("#portList");
+        const ports = $("#portList");
         ports.empty();
         for (s in data) {
-            var item = '<li><div class="port circle">'+s+ ' : '+data[s]+'</div></li>'
+            const item = '<li><div class="port circle">'+s+ ' : '+data[s]+'</div></li>'
             ports[0].innerHTML += '\n' + item;
         }
         ports[0].refresh && ports[0].refresh();
@@ -53,14 +55,14 @@ document.addEventListener('init', function(event) {
 
 });
 
-var pid; // TODO remove global state
+let pid; // TODO remove global state
 
 function openMovieDetails(id) {
   document.querySelector('#myNavigator').pushPage('movie_details.html', {data: {title: id}});
 }
 
 function requestProgram(id) {
-  var dialog = document.getElementById('run-program-dialog');
+  const dialog = document.getElementById('run-program-dialog');
   pid = id;
   if (dialog) {
     dialog.show();
@@ -72,15 +74,15 @@ function requestProgram(id) {
   }
 }
 
-var okProgramDialog = function(id) {
-  var dialog = document.getElementById(id)
+const okProgramDialog = function(id) {
+  const dialog = document.getElementById(id)
   dialog.hide();
   runProgram(pid);
 };
 
 
-function openHome() {
-  document.querySelector('#myNavigator').pushPage('home_splitter.html');
+function openSettings() {
+  document.querySelector('#myNavigator').pushPage('settings_splitter.html');
 }
 
 function openControl() {

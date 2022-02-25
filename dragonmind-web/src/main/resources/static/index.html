@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <title>Bhima Dragonmind</title>
     <link rel="stylesheet" href="css/onsenui.css">
     <link rel="stylesheet" href="css/onsen-css-components.min.css">
     <link rel="stylesheet" href="css/dragonmind.css">
@@ -13,15 +14,15 @@
 <body>
 
 
-<ons-navigator id="myNavigator" page="login.html" animation="slide"></ons-navigator>
+<ons-navigator id="myNavigator" page="home_splitter.html" animation="slide"></ons-navigator>
 
 
-<!--  The Login Page -->
+<!--  Home Page -->
 
-<template id="login.html">
-    <ons-page id="login">
+<template id="home.html">
+    <ons-page id="home">
         <ons-toolbar>
-            <div class="center pagetitle">DRAGONMIND</div>
+            <div class="center pagetitle">Dragonmind</div>
             <div class="right">
                 <ons-if platform="android">
                     <ons-toolbar-button><ons-icon icon="fa-pencil"></ons-icon></ons-toolbar-button>
@@ -38,33 +39,16 @@
         </div>
 
         <ons-row class="user_cover">
-            <ons-col onclick="openHome()">
-                <div class="user_thumbnail" style="background-color: #dd6218"><ons-icon icon="fa-cubes"></ons-icon></div>
-                <div class="username" id="choose_programs">Programs</div>
-            </ons-col>
-            <ons-col onclick="openWiring()">
-                <div class="user_thumbnail" style="background-color: #00a899"><ons-icon icon="fa-heart"></ons-icon></div>
-                <div class="username" id="choose_wiring">Wiring</div>
-            </ons-col>
-        </ons-row>
-        <ons-row class="user_cover">
-            <ons-col onclick="openHome()">
+            <ons-col onclick="openSettings()">
                 <div class="user_thumbnail" style="background-color: #e3aa05"><ons-icon icon="fa-cog"></ons-icon></div>
-                <div class="username" id="choose_setup">Setup</div>
+                <div class="username" id="choose_setings">Settings</div>
             </ons-col>
             <ons-col onclick="openControl()">
                 <div class="user_thumbnail" style="background-color: #94b052"><ons-icon icon="fa-bus-alt"></ons-icon></div>
                 <div class="username" id="choose_control">Control</div>
             </ons-col>
         </ons-row>
-        <!--
-        <ons-row class="user_cover">
-            <ons-col>
-                <div class="user_thumbnail"><ons-icon icon="fa-plus-circle"></ons-icon></div>
-                <div class="username" id="username_5">Add Program</div>
-            </ons-col>
-        </ons-row>
-        -->
+
         <style type="text/css">
       .user_cover {
         padding: 0px 40px;
@@ -97,8 +81,6 @@
 </template>
 
 
-<!--  The Splitter Page -->
-
 <template id="home_splitter.html">
     <ons-page id="home_splitter">
         <ons-splitter>
@@ -114,14 +96,8 @@
 <template id="menu.html">
     <ons-page id="menu">
         <ons-list style="background-color: transparent;">
-            <ons-list-header class="menu_header">Programs</ons-list-header>
-            <ons-list-item tappable>Video</ons-list-item>
-            <ons-list-item tappable>Playlists</ons-list-item>
             <ons-list-item tappable>Programs</ons-list-item>
-            <ons-list-item tappable>Images</ons-list-item>
-            <ons-list-header class="menu_header">Options</ons-list-header>
-            <ons-list-item tappable>Program Settings</ons-list-item>
-            <ons-list-item tappable>Global Settings</ons-list-item>
+            <ons-list-item tappable>Settings</ons-list-item>
             <ons-list-item onclick="goBack()" tappable>Back</ons-list-item>
         </ons-list>
 
@@ -153,7 +129,7 @@
     <ons-page id="control">
         <ons-toolbar>
             <div class="left"><ons-toolbar-button id="menu_button"><ons-icon icon="fa-bars"></ons-icon></ons-toolbar-button></div>
-            <div class="center pagetitle">CONTROL</div>
+            <div class="center pagetitle">Control</div>
             <div class="right">
                 <ons-toolbar-button><ons-icon icon="ion-android-more-vertical"></ons-icon></ons-toolbar-button>
             </div>
@@ -182,13 +158,22 @@
     </ons-dialog>
 </template>
 
-<!--  The Home Page -->
+<!--  Settings Page -->
 
-<template id="home.html">
-    <ons-page id="home">
+<template id="settings_splitter.html">
+    <ons-page id="settings_splitter">
+        <ons-splitter>
+            <ons-splitter-side id="menu" page="menu.html" side="left" width="220px" collapse swipeable></ons-splitter-side>
+            <ons-splitter-content id="content" page="settings.html"></ons-splitter-content>
+        </ons-splitter>
+    </ons-page>
+</template>
+
+<template id="settings.html">
+    <ons-page id="settings">
         <ons-toolbar>
             <div class="left"><ons-toolbar-button id="menu_button"><ons-icon icon="fa-bars"></ons-icon></ons-toolbar-button></div>
-            <div class="center pagetitle">PROGRAMS</div>
+            <div class="center pagetitle">Settings</div>
             <div class="right">
                 <ons-toolbar-button><ons-icon icon="fa-search"></ons-icon></ons-toolbar-button>
                 <ons-if platform="android"><ons-toolbar-button><ons-icon icon="ion-android-more-vertical"></ons-icon></ons-toolbar-button></ons-if>
@@ -199,100 +184,26 @@
             status: <span id="status">pending</span>
         </div>
 
+        <ons-row class="movie_extra_buttons">
+            <ons-col>
+                <ons-button modifier="quiet">
+                    <ons-icon icon="ion-plus-round"></ons-icon>
+                    <div>Edit Wiring</div>
+                </ons-button>
+            </ons-col>
+            <ons-col>
+                <ons-if platform="ios">
+                    <ons-button modifier="quiet">
+                        <ons-icon icon="ion-ios-upload-outline"></ons-icon>
+                        <div>Share</div>
+                    </ons-button>
+                </ons-if>
+            </ons-col>
+        </ons-row>
 
-
-        <ons-carousel class="carousel" swipeable auto-scroll id="carousel">
-            <ons-carousel-item>
-                <img src="img/dragon-head-neg.png" />
-            </ons-carousel-item>
-            <ons-carousel-item>
-                <img src="img/23415364-dragon-skin-texture.jpg" />
-            </ons-carousel-item>
-            <ons-carousel-item>
-                <img src="img/snake-skin1.jpg" />
-            </ons-carousel-item>
-        </ons-carousel>
-        <div class="cover-label center">
-            <ul>
-                <li><div id="dot0" class="circle circle_current">&#x25cf;</div></li>
-                <li><div id="dot1" class="circle">&#x25cf;</div></li>
-                <li><div id="dot2" class="circle">&#x25cf;</div></li>
-            </ul>
-        </div>
-
-        <div class="movie_list">
-            My List
-            <ons-carousel auto-refresh swipeable overscrollable item-width="110px">
-                <ons-carousel-item modifier="nodivider" id="Fire Bubbles" onclick="openMovieDetails(this.id)">
-                    <img src="img/23415364-dragon-skin-texture.jpg">
-                </ons-carousel-item>
-                <ons-carousel-item modifier="nodivider" id="Zigzag Stripes" onclick="openMovieDetails(this.id)">
-                    <img src="assets/img/movie_cover_template.jpg">
-                </ons-carousel-item>
-                <ons-carousel-item modifier="nodivider" id="Pulsator 2.0" onclick="openMovieDetails(this.id)">
-                    <img src="assets/img/movie_cover_template.jpg">
-                </ons-carousel-item>
-                <ons-carousel-item modifier="nodivider" id="Persian Rug" onclick="openMovieDetails(this.id)">
-                    <img src="assets/img/movie_cover_template.jpg">
-                </ons-carousel-item>
-                <ons-carousel-item modifier="nodivider" id="Colourwaves 2D" onclick="openMovieDetails(this.id)">
-                    <img src="assets/img/movie_cover_template.jpg">
-                </ons-carousel-item>
-            </ons-carousel>
-        </div>
-
-        <div class="movie_list">
-            Current Programs
-            <ons-carousel auto-refresh swipeable overscrollable item-width="110px">
-                <ons-carousel-item modifier="nodivider" id="Electricity" onclick="openMovieDetails(this.id)">
-                    <img src="assets/img/movie_cover_template.jpg">
-                </ons-carousel-item>
-                <ons-carousel-item modifier="nodivider" id="Laser Mountain" onclick="openMovieDetails(this.id)">
-                    <img src="assets/img/movie_cover_template.jpg">
-                </ons-carousel-item>
-                <ons-carousel-item modifier="nodivider" id="Big Fire" onclick="openMovieDetails(this.id)">
-                    <img src="assets/img/movie_cover_template.jpg">
-                </ons-carousel-item>
-                <ons-carousel-item modifier="nodivider" id="Retro Graphics 2" onclick="openMovieDetails(this.id)">
-                    <img src="assets/img/movie_cover_template.jpg">
-                </ons-carousel-item>
-                <ons-carousel-item modifier="nodivider" id="Balls" onclick="openMovieDetails(this.id)">
-                    <img src="assets/img/movie_cover_template.jpg">
-                </ons-carousel-item>
-            </ons-carousel>
-        </div>
-
-        <div class="movie_list">
-            All Programs
-            <ons-carousel auto-refresh swipeable overscrollable item-width="110px">
-                <ons-carousel-item modifier="nodivider" id="Spinner" class="movie_cover" onclick="openMovieDetails(this.id)">
-                    <img src="assets/img/movie_cover_template.jpg">
-                </ons-carousel-item>
-                <ons-carousel-item modifier="nodivider" id="Rotozoom" class="movie_cover" onclick="openMovieDetails(this.id)">
-                    <img src="assets/img/movie_cover_template.jpg">
-                </ons-carousel-item>
-                <ons-carousel-item modifier="nodivider" id="Rainbow" class="movie_cover" onclick="openMovieDetails(this.id)">
-                    <img src="assets/img/movie_cover_template.jpg">
-                </ons-carousel-item>
-                <ons-carousel-item modifier="nodivider" id="Sine wave" class="movie_cover" onclick="openMovieDetails(this.id)">
-                    <img src="assets/img/movie_cover_template.jpg">
-                </ons-carousel-item>
-                <ons-carousel-item modifier="nodivider" id="Retro Graphics 1" class="movie_cover" onclick="openMovieDetails(this.id)">
-                    <img src="assets/img/movie_cover_template.jpg">
-                </ons-carousel-item>
-            </ons-carousel>
-        </div>
 
         <style type="text/css">
-      .carousel ons-carousel-item img {
-        width: 100%;
-        max-height: 190px
-      }
 
-      .cover-label {
-        text-align: center;
-        cursor: default;
-      }
 
       ul {
         list-style: none;
@@ -302,26 +213,6 @@
       ul li {
         display: inline;
         margin-right: 5px;
-      }
-
-      .circle {
-        font-size: 15px;
-        display: table-cell;
-        color: #999;
-      + }
-
-      .circle_current {
-        color: white;
-      }
-
-      .movie_list {
-        margin: 10px;
-        height: 130px;
-        padding-top: 30px;
-      }
-
-      .movie_list img {
-        width: 90%
       }
     </style>
     </ons-page>
