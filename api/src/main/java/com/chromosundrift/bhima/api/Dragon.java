@@ -27,4 +27,8 @@ public interface Dragon {
     ProgramInfo runProgram(String id);
 
     Map<String, Set<Integer>> getEffectiveWiring();
+
+    Settings getSettings();
+
+    Settings setSettings(Settings settings);
 }

@@ -2,6 +2,7 @@ package com.chromosundrift.bhima.dragonmind.web;
 
 import com.chromosundrift.bhima.api.Dragon;
 import com.chromosundrift.bhima.api.ProgramInfo;
+import com.chromosundrift.bhima.api.Settings;
 import com.chromosundrift.bhima.api.SystemInfo;
 import com.codahale.metrics.annotation.Timed;
 
@@ -68,5 +69,23 @@ public class BhimaResource {
     @Path("/systemInfo")
     public SystemInfo getSystemInfo() {
         return dragon.getSystemInfo();
+    }
+
+    @GET
+    @Timed
+    @Path("/settings")
+    public Settings getSettings() {
+        return dragon.getSettings();
+    }
+
+    @POST
+    @Timed
+    @Path("/settings")
+    public Settings setSettings(
+            @FormParam("brightness") Double brightness,
+            @FormParam("luminanceCorrection") Boolean luminanceCorrection,
+            @FormParam("autoThrottling") Boolean autoThrottle
+            ) {
+        return dragon.setSettings(new Settings(brightness, luminanceCorrection, autoThrottle));
     }
 }

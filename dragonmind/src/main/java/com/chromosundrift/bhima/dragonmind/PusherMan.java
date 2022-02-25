@@ -15,6 +15,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.chromosundrift.bhima.api.Settings;
+
 /**
  * Class for encapsulating common configuration and operations for Bhima's PusherMan
  */
@@ -22,6 +24,16 @@ import java.util.concurrent.locks.ReentrantLock;
 public class PusherMan implements Observer {
 
     final static Logger logger = LoggerFactory.getLogger(PusherMan.class);
+    private static final boolean DEFAULT_ANTI_LOG = true;
+    private static final boolean DEFAULT_AUTO_THROTTLE = false;
+    private static final double DEFAULT_BRIGHGTNESS = 1.0d;
+
+    /**
+     * Must be kept in sync with DeviceRegistry. We can't fully read its state so we
+     * have to assume the calls to set values do stick.
+     * TODO confirm settings via live testing
+     */
+    private Settings settings;
 
     private DeviceRegistry registry;
 
@@ -39,8 +51,10 @@ public class PusherMan implements Observer {
     private final AtomicBoolean started = new AtomicBoolean(false);
 
     public PusherMan(boolean debug) {
+        DeviceRegistry.setOverallBrightnessScale(DEFAULT_BRIGHGTNESS);
         registry = new DeviceRegistry();
         registry.setLogging(debug);
+        this.settings = new Settings(1d, DEFAULT_ANTI_LOG, DEFAULT_AUTO_THROTTLE);
     }
 
     private void withLock(Runnable runme) {
@@ -151,8 +165,8 @@ public class PusherMan implements Observer {
         if (!this.started.get()) {
             withLock(() -> {
                 logger.info("setting up registry");
-                registry.setAntiLog(true);
-                registry.setAutoThrottle(false);
+                registry.setAntiLog(DEFAULT_ANTI_LOG);
+                registry.setAutoThrottle(DEFAULT_AUTO_THROTTLE);
                 registry.startPushing();
                 this.started.set(true);
             });
@@ -225,4 +239,14 @@ public class PusherMan implements Observer {
         }
     }
 
+    public Settings getSettings() {
+        return this.settings;
+    }
+
+    public Settings setSettings(Settings settings) {
+        this.registry.setAntiLog(settings.isLuminanceCorrection());
+        this.registry.setAutoThrottle(settings.isAutoThrottle());
+        DeviceRegistry.setOverallBrightnessScale(settings.getBrightness());
+        return settings;
+    }
 }

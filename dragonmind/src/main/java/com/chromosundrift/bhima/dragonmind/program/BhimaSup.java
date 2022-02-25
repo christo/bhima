@@ -2,6 +2,7 @@ package com.chromosundrift.bhima.dragonmind.program;
 
 import com.chromosundrift.bhima.api.Dragon;
 import com.chromosundrift.bhima.api.ProgramInfo;
+import com.chromosundrift.bhima.api.Settings;
 import com.chromosundrift.bhima.api.SystemInfo;
 import com.chromosundrift.bhima.dragonmind.DragonMind;
 import com.chromosundrift.bhima.dragonmind.NearDeathExperience;
@@ -78,6 +79,18 @@ public final class BhimaSup extends DragonMind implements Dragon {
     @Override
     public Wiring getWiring() {
         return wiring;
+    }
+
+    @Override
+    public Settings getSettings() {
+        getPusherMan().ensureReady();
+        return getPusherMan().getSettings();
+    }
+
+    @Override
+    public Settings setSettings(Settings settings) {
+        getPusherMan().ensureReady();
+        return this.getPusherMan().setSettings(settings);
     }
 
     @Override
