@@ -164,8 +164,10 @@ const TopBar = (props) => {
 };
 
 const CurrentProgram = (props) => {
+
+    const {program, setProgram} = props;
     const [loaded, setLoaded] = useState(false);
-    const [program, setProgram] = useState(null);
+
     const [error, setError] = useState(null);
     useEffect(() => {
         bhimaFetch("program")
@@ -193,7 +195,6 @@ const CurrentProgram = (props) => {
         }
     }
 }
-
 
 const ProgramCard = (props) => {
     // TODO make clickable to show more info and run button, unshow on click out
@@ -262,22 +263,21 @@ const ProgramList = (props) => {
 };
 
 const HomePage = (props) => {
-    const onRun = (program) => {
-        console.log(`running ${program.id}`);
+    const [program, setProgram] = useState(null);
 
+    const onRun = (aProgram) => {
         let data = new FormData();
-        data.append("id", program.id);
-        fetch(getEndpoint("runProgram2?id=" + encodeURI(program.id)), {
+        data.append("id", aProgram.id);
+        fetch(getEndpoint("runProgram2?id=" + encodeURI(aProgram.id)), {
             method: 'POST',
             headers: getHeaders()
-        }).then(res => res.json());
-        // TODO update current program state
-
+        }).then(res => res.json())
+            .then(() => setProgram(aProgram));
     }
     return (
         <div className="page">
             <h3>Live</h3>
-            <CurrentProgram/>
+            <CurrentProgram program={program} setProgram={setProgram}/>
             <h3>All Programs</h3>
             <ProgramList onRun={onRun}/>
         </div>
