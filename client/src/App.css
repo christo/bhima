@@ -59,11 +59,12 @@ main {
 }
 
 .active button {
-    color: white;
+    color: lightgray;
 }
 
 ul.programTypes {
     list-style: none;
+    padding-left: 0;
 }
 
 ul.programTypes li {
@@ -71,5 +72,11 @@ ul.programTypes li {
 }
 
 li .programType {
-    vertical-align: bottom;
+    vertical-align: hanging;
+}
+
+main {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
 }

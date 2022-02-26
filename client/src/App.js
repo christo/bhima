@@ -11,23 +11,21 @@ import {
     CssBaseline,
     Dialog,
     DialogActions,
-    DialogContent,
-    DialogContentText,
-    DialogTitle,
-    IconButton,
-    Paper,
+    DialogTitle, Grid,
+    IconButton, List, ListItemText,
+    Paper, Slider,
     Stack,
     ThemeProvider,
-    Toolbar
+    Toolbar, Typography
 } from "@mui/material";
 import {
     AppRegistration,
-    Apps,
+    Apps, BrightnessHigh, BrightnessLow,
     Cable,
     ConnectedTv,
     DirectionsBus,
-    Image, LocalMovies,
-    Movie,
+    Image,
+    LocalMovies,
     QuestionMark,
     Settings,
     TextFields
@@ -108,7 +106,7 @@ const TopBar = (props) => {
         <Toolbar sx={{justifyItems: "center"}}>
             <Box
                 component="img"
-                sx={{maxHeight: 50, overflow: "hidden", objectFit: "contain", mr: 2}}
+                sx={{maxHeight: 50, mr: 2}}
                 alt="Bhima logo"
                 className="logo"
                 src={Logo}
@@ -124,7 +122,7 @@ const TopBar = (props) => {
                     <DirectionsBus/>
                 </IconButton>
             </NavLink>
-            <NavLink to="/settings" end className={(props) => `${props.isActive ? 'active ' : ''}`} >
+            <NavLink to="/system" end className={(props) => `${props.isActive ? 'active ' : ''}`} >
                 <IconButton
                     size="large"
                     edge="start"
@@ -163,6 +161,10 @@ const TopBar = (props) => {
     </AppBar>;
 };
 
+function NetworkError(error) {
+    return <Alert severity="error">Dragonmind link failure: {error.message}</Alert>;
+}
+
 const CurrentProgram = (props) => {
 
     const {program, setProgram} = props;
@@ -184,7 +186,7 @@ const CurrentProgram = (props) => {
 
     }, []);
     if (error) {
-        return <Alert severity="error">Dragonmind link failure: {error.message}</Alert>
+        return NetworkError(error);
     } else if (!loaded) {
         return <CircularProgress color="secondary" />;
     } else {
@@ -293,28 +295,82 @@ const WiringPage = (props) => {
     </div>);
 };
 
-const SettingsPage = (props) => {
-    return (<div className="page">
-        <h3>Settings</h3>
-        This is where the settings page goes, yo.
+function secondsToHuman(totalSecs) {
+    let days    = Math.floor(totalSecs / 86400);
+    let hours   = Math.floor((totalSecs - (days * 86400)) / 3600);
+    let minutes = Math.floor((totalSecs - (days * 86400) - (hours * 3600)) / 60);
+    let seconds = totalSecs - (days * 86400) - (hours * 3600) - (minutes * 60);
 
-    </div>);
+    let daysStr = (days > 0) ? (days + " days ") : ("");
+    if (hours   < 10) {hours   = "0"+hours;}
+    if (minutes < 10) {minutes = "0"+minutes;}
+    if (seconds < 10) {seconds = "0"+seconds;}
+    return daysStr + hours+'h '+minutes+'m '+seconds + "s";
+}
+
+const SystemPage = (props) => {
+    const {systemInfo, error, loaded} = props;
+    if (error) {
+        return NetworkError(error);
+    } else if (!loaded) {
+        return <CircularProgress color="secondary" />;
+    } else {
+        const updateBrightness = () => {}; // TODO update brightness
+        return (
+            <div className="page">
+                <h3>System</h3>
+                <List>
+                    <ListItemText primary="Uptime" secondary={secondsToHuman(systemInfo.uptimeSeconds)} />
+                    <ListItemText primary="Scroll Text" secondary={systemInfo.scrollText} />
+                    <ListItemText primary="Current Program" secondary={systemInfo.currentProgram.name} />
+                </List>
+                <Stack spacing={2} direction="row" sx={{ mb: 1, width: "90%" }} alignItems="center">
+                    <BrightnessLow />
+                    <Slider aria-label="Brightness" value="20" onChange={updateBrightness} />
+                    <BrightnessHigh />
+
+                </Stack>
+
+            </div>
+        );
+    }
 };
 
-const ProgramsPage = () => {
-    return <div className="page">
-        <h3>Program Configuration</h3>
-        <ul className="programTypes">
-            <li><ProgramTypeIcon type="Algorithm"/> Algorithm: code module</li>
-            <li><ProgramTypeIcon type="Movie"/> Movie: looping video file</li>
-            <li><ProgramTypeIcon type="Image"/> Image: animated image</li>
-            <li><ProgramTypeIcon type="Stream"/> Stream: video stream</li>
-            <li><ProgramTypeIcon type="Text"/> Text: scrolling text</li>
-        </ul>
-    </div>
+const ProgramsPage = (props) => {
+    const {systemInfo, error, loaded} = props;
+    if (error) {
+        return NetworkError(error);
+    } else if (!loaded) {
+        return <CircularProgress color="secondary"/>;
+    } else {
+        return <div className="page">
+            <h3>Program Configuration</h3>
+            <ul className="programTypes">
+                {systemInfo.programTypes.map(pt => (
+                    <li key={pt.name}><ProgramTypeIcon type={pt.name}/> {pt.name}: {pt.description}</li>
+                ))}
+            </ul>
+        </div>;
+    }
 };
 
 function App() {
+    const [systemInfo, setSystemInfo] = useState(null);
+    const [loaded, setLoaded] = useState(false);
+    const [error, setError] = useState(null);
+    useEffect(() => {
+        bhimaFetch("systemInfo").then(
+            (result) => {
+                setLoaded(true);
+                setSystemInfo(result);
+            },
+            (error) => {
+                setLoaded(true);
+                setError(error);
+            }
+        );
+    }, []);
+
     return <ThemeProvider theme={bhimaTheme}>
             <CssBaseline enableColorScheme />
             <Container sx={{ display: 'flex', justifyItems: "space-around", justifyContent: "center", padding: 0 }} className="App">
@@ -322,10 +378,10 @@ function App() {
                     <TopBar/>
                     <main>
                         <Routes>
-                            <Route exact path="/" element={<HomePage/>}/>
-                            <Route exact path="/settings" element={<SettingsPage/>}/>
-                            <Route exact path="/wiring" element={<WiringPage/>}/>
-                            <Route exact path="/programs" element={<ProgramsPage/>}/>
+                            <Route exact path="/" element={<HomePage systemInfo={systemInfo} error={error} loaded={loaded}/>}/>
+                            <Route exact path="/system" element={<SystemPage systemInfo={systemInfo} error={error} loaded={loaded}/>}/>
+                            <Route exact path="/wiring" element={<WiringPage systemInfo={systemInfo} error={error} loaded={loaded}/>}/>
+                            <Route exact path="/programs" element={<ProgramsPage systemInfo={systemInfo} error={error} loaded={loaded}/>}/>
                         </Routes>
                     </main>
                 </BrowserRouter>

@@ -2,6 +2,7 @@ package com.chromosundrift.bhima.dragonmind.program;
 
 import com.chromosundrift.bhima.api.Dragon;
 import com.chromosundrift.bhima.api.ProgramInfo;
+import com.chromosundrift.bhima.api.ProgramType;
 import com.chromosundrift.bhima.api.Settings;
 import com.chromosundrift.bhima.api.SystemInfo;
 import com.chromosundrift.bhima.dragonmind.DragonMind;
@@ -23,6 +24,7 @@ import processing.event.MouseEvent;
 import processing.video.Movie;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +33,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static java.lang.Runtime.getRuntime;
+import static java.lang.management.ManagementFactory.getRuntimeMXBean;
 import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toSet;
 
@@ -68,7 +71,13 @@ public final class BhimaSup extends DragonMind implements Dragon {
 
     @Override
     public SystemInfo getSystemInfo() {
-        return null;
+        final long uptime = getRuntimeMXBean().getUptime();
+        SystemInfo si = new SystemInfo(uptime, this.getCurrentProgram());
+        si.setProgramTypes(ProgramType.all());
+        si.setSettings(this.getSettings());
+        si.setEffectiveWiring(this.getEffectiveWiring());
+        si.setScrollText(mesg);
+        return si;
     }
 
     @Override

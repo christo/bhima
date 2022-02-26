@@ -27,9 +27,8 @@ public class ImageUtils {
         graphics.setColor(Color.red);
         graphics.fillOval(width / 4, height / 4, width / 2, height / 2);
         graphics.setColor(Color.white);
-        final FontMetrics fontMetrics = graphics.getFontMetrics();
         final String mesg = "NOT AVAILABLE";
-        final Rectangle2D stringBounds = fontMetrics.getStringBounds(mesg, graphics);
+        final Rectangle2D stringBounds = graphics.getFontMetrics().getStringBounds(mesg, graphics);
         final int sx = (int) (width / 2 - stringBounds.getWidth() / 2);
         final int sy = (int) (height / 2 - stringBounds.getHeight() / 2);
         graphics.drawString(mesg, sx, sy);

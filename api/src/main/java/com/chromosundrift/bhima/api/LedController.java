@@ -1,10 +1,15 @@
 package com.chromosundrift.bhima.api;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
+
 import java.util.Map;
 
 /**
  * Model for representing LED Controllers like PixelPusher.
  */
+@JsonInclude(NON_EMPTY)
 public class LedController {
     public String species;
     public String address;
