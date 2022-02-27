@@ -26,7 +26,8 @@ public class PusherMan implements Observer {
     final static Logger logger = LoggerFactory.getLogger(PusherMan.class);
     private static final boolean DEFAULT_ANTI_LOG = true;
     private static final boolean DEFAULT_AUTO_THROTTLE = false;
-    private static final double DEFAULT_BRIGHGTNESS = 1.0d;
+    private static final double DEFAULT_BRIGHTNESS = 1.0d;
+    private static final boolean DEFAULT_MUTE = false;
 
     /**
      * Must be kept in sync with DeviceRegistry. We can't fully read its state so we
@@ -51,7 +52,7 @@ public class PusherMan implements Observer {
     private final AtomicBoolean started = new AtomicBoolean(false);
 
     public PusherMan(boolean debug) {
-        DeviceRegistry.setOverallBrightnessScale(DEFAULT_BRIGHGTNESS);
+        DeviceRegistry.setOverallBrightnessScale(DEFAULT_BRIGHTNESS);
         registry = new DeviceRegistry();
         registry.setLogging(debug);
         this.settings = new Settings(1d, DEFAULT_ANTI_LOG, DEFAULT_AUTO_THROTTLE);
