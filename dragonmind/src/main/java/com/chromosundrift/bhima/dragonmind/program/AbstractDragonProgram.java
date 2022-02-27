@@ -14,8 +14,6 @@ public abstract class AbstractDragonProgram implements DragonProgram {
 
     private static final Logger logger = LoggerFactory.getLogger(AbstractDragonProgram.class);
 
-    public static final String TYPE_SKETCH = "Sketch";
-
     /**
      * Does nothing, override me.
      */
