@@ -172,7 +172,6 @@ public class PusherMan implements Observer {
                 this.started.set(true);
             });
         }
-
     }
 
     public void turnOffAllPixels() {
@@ -217,12 +216,7 @@ public class PusherMan implements Observer {
     }
 
     public int numTotalLights() {
-        List<Strip> strips = getStrips();
-        int count = 0;
-        for (Strip strip : strips) {
-            count += strip.getLength();
-        }
-        return count;
+        return getStrips().stream().mapToInt(Strip::getLength).sum();
     }
 
     public void addObserver(Observer observer) {
