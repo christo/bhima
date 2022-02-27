@@ -86,7 +86,6 @@ assumed to work the same way.
     * led drivers connected, latency?
     * temperatures?
     * database size and disk usage
-    * uptime
     * network info
     * runtime info e.g. os, ram usage etc.
 
