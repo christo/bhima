@@ -21,6 +21,7 @@ public class SystemInfo {
     public List<ProgramType> programTypes;
     public Map<String, Set<Integer>> effectiveWiring;
     public String scrollText;
+    public String version;
 
     public SystemInfo() {
         this(0L, ProgramInfo.getNullProgramInfo());
@@ -86,5 +87,13 @@ public class SystemInfo {
 
     public void setScrollText(String scrollText) {
         this.scrollText = scrollText;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 }

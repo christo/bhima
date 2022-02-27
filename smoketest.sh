@@ -8,7 +8,8 @@
 set -vx 
 shopt -s failglob
 
-gradle clean
+echo JAVA_HOME: $JAVA_HOME
+gradle clean --debug --stacktrace || exit
 gradle distTar
 mkdir -p tmp
 rm -rf tmp/*

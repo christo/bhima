@@ -71,12 +71,13 @@ public final class BhimaSup extends DragonMind implements Dragon {
 
     @Override
     public SystemInfo getSystemInfo() {
-        final long uptime = getRuntimeMXBean().getUptime();
-        SystemInfo si = new SystemInfo(uptime, this.getCurrentProgram());
+        final long uptimeSecs = getRuntimeMXBean().getUptime() / 1000;
+        SystemInfo si = new SystemInfo(uptimeSecs, this.getCurrentProgram());
         si.setProgramTypes(ProgramType.all());
         si.setSettings(this.getSettings());
         si.setEffectiveWiring(this.getEffectiveWiring());
         si.setScrollText(mesg);
+        si.setVersion(getVersion());
         return si;
     }
 

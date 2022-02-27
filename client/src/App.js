@@ -11,24 +11,36 @@ import {
     CssBaseline,
     Dialog,
     DialogActions,
-    DialogTitle, Grid,
-    IconButton, List, ListItemText,
-    Paper, Slider,
+    DialogTitle,
+    FormControlLabel,
+    IconButton,
+    List,
+    ListItem,
+    ListItemIcon,
+    ListItemText,
+    Paper,
+    Slider,
     Stack,
+    Switch,
     ThemeProvider,
-    Toolbar, Typography
+    Toolbar
 } from "@mui/material";
 import {
+    AccessTime,
     AppRegistration,
-    Apps, BrightnessHigh, BrightnessLow,
+    Apps,
+    BrightnessHigh,
+    BrightnessLow,
     Cable,
     ConnectedTv,
     DirectionsBus,
     Image,
+    Label,
     LocalMovies,
     QuestionMark,
     Settings,
-    TextFields
+    TextFields,
+    TextRotationNone
 } from "@mui/icons-material";
 import {BrowserRouter, NavLink, Route, Routes} from "react-router-dom";
 import {purple} from "@mui/material/colors";
@@ -62,6 +74,20 @@ const bhimaTheme = createTheme({
     },
 });
 
+/** Converts seconds to human-readable duration format */
+function secondsToHuman(totalSecs) {
+    let days    = Math.floor(totalSecs / 86400);
+    let hours   = Math.floor((totalSecs - (days * 86400)) / 3600);
+    let minutes = Math.floor((totalSecs - (days * 86400) - (hours * 3600)) / 60);
+    let seconds = totalSecs - (days * 86400) - (hours * 3600) - (minutes * 60);
+
+    let daysStr = (days > 0) ? (days + " days ") : ("");
+    if (hours   < 10) {hours   = "0"+hours;}
+    if (minutes < 10) {minutes = "0"+minutes;}
+    if (seconds < 10) {seconds = "0"+seconds;}
+    return daysStr + hours+'h '+minutes+'m '+seconds + "s";
+}
+
 
 function getEndpoint(name) {
     return '//' + window.location.hostname + ":9000/api/bhima/" + name;
@@ -90,12 +116,12 @@ function bhimaFetch(name) {
  */
 const ProgramTypeIcon = (props) => {
     switch(props.type) {
-        case TYPE_MOVIE: return <LocalMovies fontSize="large" className="programType" />;
-        case TYPE_ALGORITHM: return <Apps fontSize="large" className="programType" />;
-        case TYPE_IMAGE: return <Image fontSize="large" className="programType" />;
-        case TYPE_STREAM: return <ConnectedTv fontSize="large" className="programType" />;
-        case TYPE_TEXT: return <TextFields fontSize="large" className="programType" />;
-        default: return <QuestionMark fontSize="large" className="programType" />;
+        case TYPE_MOVIE: return <LocalMovies fontSize="large" className="programType" fontSize={props.fontSize}/>;
+        case TYPE_ALGORITHM: return <Apps fontSize="large" className="programType" fontSize={props.fontSize} />;
+        case TYPE_IMAGE: return <Image fontSize="large" className="programType" fontSize={props.fontSize} />;
+        case TYPE_STREAM: return <ConnectedTv fontSize="large" className="programType" fontSize={props.fontSize} />;
+        case TYPE_TEXT: return <TextFields fontSize="large" className="programType" fontSize={props.fontSize} />;
+        default: return <QuestionMark fontSize="large" className="programType" fontSize={props.fontSize} />;
     }
 };
 
@@ -103,7 +129,7 @@ const TopBar = (props) => {
     // TODO highlight current page
     // TODO make topbar slide in/out on scroll
     return <AppBar position="fixed" color="primary" title="Bhima">
-        <Toolbar sx={{justifyItems: "center"}}>
+        <Toolbar sx={{display: "flex", flexDirection: "row", justifyContent: "space-evenly", justifyItems: "center"}}>
             <Box
                 component="img"
                 sx={{maxHeight: 50, mr: 2}}
@@ -183,7 +209,6 @@ const CurrentProgram = (props) => {
                     setLoaded(true);
                 }
             );
-
     }, []);
     if (error) {
         return NetworkError(error);
@@ -234,7 +259,7 @@ const ProgramCard = (props) => {
         <Paper className="program" onClick={handleOpen}>
             <img className="thumbnail" alt={`thumbnail for ${program.name}`}
                  src={"data:image/jpg;charset=utf-8;base64," + program.thumbnail}/>
-            <ProgramTypeIcon type={program.type}/>
+            <ProgramTypeIcon type={program.type.name} fontSize="large"/>
             <span className="programName">{program.name}</span>
         </Paper>
     </React.Fragment>;
@@ -276,37 +301,23 @@ const HomePage = (props) => {
     const [program, setProgram] = useState(null);
 
     return (
-        <div className="page">
+        <Container className="page">
             <h3>Live</h3>
             <CurrentProgram program={program} setProgram={setProgram}/>
             <h3>All Programs</h3>
             <ProgramList setProgram={setProgram}/>
-        </div>
+        </Container>
     );
 };
 
 
 const WiringPage = (props) => {
     return (
-    <div className="page">
+    <Container className="page">
         <h3>Wiring</h3>
         This is where the wiring page goes, yo.
-
-    </div>);
+    </Container>);
 };
-
-function secondsToHuman(totalSecs) {
-    let days    = Math.floor(totalSecs / 86400);
-    let hours   = Math.floor((totalSecs - (days * 86400)) / 3600);
-    let minutes = Math.floor((totalSecs - (days * 86400) - (hours * 3600)) / 60);
-    let seconds = totalSecs - (days * 86400) - (hours * 3600) - (minutes * 60);
-
-    let daysStr = (days > 0) ? (days + " days ") : ("");
-    if (hours   < 10) {hours   = "0"+hours;}
-    if (minutes < 10) {minutes = "0"+minutes;}
-    if (seconds < 10) {seconds = "0"+seconds;}
-    return daysStr + hours+'h '+minutes+'m '+seconds + "s";
-}
 
 const SystemPage = (props) => {
     const {systemInfo, error, loaded} = props;
@@ -316,22 +327,62 @@ const SystemPage = (props) => {
         return <CircularProgress color="secondary" />;
     } else {
         const updateBrightness = () => {}; // TODO update brightness
+        console.log(error, loaded, systemInfo);
         return (
-            <div className="page">
+            <Container className="page">
                 <h3>System</h3>
                 <List>
-                    <ListItemText primary="Uptime" secondary={secondsToHuman(systemInfo.uptimeSeconds)} />
-                    <ListItemText primary="Scroll Text" secondary={systemInfo.scrollText} />
-                    <ListItemText primary="Current Program" secondary={systemInfo.currentProgram.name} />
+                    <ListItem>
+                        <ListItemIcon>
+                            <Label fontSize="large"/>
+                        </ListItemIcon>
+                        <ListItemText primary="Version" secondary={systemInfo.version} />
+                    </ListItem>
+                    <ListItem>
+                        <ListItemIcon>
+                            <AccessTime fontSize="large"/>
+                        </ListItemIcon>
+                        {/* TODO update this client-side on a timer*/}
+                        <ListItemText primary="Uptime" secondary={secondsToHuman(systemInfo.uptimeSeconds)} />
+                    </ListItem>
+                    <ListItem>
+                        <ListItemIcon>
+                            <TextRotationNone fontSize="large"/>
+                        </ListItemIcon>
+                        <ListItemText primary="Scroll Text" secondary={systemInfo.scrollText} />
+                    </ListItem>
+                    <ListItem>
+                        <ListItemIcon>
+                            <ProgramTypeIcon type={systemInfo.currentProgram.type.name} fontSize="large"/>
+                        </ListItemIcon>
+                        <ListItemText primary="Current Program" secondary={systemInfo.currentProgram.name} />
+                    </ListItem>
+
+
+                {/*    TODO: RAM, disk, load, temp, */}
                 </List>
-                <Stack spacing={2} direction="row" sx={{ mb: 1, width: "90%" }} alignItems="center">
-                    <BrightnessLow />
-                    <Slider aria-label="Brightness" value="20" onChange={updateBrightness} />
-                    <BrightnessHigh />
-
+                <h3>Global Settings</h3>
+                <Stack>
+                    <FormControlLabel control={<Switch checked={systemInfo.settings.luminanceCorrection}/>} label="Gamma Correction" />
+                    <FormControlLabel control={<Switch checked={systemInfo.settings.autoThrottle}/>} label="Autothrottle" />
+                    <FormControlLabel control={<Switch checked={systemInfo.settings.mute}/>} label="Mute" />
+                    <Stack spacing={2} direction="row" sx={{ mb: 1, width: "90%" }} alignItems="center">
+                        <BrightnessLow />
+                        <Slider aria-label="Brightness" value={systemInfo.settings.brightness} onChange={updateBrightness} />
+                        <BrightnessHigh />
+                    </Stack>
                 </Stack>
-
-            </div>
+                <h3>Operations</h3>
+                <Box sx={{display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly', mt: 2}}>
+                    {/*TODO if asleep, show "Wake Up"*/}
+                    <Button variant="contained" href="#sleep">
+                        Sleep
+                    </Button>
+                    <Button variant="contained" href="#puge-cache">
+                        Purge Cache
+                    </Button>
+                </Box>
+            </Container>
         );
     }
 };
@@ -343,14 +394,14 @@ const ProgramsPage = (props) => {
     } else if (!loaded) {
         return <CircularProgress color="secondary"/>;
     } else {
-        return <div className="page">
+        return <Container className="page">
             <h3>Program Configuration</h3>
             <ul className="programTypes">
                 {systemInfo.programTypes.map(pt => (
-                    <li key={pt.name}><ProgramTypeIcon type={pt.name}/> {pt.name}: {pt.description}</li>
+                    <li key={pt.name}><ProgramTypeIcon type={pt.name} fontSize="large"/> {pt.name}: {pt.description}</li>
                 ))}
             </ul>
-        </div>;
+        </Container>;
     }
 };
 
@@ -370,7 +421,6 @@ function App() {
             }
         );
     }, []);
-
     return <ThemeProvider theme={bhimaTheme}>
             <CssBaseline enableColorScheme />
             <Container sx={{ display: 'flex', justifyItems: "space-around", justifyContent: "center", padding: 0 }} className="App">

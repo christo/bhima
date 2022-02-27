@@ -9,8 +9,6 @@ import processing.core.PGraphics;
 import processing.core.PImage;
 import processing.video.Movie;
 
-import static processing.core.PConstants.PI;
-
 import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -28,6 +26,7 @@ import static java.util.stream.Collectors.toList;
 import com.chromosundrift.bhima.api.ImageDeserializer;
 import com.chromosundrift.bhima.api.ImageSerializer;
 import com.chromosundrift.bhima.api.ProgramInfo;
+import com.chromosundrift.bhima.api.ProgramType;
 import com.chromosundrift.bhima.dragonmind.CompositeMedia;
 import com.chromosundrift.bhima.dragonmind.DragonMind;
 import com.chromosundrift.bhima.dragonmind.LocalVideos;
@@ -42,12 +41,16 @@ import static com.chromosundrift.bhima.dragonmind.ProcessingBase.isLinux;
  */
 public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProgram {
 
+    private static final Logger logger = LoggerFactory.getLogger(MoviePlayerImpl.class);
+
     public static final int THUMBNAIL_WIDTH = 400;
     public static final int THUMBNAIL_HEIGHT = 100;
 
-    private static final Logger logger = LoggerFactory.getLogger(MoviePlayerImpl.class);
     private static final String VIDEO_DIR_NAME = "video";
+    /** Time offset from beginning of video to use as thumbnail */
+    public static final float THUMBNAIL_TIME_OFFSET = 8f;
 
+    /** Default time to loop short videos for */
     private long movieCyclePeriodMs = 1000 * 60 * 5;
     private MediaSource mediaSource;
     private ObjectMapper objectmapper;
@@ -68,12 +71,12 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
     }
 
     public ProgramInfo getCurrentProgramInfo(int x, int y, int w, int h) {
-        return movie == null ? ProgramInfo.getNullProgramInfo() : getProgramInfo(movie, x, y, w, h);
-    }
-
-    private ProgramInfo getProgramInfo(Movie m, int x, int y, int w, int h) {
-        BufferedImage bi = getMovieImage(m, x, y, w, h);
-        return getMovieProgramInfo(bi, m.filename);
+        if (movie == null) {
+            return getNullProgramInfo();
+        }
+        logger.debug("getting movie image for current movie {}", movie.filename);
+        BufferedImage bi = getMovieImage(movie, x, y, w, h);
+        return getMovieProgramInfo(bi, movie.filename);
     }
 
     BufferedImage getMovieImage(Movie m, int x, int y, int w, int h) {
@@ -87,14 +90,14 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
             Image image = m.getImage();
             if (image == null) {
                 logger.warn("movie image is null!");
-                return ProgramInfo.getNullProgramInfo().getThumbnail();
+                return getNullProgramInfo().getThumbnail();
             }
             if (image.getClass().isAssignableFrom(BufferedImage.class)) {
                 return (BufferedImage) image;
             }
             return imageToBufferedImage(image, x, y, w, h);
         } catch (RuntimeException e) {
-            logger.warn("unable to get image (may be race condition in processing's native gstreamer stack)");
+            logger.error("unable to get image (may be race condition in processing's native gstreamer stack)", e);
             return getNullProgramInfo().getThumbnail();
         }
     }
@@ -104,7 +107,9 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
         Map<String, String> settings = new HashMap<>();
         settings.put("FPS", Float.toString(fps));
         settings.put("muted", Boolean.toString(mute));
-        return new ProgramInfo(f, niceName, "Movie", bi, settings);
+//        settings.put("duration", Float.toString(movie.duration()));
+//        settings.put("elapsed", Float.toString(movie.time()));
+        return new ProgramInfo(f, niceName, ProgramType.MOVIE, bi, settings);
     }
 
     @Override
@@ -283,10 +288,13 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
             float secs = Math.min(thisMovie.duration() / 2, 8f);
             thisMovie.jump(secs); // take thumbnail from secs into the movie
             thisMovie.loadPixels();
-            return getProgramInfo(thisMovie, x, y, w, h);
+            logger.info("getting movie image from filename '{}'", filename);
+            BufferedImage bi = getMovieImage(thisMovie, x, y, w, h);
+            return getMovieProgramInfo(bi, thisMovie.filename);
         } catch (RuntimeException re) {
             logger.error("cannot generate thumbnail for {} because {}", filename, re.getMessage());
-            return getMovieProgramInfo(ProgramInfo.getNullProgramInfo().getThumbnail(), filename);
+            String niceName = filename.substring(filename.lastIndexOf('/') + 1, filename.length() - 4);
+            return new ProgramInfo(filename, niceName, ProgramType.MOVIE, getNullProgramInfo().getThumbnail());
         } finally {
             if (thisMovie != null) {
                 // clean up any native resources

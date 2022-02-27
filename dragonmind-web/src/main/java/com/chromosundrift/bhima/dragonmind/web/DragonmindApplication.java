@@ -84,7 +84,7 @@ public class DragonmindApplication extends Application<DragonWebConfig> {
 
     private static class DummyDragon implements Dragon {
         private SystemInfo systeminfo = new SystemInfo(0L, ProgramInfo.getNullProgramInfo());
-        private Settings settings = new Settings(1d, true, false);
+        private Settings settings = new Settings(1d, true, false, false);
 
         @Override
         public String getStatus() {

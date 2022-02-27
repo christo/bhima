@@ -1,6 +1,7 @@
 package com.chromosundrift.bhima.dragonmind.program;
 
 import com.chromosundrift.bhima.api.ProgramInfo;
+import com.chromosundrift.bhima.api.ProgramType;
 import com.chromosundrift.bhima.dragonmind.DragonMind;
 import processing.core.PConstants;
 import processing.core.PGraphics;
@@ -66,7 +67,7 @@ public class BallsProgram extends AbstractDragonProgram implements DragonProgram
         PGraphics graphics = draw(mind, w, h);
         BufferedImage thumbnail = imageToBufferedImage(graphics.getImage(), x, y, w, h);
         String id = BallsProgram.class.getName();
-        return new ProgramInfo(id, NAME, TYPE_SKETCH, thumbnail);
+        return new ProgramInfo(id, NAME, ProgramType.ALGORITHM, thumbnail);
     }
 
     /**
@@ -80,6 +81,6 @@ public class BallsProgram extends AbstractDragonProgram implements DragonProgram
         t = 0;
         PGraphics graphics = draw(mind, 400, 100);
         BufferedImage thumbnail = imageToBufferedImage(graphics.getImage(), 0, 0, 400, 100);
-        return new ProgramInfo(BallsProgram.class.getName(), NAME, TYPE_SKETCH, thumbnail);
+        return new ProgramInfo(BallsProgram.class.getName(), NAME, ProgramType.ALGORITHM, thumbnail);
     }
 }
