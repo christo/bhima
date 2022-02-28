@@ -21,7 +21,7 @@ import static java.util.Collections.emptyMap;
 @JsonInclude(NON_EMPTY)
 public final class ProgramInfo {
     private static final ProgramInfo NULL_PROGRAM_INFO =
-            new ProgramInfo("NULL", "no program", "dummy", generateNullImage(400, 100), emptyMap());
+            new ProgramInfo("NULL", "no program", ProgramType.UNKNOWN, generateNullImage(400, 100), emptyMap());
 
     @JsonIgnore
     public static ProgramInfo getNullProgramInfo() {
@@ -30,7 +30,9 @@ public final class ProgramInfo {
 
     private String name;
     private String id;
-    private String type;
+    private ProgramType type;
+    private Double durationSeconds;
+    // TODO enable settings edit, update settings to include validation type & read-only flag, rename to attributes
     private Map<String, String> settings;
 
     @JsonSerialize(using = ImageSerializer.class)
@@ -40,11 +42,11 @@ public final class ProgramInfo {
         settings = new TreeMap<>();
     }
 
-    public ProgramInfo(String id, String name, String type, BufferedImage thumbnail) {
+    public ProgramInfo(String id, String name, ProgramType type, BufferedImage thumbnail) {
         this(id, name, type, thumbnail, new Hashtable<>());
     }
 
-    public ProgramInfo(String id, String name, String type, BufferedImage thumbnail, Map<String, String> settings) {
+    public ProgramInfo(String id, String name, ProgramType type, BufferedImage thumbnail, Map<String, String> settings) {
         this.id = id;
         this.name = name;
         this.type = type;
@@ -68,11 +70,11 @@ public final class ProgramInfo {
         this.name = name;
     }
 
-    public String getType() {
+    public ProgramType getType() {
         return type;
     }
 
-    public void setType(String type) {
+    public void setType(ProgramType type) {
         this.type = type;
     }
 
@@ -91,5 +93,13 @@ public final class ProgramInfo {
     public void setSettings(Map<String, String> settings) {
         // defensive copy
         this.settings = new TreeMap<>(settings);
+    }
+
+    public Double getDurationSeconds() {
+        return durationSeconds;
+    }
+
+    public void setDurationSeconds(Double durationSeconds) {
+        this.durationSeconds = durationSeconds;
     }
 }

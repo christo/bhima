@@ -55,7 +55,7 @@ public class PusherMan implements Observer {
         DeviceRegistry.setOverallBrightnessScale(DEFAULT_BRIGHTNESS);
         registry = new DeviceRegistry();
         registry.setLogging(debug);
-        this.settings = new Settings(1d, DEFAULT_ANTI_LOG, DEFAULT_AUTO_THROTTLE);
+        this.settings = new Settings(1d, DEFAULT_ANTI_LOG, DEFAULT_AUTO_THROTTLE, DEFAULT_MUTE);
     }
 
     private void withLock(Runnable runme) {

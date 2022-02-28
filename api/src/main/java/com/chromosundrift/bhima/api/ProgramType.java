@@ -15,7 +15,9 @@ public class ProgramType {
     public static final ProgramType IMAGE = new ProgramType("Image", "animated image");
     public static final ProgramType STREAM = new ProgramType("Stream", "video stream");
     public static final ProgramType TEXT = new ProgramType("Text", "scrolling message");
+    public static final ProgramType UNKNOWN = new ProgramType("Unknown", "known unknown");
 
+    /** All normal types - excludes {@link #UNKNOWN} */
     @JsonIgnore
     private static final List<ProgramType> ALL = Arrays.asList(
             ALGORITHM, MOVIE, IMAGE, STREAM, TEXT
@@ -23,6 +25,9 @@ public class ProgramType {
 
     private String name;
     private String description;
+
+    public ProgramType() {
+    }
 
     public ProgramType(String name, String description) {
         this.name = name;

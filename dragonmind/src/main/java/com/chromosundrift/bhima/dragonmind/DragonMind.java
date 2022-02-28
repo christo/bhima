@@ -33,6 +33,7 @@ public class DragonMind extends ProcessingBase {
 
     private BallsProgram balls = new BallsProgram();
     private PusherMan pusherMan;
+    private String version;
 
     private PFont defaultFont;
 
@@ -44,6 +45,7 @@ public class DragonMind extends ProcessingBase {
     @Override
     public void setup() {
         super.setup();
+//        setVersionFromProperties();
         balls.setup(this);
         pusherMan = new PusherMan(DEBUG_NOISY);
         pusherMan.init();
@@ -71,25 +73,28 @@ public class DragonMind extends ProcessingBase {
         textFont(brandFont);
 
         int textMarginTop = 100;
-        String version = "unknown";
         text(brandText, width / 2f, height / 2 + logo.height / 2 + textMarginTop);
+        textFont(defaultFont, 18);
+        textAlign(RIGHT);
+        text("version: " + version, width - 350, height - 100, 280, 80);
+    }
+
+    private void setVersionFromProperties() {
         try {
             Properties p = new Properties();
             InputStream propFile = getClass().getClassLoader().getResourceAsStream(PROP_FILE);
             if (propFile != null) {
                 p.load(propFile);
-                version = p.getProperty("version").trim();
+                version = p.getProperty("version", "unknown").trim();
+                logger.info("Version (from properties): {}", version);
             } else {
-                System.out.println(PROP_FILE + " missing");
+                logger.warn(PROP_FILE + " missing");
+                version = "unknown";
             }
         } catch (IOException e) {
             // NOTE This indicates a build problem, but we'd rather not explode here
-            System.out.println("Could not load " + PROP_FILE + " because " + e.getMessage());
-            //e.printStackTrace();
+            logger.error("Could not load " + PROP_FILE + " because " + e.getMessage(), e);
         }
-        textFont(defaultFont, 18);
-        textAlign(RIGHT);
-        text("version: " + version, width - 350, height - 100, 280, 80);
     }
 
     static String getResourceFileOrUrl(String resourceName) {
@@ -103,6 +108,10 @@ public class DragonMind extends ProcessingBase {
 
     protected PusherMan getPusherMan() {
         return pusherMan;
+    }
+
+    protected String getVersion() {
+        return version;
     }
 
     protected GLabel label(String text, float x, float y, float w, float h) {

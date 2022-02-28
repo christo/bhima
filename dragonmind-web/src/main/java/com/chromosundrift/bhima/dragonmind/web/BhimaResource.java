@@ -95,8 +95,9 @@ public class BhimaResource {
     public Settings setSettings(
             @FormParam("brightness") Double brightness,
             @FormParam("luminanceCorrection") Boolean luminanceCorrection,
-            @FormParam("autoThrottling") Boolean autoThrottle
+            @FormParam("autoThrottling") Boolean autoThrottle,
+            @FormParam("mute") Boolean mute
             ) {
-        return dragon.setSettings(new Settings(brightness, luminanceCorrection, autoThrottle));
+        return dragon.setSettings(new Settings(brightness, luminanceCorrection, autoThrottle, mute));
     }
 }
