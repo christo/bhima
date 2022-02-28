@@ -66,7 +66,7 @@ public class BallsProgram extends AbstractDragonProgram implements DragonProgram
         PGraphics graphics = draw(mind, w, h);
         BufferedImage thumbnail = imageToBufferedImage(graphics.getImage(), x, y, w, h);
         String id = BallsProgram.class.getName();
-        return new ProgramInfo(id, NAME, TYPE_SKETCH, thumbnail);
+        return new ProgramInfo(id, NAME, "Algorithm", thumbnail);
     }
 
     /**
@@ -80,6 +80,6 @@ public class BallsProgram extends AbstractDragonProgram implements DragonProgram
         t = 0;
         PGraphics graphics = draw(mind, 400, 100);
         BufferedImage thumbnail = imageToBufferedImage(graphics.getImage(), 0, 0, 400, 100);
-        return new ProgramInfo(BallsProgram.class.getName(), NAME, TYPE_SKETCH, thumbnail);
+        return new ProgramInfo(BallsProgram.class.getName(), NAME, "Algorithm", thumbnail);
     }
 }
