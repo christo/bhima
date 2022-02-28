@@ -87,6 +87,9 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
             throw new IllegalArgumentException(format("invalid dimensions: %d, %d, %d, %d", x, y, w, h));
         }
         try {
+            if (m.pixelWidth == 0 || m.pixelHeight == 0) {
+                logger.warn("Movie pixel dimensions are unset: not good to capture image.");
+            }
             Image image = m.getImage();
             if (image == null) {
                 logger.warn("movie image is null!");
@@ -125,7 +128,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
             final List<String> media = localVideos.getMedia();
             generateInfos(media);
         } catch (IOException e) {
-            logger.error("Cannot initialise local video list");
+            logger.error("Cannot initialise local video list", e);
         }
 
         String baseDir = isLinux()
@@ -152,7 +155,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
     private void generateInfos(List<String> videoFiles) {
         videoFiles.forEach(s -> {
             File thumb = new File(s + ".info.json");
-            if (!thumb.exists()) {
+            if (!thumb.exists() || true) {
                 generateInfo(s, thumb);
             } else {
                 logger.debug("reusing cached info for {}", s);
@@ -236,6 +239,18 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
     private Movie setupMovie(DragonMind mind, String movieFile) {
         logger.info("setting up movie {}", movieFile);
 
+        Movie movie = constructMovie(mind, movieFile);
+        fps = Math.min(movie.frameRate, 30);
+
+        logger.info("playing back {} at {} FPS (native framerate is {})", movie.filename, fps, movie.frameRate);
+
+        movie.frameRate(fps);
+        movie.volume(mute ? 0f : 1f);
+        movie.loop();
+        return movie;
+    }
+
+    private Movie constructMovie(DragonMind mind, String movieFile) {
         Movie movie = null;
         try {
             movie = new Movie(mind, movieFile);
@@ -247,13 +262,6 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
             logger.error("ULE: Probably native libraries or lib paths are missing or wrong.");
             throw e;
         }
-        fps = Math.min(movie.frameRate, 30);
-
-        logger.info("playing back {} at {} FPS (native framerate is {})", movie.filename, fps, movie.frameRate);
-
-        movie.frameRate(fps);
-        movie.volume(mute ? 0f : 1f);
-        movie.loop();
         return movie;
     }
 
@@ -284,8 +292,8 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
         try {
             //File movieFile = new File(filename);
             thisMovie = setupMovie(mind, filename);
-            // either 8s from beginning or if movie is shorter, the half-way point
-            float secs = Math.min(thisMovie.duration() / 2, 8f);
+            // choose time offset for thumbnail
+            float secs = Math.min(thisMovie.duration() / 2, 18f);
             thisMovie.jump(secs); // take thumbnail from secs into the movie
             thisMovie.loadPixels();
             logger.info("getting movie image from filename '{}'", filename);

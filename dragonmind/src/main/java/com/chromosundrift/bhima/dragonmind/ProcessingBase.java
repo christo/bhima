@@ -85,7 +85,7 @@ public class ProcessingBase extends PApplet {
     @Override
     public void setup() {
         super.setup();
-        logger.info("surface implementation: {}", surface.getClass());
+        logger.info("surface implementation: {}", surface.getClass().getName());
     }
 
     public ProcessingBase() {
