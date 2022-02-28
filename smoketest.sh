@@ -9,11 +9,12 @@ set -vx
 shopt -s failglob
 
 echo JAVA_HOME: $JAVA_HOME
-gradle clean --debug --stacktrace || exit
-gradle distTar
+./gradlew clean || exit
+./gradlew distTar
 mkdir -p tmp
 rm -rf tmp/*
 tar xf dragonmind/build/distributions/dragonmind-*.tar -C tmp/
 dd=tmp/dragonmind-*
-ln -s dragonmind/video ${dd#}/
-${dd#}/bin/dragonmind
+ln -s $PWD/dragonmind/video ${dd#}/
+cd ${dd#}
+./bin/dragonmind
