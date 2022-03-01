@@ -65,6 +65,10 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
      */
     private float fps;
 
+    public MoviePlayerImpl() {
+        logger.debug("constructor");
+    }
+
     @Override
     public void settings(DragonMind mind) {
 
@@ -131,10 +135,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
             logger.error("Cannot initialise local video list", e);
         }
 
-        String baseDir = isLinux()
-                ? format("/media/%s", System.getProperty("user.name"))
-                : "/Volumes";
-        VideoLurker videoLurker = new VideoLurker(baseDir, "bhima");
+        VideoLurker videoLurker = new VideoLurker(getMediaBaseDir(), "bhima");
 
         videoLurker.start();
         getRuntime().addShutdownHook(new Thread(videoLurker::stop, "VideoLurker Shutdown Hook"));
