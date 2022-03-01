@@ -8,9 +8,14 @@
 set -vx 
 shopt -s failglob
 
-echo JAVA_HOME: $JAVA_HOME
+echo  $JAVA_HOME
+
+if [[ -f "sourceme.sh" ]]; then
+  source "sourceme.sh"
+fi
+
 ./gradlew clean || exit
-./gradlew distTar
+./gradlew distTar || exit
 mkdir -p tmp
 rm -rf tmp/*
 tar xf dragonmind/build/distributions/dragonmind-*.tar -C tmp/
