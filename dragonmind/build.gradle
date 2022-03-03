@@ -17,9 +17,8 @@ testSets {
 }
 
 check.dependsOn integrationTest
+
 dependencies {
-
-
 
     implementation project(':api')
     implementation project(':dragonmind-web')
@@ -59,12 +58,14 @@ dependencies {
     // OSX native gstreamer lib, linux is distributed with gstreamer
     // TODO try commenting this out - it's right but processing-video does manual dynamic native library loading
     def videoLib = "processing-video-lib/video/library"
-    runtimeOnly files("${videoLib}/macosx64/libgstreamer-1.0.0.dylib")
+    runtimeOnly files("${videoLib}/macosx/libgstreamer-1.0.0.dylib")
     // need to have all native libraries available for integration test without processing's manual resolution
-    integrationTestRuntimeOnly fileTree("${videoLib}/macosx64/") { include '*.dylib' }
-    testRuntimeOnly fileTree("${videoLib}/macosx64/") { include '*.dylib' }
+    integrationTestRuntimeOnly fileTree("${videoLib}/macosx/") { include '*.dylib' }
+    testRuntimeOnly fileTree("${videoLib}/macosx/") { include '*.dylib' }
 
-    runtimeOnly files("${videoLib}/gst1-java-core-1.1.0.jar")
+    implementation group: 'org.freedesktop.gstreamer', name: 'gst1-java-core', version: '1.4.0'
+
+    //runtimeOnly files("${videoLib}/gst1-java-core-1.2.0.jar")
     implementation files("${videoLib}/jna.jar")
 
     // TODO might need dev mode with linked source and source project for Processing Video

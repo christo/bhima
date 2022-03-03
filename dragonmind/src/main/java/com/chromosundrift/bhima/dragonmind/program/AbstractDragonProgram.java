@@ -21,8 +21,10 @@ public abstract class AbstractDragonProgram implements DragonProgram {
     public void settings(DragonMind mind) {
     }
 
+    /**
+     * Converts an {@link Image} to a {@link BufferedImage} using {@link Graphics2D} to scale it.
+     */
     protected static BufferedImage imageToBufferedImage(Image image, int x, int y, int w, int h) {
-        logger.debug("Having to convert a weird image implementation to a BufferedImage");
         BufferedImage bi = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
         Graphics2D g2d = bi.createGraphics();
         g2d.drawImage(image, x, y, w, h, null);

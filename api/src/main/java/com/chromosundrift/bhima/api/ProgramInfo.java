@@ -21,7 +21,7 @@ import static java.util.Collections.emptyMap;
 @JsonInclude(NON_EMPTY)
 public final class ProgramInfo {
     private static final ProgramInfo NULL_PROGRAM_INFO =
-            new ProgramInfo("NULL", "no program", ProgramType.UNKNOWN, generateNullImage(400, 100), emptyMap());
+            new ProgramInfo("NULL", "no program", ProgramType.NULL, generateNullImage(400, 100), emptyMap());
 
     @JsonIgnore
     public static ProgramInfo getNullProgramInfo() {

@@ -34,7 +34,7 @@ import {
     Cable,
     ConnectedTv,
     DirectionsBus,
-    Image,
+    Image, Info,
     Label,
     LocalMovies,
     QuestionMark,
@@ -115,13 +115,14 @@ function bhimaFetch(name) {
  * @constructor
  */
 const ProgramTypeIcon = (props) => {
-    switch(props.type) {
-        case TYPE_MOVIE: return <LocalMovies fontSize="large" className="programType" fontSize={props.fontSize}/>;
-        case TYPE_ALGORITHM: return <Apps fontSize="large" className="programType" fontSize={props.fontSize} />;
-        case TYPE_IMAGE: return <Image fontSize="large" className="programType" fontSize={props.fontSize} />;
-        case TYPE_STREAM: return <ConnectedTv fontSize="large" className="programType" fontSize={props.fontSize} />;
-        case TYPE_TEXT: return <TextFields fontSize="large" className="programType" fontSize={props.fontSize} />;
-        default: return <QuestionMark fontSize="large" className="programType" fontSize={props.fontSize} />;
+    const {type, fontSize} = props;
+    switch(type) {
+        case TYPE_MOVIE: return <LocalMovies className="programType" fontSize={fontSize}/>;
+        case TYPE_ALGORITHM: return <Apps className="programType" fontSize={fontSize} />;
+        case TYPE_IMAGE: return <Image className="programType" fontSize={fontSize} />;
+        case TYPE_STREAM: return <ConnectedTv className="programType" fontSize={fontSize} />;
+        case TYPE_TEXT: return <TextFields className="programType" fontSize={fontSize} />;
+        default: return <QuestionMark className="programType" fontSize={fontSize} />;
     }
 };
 
@@ -327,12 +328,16 @@ const SystemPage = (props) => {
         return <CircularProgress color="secondary" />;
     } else {
         const updateBrightness = () => {}; // TODO update brightness
-        console.log(error, loaded, systemInfo);
         return (
             <Container className="page">
                 <h3>System</h3>
                 <List>
                     <ListItem>
+                        <ListItemIcon>
+                            <Info fontSize="large"/>
+                        </ListItemIcon>
+                        <ListItemText primary="Status" secondary={systemInfo.status} />
+                    </ListItem>                    <ListItem>
                         <ListItemIcon>
                             <Label fontSize="large"/>
                         </ListItemIcon>

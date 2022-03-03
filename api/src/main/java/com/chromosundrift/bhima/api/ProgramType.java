@@ -15,9 +15,9 @@ public class ProgramType {
     public static final ProgramType IMAGE = new ProgramType("Image", "animated image");
     public static final ProgramType STREAM = new ProgramType("Stream", "video stream");
     public static final ProgramType TEXT = new ProgramType("Text", "scrolling message");
-    public static final ProgramType UNKNOWN = new ProgramType("Unknown", "known unknown");
+    public static final ProgramType NULL = new ProgramType("Borken", "achtung geborken");
 
-    /** All normal types - excludes {@link #UNKNOWN} */
+    /** All normal types - excludes {@link #NULL} */
     @JsonIgnore
     private static final List<ProgramType> ALL = Arrays.asList(
             ALGORITHM, MOVIE, IMAGE, STREAM, TEXT

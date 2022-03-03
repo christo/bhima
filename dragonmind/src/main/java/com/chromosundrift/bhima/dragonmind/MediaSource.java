@@ -48,7 +48,7 @@ public abstract class MediaSource {
 
     private boolean fileOk(Path p, BasicFileAttributes bfa) {
         String filename = p.getFileName().toString();
-        return !filename.endsWith(".json") &&
+        return !filename.contains(".json") &&
                 bfa.isRegularFile() &&
                 !filename.startsWith(".") &&
                 !filename.endsWith(".mov") &&

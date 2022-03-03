@@ -27,9 +27,13 @@ public class MoviePlayerImplTest {
         System.setProperty("gstreamer.library.path", "processing-video-lib/video/library/macosx");
         System.setProperty("gstreamer.plugin.path", "processing-video-lib/video/library/macosx/gstreamer-1.0");
         Movie movie = new Movie(papplet, "video/candy-crush.m4v");
+        movie.frameRate(30);
+        movie.volume(0f);
+        movie.loop();
+
         MoviePlayerImpl player = new MoviePlayerImpl();
 
-        final BufferedImage movieImage = player.getMovieImage(movie, 0, 0, 0, 0);
+        final BufferedImage movieImage = player.getImageFrameFromMovie(movie, 0, 0, 400, 100);
         final int width = movieImage.getWidth();
         Assert.assertEquals("movie frame should be 400x100", 400, width);
         final int height = movieImage.getHeight();
@@ -42,19 +46,23 @@ public class MoviePlayerImplTest {
     private static PApplet mockPApplet() {
         try {
             class MockSketch extends PApplet {
-                public MockSketch() {
-                    // need to do this or we don't get far
-                    initSurface();
+                void doInitSurface() {
+                    super.initSurface();
                 }
             }
-            PApplet papplet = new MockSketch();
-            if (ProcessingBase.getOs().contains("osx")) {
+            MockSketch papplet = new MockSketch();
+
+            if (ProcessingBase.getOs().contains("mac")) {
                 // call this thing otherwise a later attempt to set icon fails
                 ThinkDifferent.init(papplet);
             }
+            papplet.doInitSurface();
             return papplet;
         } catch (ExceptionInInitializerError e) {
             logger.error("probably running on wrong java version (>1.8), cannot mock PApplet ffs", e);
+            throw e;
+        } catch (RuntimeException e) {
+            logger.error("hacky mock blew up! hack more, hack different, hack better");
             throw e;
         }
     }

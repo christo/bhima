@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
+import static java.lang.Math.min;
 import static java.lang.Runtime.getRuntime;
 import static java.lang.String.format;
 import static java.lang.System.currentTimeMillis;
@@ -34,7 +35,7 @@ import com.chromosundrift.bhima.dragonmind.MediaSource;
 import com.chromosundrift.bhima.dragonmind.NearDeathExperience;
 import com.chromosundrift.bhima.dragonmind.VideoLurker;
 import static com.chromosundrift.bhima.api.ProgramInfo.getNullProgramInfo;
-import static com.chromosundrift.bhima.dragonmind.ProcessingBase.isLinux;
+import static com.chromosundrift.bhima.dragonmind.OsUtils.getMediaBaseDir;
 
 /**
  * Plays one or more movies.
@@ -48,7 +49,8 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
 
     private static final String VIDEO_DIR_NAME = "video";
     /** Time offset from beginning of video to use as thumbnail */
-    public static final float THUMBNAIL_TIME_OFFSET = 8f;
+    private static final float THUMBNAIL_TIME_OFFSET = 24f;
+    private static final boolean CACHE_INFOS = false;
 
     /** Default time to loop short videos for */
     private long movieCyclePeriodMs = 1000 * 60 * 5;
@@ -78,12 +80,13 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
         if (movie == null) {
             return getNullProgramInfo();
         }
-        logger.debug("getting movie image for current movie {}", movie.filename);
-        BufferedImage bi = getMovieImage(movie, x, y, w, h);
-        return getMovieProgramInfo(bi, movie.filename);
+        final String filename = movie.filename;
+        logger.debug("getting movie image for current movie {}", filename);
+        return getMovieProgramInfoPlease(filename, x, y, w, h, movie);
     }
 
-    BufferedImage getMovieImage(Movie m, int x, int y, int w, int h) {
+    /** Gets image from the movie if possible. */
+    Optional<BufferedImage> getMovieImage(Movie m, int x, int y, int w, int h) {
         if (m == null) {
             throw new NullPointerException();
         }
@@ -93,30 +96,35 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
         try {
             if (m.pixelWidth == 0 || m.pixelHeight == 0) {
                 logger.warn("Movie pixel dimensions are unset: not good to capture image.");
+            } else {
+                logger.debug("Movie pixel dimensions are good!");
             }
-            Image image = m.getImage();
-            if (image == null) {
-                logger.warn("movie image is null!");
-                return getNullProgramInfo().getThumbnail();
-            }
-            if (image.getClass().isAssignableFrom(BufferedImage.class)) {
-                return (BufferedImage) image;
-            }
-            return imageToBufferedImage(image, x, y, w, h);
+            return Optional.of(getImageFrameFromMovie(m, x, y, w, h));
         } catch (RuntimeException e) {
-            logger.error("unable to get image (may be race condition in processing's native gstreamer stack)", e);
-            return getNullProgramInfo().getThumbnail();
+            logger.error("unable to get image (may be race condition in processing-video/gstreamer): {}", e.getMessage());
+            return Optional.empty();
         }
     }
 
+    /** Just gets the image from the movie frame without fallback to the null placeholder image. */
+    BufferedImage getImageFrameFromMovie(Movie m, int x, int y, int w, int h) {
+        Image image = m.getImage();
+        if (image == null) {
+            throw new NullPointerException("movie image is null!");
+        }
+        return imageToBufferedImage(image, x, y, w, h);
+    }
+
     private ProgramInfo getMovieProgramInfo(BufferedImage bi, String f) {
-        String niceName = f.substring(f.lastIndexOf('/') + 1, f.length() - 4);
+        return getMovieProgramInfo(bi, f, ProgramType.MOVIE);
+    }
+
+    private ProgramInfo getMovieProgramInfo(BufferedImage bi, String f, ProgramType type) {
+        String niceName = makeNice(f);
         Map<String, String> settings = new HashMap<>();
         settings.put("FPS", Float.toString(fps));
         settings.put("muted", Boolean.toString(mute));
-//        settings.put("duration", Float.toString(movie.duration()));
-//        settings.put("elapsed", Float.toString(movie.time()));
-        return new ProgramInfo(f, niceName, ProgramType.MOVIE, bi, settings);
+        return new ProgramInfo(f, niceName, type, bi, settings);
     }
 
     @Override
@@ -156,7 +164,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
     private void generateInfos(List<String> videoFiles) {
         videoFiles.forEach(s -> {
             File thumb = new File(s + ".info.json");
-            if (!thumb.exists() || true) {
+            if (!thumb.exists() || !CACHE_INFOS) {
                 generateInfo(s, thumb);
             } else {
                 logger.debug("reusing cached info for {}", s);
@@ -241,13 +249,16 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
         logger.info("setting up movie {}", movieFile);
 
         Movie movie = constructMovie(mind, movieFile);
-        fps = Math.min(movie.frameRate, 30);
+        fps = min(movie.frameRate, 30);
 
         logger.info("playing back {} at {} FPS (native framerate is {})", movie.filename, fps, movie.frameRate);
 
         movie.frameRate(fps);
         movie.volume(mute ? 0f : 1f);
         movie.loop();
+        if (!movie.available()) {
+            logger.warn("movie not available() in setupMovie...");
+        }
         return movie;
     }
 
@@ -256,8 +267,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
         try {
             movie = new Movie(mind, movieFile);
             if (!movie.available()) {
-                // this is apparently often not fatal
-                logger.warn("Movie not 'available()'; may still work: {}", movieFile);
+                logger.warn("Movie not 'available()': {}", movieFile);
             }
         } catch (UnsatisfiedLinkError e) {
             logger.error("ULE: Probably native libraries or lib paths are missing or wrong.");
@@ -291,24 +301,41 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
     private ProgramInfo toProgramInfo(String filename, int x, int y, int w, int h) {
         Movie thisMovie = null;
         try {
-            //File movieFile = new File(filename);
+            // generate thumbnail
             thisMovie = setupMovie(mind, filename);
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             // choose time offset for thumbnail
-            float secs = Math.min(thisMovie.duration() / 2, 18f);
+            float secs = min(thisMovie.duration() / 2, THUMBNAIL_TIME_OFFSET);
             thisMovie.jump(secs); // take thumbnail from secs into the movie
             thisMovie.loadPixels();
             logger.info("getting movie image from filename '{}'", filename);
-            BufferedImage bi = getMovieImage(thisMovie, x, y, w, h);
-            return getMovieProgramInfo(bi, thisMovie.filename);
+            return getMovieProgramInfoPlease(filename, x, y, w, h, thisMovie);
         } catch (RuntimeException re) {
             logger.error("cannot generate thumbnail for {} because {}", filename, re.getMessage());
-            String niceName = filename.substring(filename.lastIndexOf('/') + 1, filename.length() - 4);
-            return new ProgramInfo(filename, niceName, ProgramType.MOVIE, getNullProgramInfo().getThumbnail());
+            return new ProgramInfo(filename, makeNice(filename), ProgramType.NULL, getNullProgramInfo().getThumbnail());
         } finally {
             if (thisMovie != null) {
                 // clean up any native resources
                 thisMovie.dispose();
             }
+        }
+    }
+
+    private String makeNice(String filename) {
+        return filename.substring(filename.lastIndexOf('/') + 1, filename.length() - 4);
+    }
+
+    private ProgramInfo getMovieProgramInfoPlease(String filename, int x, int y, int w, int h, Movie thisMovie) {
+        Optional<BufferedImage> obi = getMovieImage(thisMovie, x, y, w, h);
+        if (obi.isPresent()) {
+            return getMovieProgramInfo(obi.get(), filename);
+        } else {
+            final BufferedImage thumb = getNullProgramInfo().getThumbnail();
+            return getMovieProgramInfo(thumb, filename, ProgramType.NULL);
         }
     }
 
@@ -326,6 +353,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
             }
         } else {
             logger.warn("Can't find program with id {}", id);
+            return getCurrentProgramInfo(0, 0, 400, 100);
         }
         return getNullProgramInfo();
     }

@@ -22,6 +22,7 @@ public class SystemInfo {
     public Map<String, Set<Integer>> effectiveWiring;
     public String scrollText;
     public String version;
+    public String status;
 
     public SystemInfo() {
         this(0L, ProgramInfo.getNullProgramInfo());
@@ -95,5 +96,13 @@ public class SystemInfo {
 
     public void setVersion(String version) {
         this.version = version;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

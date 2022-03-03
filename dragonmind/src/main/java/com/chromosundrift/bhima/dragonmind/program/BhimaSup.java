@@ -24,7 +24,6 @@ import processing.event.MouseEvent;
 import processing.video.Movie;
 
 import java.io.IOException;
-import java.lang.management.ManagementFactory;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -35,7 +34,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static java.lang.Runtime.getRuntime;
 import static java.lang.management.ManagementFactory.getRuntimeMXBean;
 import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toSet;
+
+import static com.chromosundrift.bhima.api.ProgramInfo.getNullProgramInfo;
 
 /**
  * Loads and plays video on Bhima configured by file.
@@ -44,6 +46,9 @@ public final class BhimaSup extends DragonMind implements Dragon {
 
     private static final Logger logger = LoggerFactory.getLogger(BhimaSup.class);
     private static final int CABINET_PORT_INDEX_BASE = 1;
+    private static final String STATUS_RUNNING = "running";
+    private static final String STATUS_SETTING_UP = "setting up";
+    private static final String STATUS_SETTINGS_COMPLETE = "settings complete";
 
     private static int INNER_WIDTH = 400;
     private static int INNER_HEIGHT = 100;
@@ -62,11 +67,14 @@ public final class BhimaSup extends DragonMind implements Dragon {
     private float xpos = 0;
     private PFont mesgFont;
     private String mesg;
-    private DragonProgram moviePlayer;
+    private DragonProgram moviePlayer = null;
+    private AtomicBoolean doVideo;
+    private AtomicBoolean doServer;
+    private String baseStatus = "pre-settings";
 
     @Override
     public String getStatus() {
-        return "running"; // TODO implement status
+        return baseStatus + (doVideo.get() ? " (Video)" : " (No Video)"); // TODO implement proper status
     }
 
     @Override
@@ -78,6 +86,7 @@ public final class BhimaSup extends DragonMind implements Dragon {
         si.setEffectiveWiring(this.getEffectiveWiring());
         si.setScrollText(mesg);
         si.setVersion(getVersion());
+        si.setStatus(this.getStatus());
         return si;
     }
 
@@ -106,7 +115,7 @@ public final class BhimaSup extends DragonMind implements Dragon {
     @Override
     public ProgramInfo getCurrentProgram() {
         if (!movieMode || moviePlayer == null) {
-            return ProgramInfo.getNullProgramInfo();
+            return getNullProgramInfo();
         } else {
             return moviePlayer.getCurrentProgramInfo(inx, iny, INNER_WIDTH, INNER_HEIGHT);
         }
@@ -114,12 +123,21 @@ public final class BhimaSup extends DragonMind implements Dragon {
 
     @Override
     public List<ProgramInfo> getPrograms() {
-        return moviePlayer.getProgramInfos(inx, iny, INNER_WIDTH, INNER_HEIGHT);
+        if (!movieMode || moviePlayer == null) {
+            // may happen if we haven't got moviePlayer setup yet
+            return singletonList(getNullProgramInfo());
+        } else {
+            return moviePlayer.getProgramInfos(inx, iny, INNER_WIDTH, INNER_HEIGHT);
+        }
     }
 
     @Override
     public ProgramInfo runProgram(String id) {
-        return moviePlayer.runProgram(id);
+        if (moviePlayer != null && movieMode) {
+            return moviePlayer.runProgram(id);
+        } else {
+            return getNullProgramInfo();
+        }
     }
 
     @Override
@@ -138,14 +156,16 @@ public final class BhimaSup extends DragonMind implements Dragon {
     public void settings() {
         size(INNER_WIDTH, INNER_HEIGHT);
         mesg = "LOVE   OVER   FEAR";
+        baseStatus = STATUS_SETTINGS_COMPLETE;
     }
 
     @Override
     public void setup() {
         super.setup();
+        baseStatus = STATUS_SETTING_UP;
         xpos = width;
-        AtomicBoolean doVideo = new AtomicBoolean(true);
-        AtomicBoolean doServer = new AtomicBoolean(true);
+        doVideo = new AtomicBoolean(true);
+        doServer = new AtomicBoolean(true);
         if (args != null) {
             Arrays.stream(args).filter(s -> s.startsWith("-")).forEach(arg -> {
                 if (arg.equals("-noserver")) {
@@ -173,21 +193,32 @@ public final class BhimaSup extends DragonMind implements Dragon {
 
         background(0);
 
+        try {
+            config = loadConfigFromFirstArgOrDefault();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        baseStatus = BhimaSup.STATUS_SETTINGS_COMPLETE;
+    }
+
+    private void setupMoviePlayer() {
         if (doVideo.get()) {
             moviePlayer = new MoviePlayerImpl();
             moviePlayer.setup(this); // FIXME this composition linkage causes ambiguous state in lifecycle
         } else {
             moviePlayer = new NullProgram();
         }
-        try {
-            config = loadConfigFromFirstArgOrDefault();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+
     }
 
     @Override
     public void draw() {
+        baseStatus = STATUS_RUNNING;
+        if (moviePlayer == null) {
+            logger.info("moviePlayer not setup, doing now.");
+            // TODO check this is blocking
+            setupMoviePlayer();
+        }
         try {
             // main feed
             PImage mainSrc;
@@ -265,8 +296,10 @@ public final class BhimaSup extends DragonMind implements Dragon {
 
     private PImage getPImage() {
         PImage image;
-        if (movieMode) {
+        if (movieMode && moviePlayer != null) {
             image = moviePlayer.draw(this, width, height);
+        } else if (moviePlayer == null) {
+            image = TestPattern.cycleTestPattern(this, width, height);
         } else if (mouseMode) {
             image = TestPattern.fullCrossHair(this, mouseX, mouseY, width, height);
         } else {
