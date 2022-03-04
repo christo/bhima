@@ -1,21 +1,15 @@
-.App {
-    background-color: #434152; /* TODO remove, use theme */
-    width: 100%;
-    margin: 0;
-}
-
 h3 {
     text-transform: uppercase;
 }
 
 .logo {
     mix-blend-mode: lighten;
-    overflow: hidden;
-    filter: saturate(150%) brightness(70%) hue-rotate(160deg);
+    filter: saturate(150%) brightness(70%) hue-rotate(150deg);
 }
 
 .program {
-    width: 100vw;
+    width: 100%;
+    height: auto;
     overflow: hidden;
     position: relative;
 
@@ -68,7 +62,7 @@ li .programType {
 
 main {
     width: 100vw;
-    height: 100vh;
+    height: 100%;
     display: flex;
     justify-content: space-around;
     margin-top: 60px;

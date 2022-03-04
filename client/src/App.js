@@ -11,7 +11,7 @@ import {
     CssBaseline,
     Dialog,
     DialogActions,
-    DialogTitle,
+    DialogTitle, FormControl,
     FormControlLabel,
     IconButton,
     List,
@@ -23,7 +23,7 @@ import {
     Stack,
     Switch,
     ThemeProvider,
-    Toolbar
+    Toolbar, Typography
 } from "@mui/material";
 import {
     AccessTime,
@@ -34,7 +34,8 @@ import {
     Cable,
     ConnectedTv,
     DirectionsBus,
-    Image, Info,
+    Image,
+    Info,
     Label,
     LocalMovies,
     QuestionMark,
@@ -58,6 +59,13 @@ const TYPE_IMAGE = "Image";
 const TYPE_STREAM = "Stream";
 /** Text scroller */
 const TYPE_TEXT = "Text";
+
+/**
+ * Returns value clamped between lowest and highest.
+ */
+function clamp(value, lowest, highest) {
+    return Math.min(Math.max(lowest, value), highest);
+}
 
 // TODO complete colour scheme: purple/aqua/pink/lightgrey/black  (?)
 const bhimaTheme = createTheme({
@@ -129,11 +137,11 @@ const ProgramTypeIcon = (props) => {
 const TopBar = (props) => {
     // TODO highlight current page
     // TODO make topbar slide in/out on scroll
-    return <AppBar position="fixed" color="primary" title="Bhima">
+    return <AppBar position="fixed" color="primary" title="Bhima" sx={{margin: 0, padding: 0}}>
         <Toolbar sx={{display: "flex", flexDirection: "row", justifyContent: "space-evenly", justifyItems: "center"}}>
             <Box
                 component="img"
-                sx={{maxHeight: 50, mr: 2}}
+                sx={{maxHeight: 50, objectFit: "cover", top: -80, overflow: "hidden", height: "100%", width: "300px", margin: 0}}
                 alt="Bhima logo"
                 className="logo"
                 src={Logo}
@@ -161,29 +169,6 @@ const TopBar = (props) => {
                 </IconButton>
             </NavLink>
 
-            <NavLink to="/programs" end className={(props) => `${props.isActive ? 'active ' : ''}`} >
-                <IconButton
-                    size="large"
-                    edge="start"
-                    color="inherit"
-                    aria-label="menu"
-                    sx={{mr: 3}}
-                >
-                    <AppRegistration/>
-                </IconButton>
-            </NavLink>
-
-            <NavLink to="/wiring" end className={(props) => `${props.isActive ? 'active ' : ''}`} >
-                <IconButton
-                    size="large"
-                    edge="start"
-                    color="inherit"
-                    aria-label="menu"
-                    sx={{mr: 3}}
-                >
-                    <Cable/>
-                </IconButton>
-            </NavLink>
         </Toolbar>
     </AppBar>;
 };
@@ -193,11 +178,11 @@ function NetworkError(error) {
 }
 
 const CurrentProgram = (props) => {
-
     const {program, setProgram} = props;
-    const [loaded, setLoaded] = useState(false);
 
+    const [loaded, setLoaded] = useState(false);
     const [error, setError] = useState(null);
+
     useEffect(() => {
         bhimaFetch("program")
             .then(
@@ -312,22 +297,42 @@ const HomePage = (props) => {
 };
 
 
-const WiringPage = (props) => {
-    return (
-    <Container className="page">
-        <h3>Wiring</h3>
-        This is where the wiring page goes, yo.
-    </Container>);
-};
-
 const SystemPage = (props) => {
-    const {systemInfo, error, loaded} = props;
+    const {systemInfo, setSystemInfo, error, loaded} = props;
+    useEffect(() => {
+        // TODO sync state
+    }, [systemInfo, error, loaded]);
     if (error) {
         return NetworkError(error);
     } else if (!loaded) {
         return <CircularProgress color="secondary" />;
     } else {
-        const updateBrightness = () => {}; // TODO update brightness
+        let lastUpdate = Date.now();
+        const updateBrightness = (event) => {
+            if (event.target.value !== undefined) {
+                const v = event.target.value;
+                const thisUpdate = Date.now();
+                let spamLimited = thisUpdate - lastUpdate > 100;
+                if (spamLimited) {
+                    console.log("got new brightness value ", v);
+                    let currentSettings=systemInfo.settings;
+                    currentSettings.brightness = clamp(v/100.0, 0.0, 1.0);
+                    let currentSystemInfo = systemInfo;
+                    currentSystemInfo.settings = currentSettings;
+                    // optimistically assume this update worked
+                    setSystemInfo(currentSystemInfo);
+                    // call remote update
+                    fetch(getEndpoint("settings"), {
+                        method: 'POST',
+                        headers: getHeaders(),
+                        body: JSON.stringify(currentSettings)   // TODO change to settings html form
+                    }).then(res => res.json())
+                        .then(() => console.log("TODO: update settings from post"));
+                }
+                lastUpdate = thisUpdate;
+            }
+
+        }; // TODO update brightness
         return (
             <Container className="page">
                 <h3>System</h3>
@@ -368,15 +373,29 @@ const SystemPage = (props) => {
                 </List>
                 <h3>Global Settings</h3>
                 <Stack>
-                    <FormControlLabel control={<Switch checked={systemInfo.settings.luminanceCorrection}/>} label="Gamma Correction" />
-                    <FormControlLabel control={<Switch checked={systemInfo.settings.autoThrottle}/>} label="Autothrottle" />
-                    <FormControlLabel control={<Switch checked={systemInfo.settings.mute}/>} label="Mute" />
-                    <Stack spacing={2} direction="row" sx={{ mb: 1, width: "90%" }} alignItems="center">
-                        <BrightnessLow />
-                        <Slider aria-label="Brightness" value={systemInfo.settings.brightness} onChange={updateBrightness} />
-                        <BrightnessHigh />
-                    </Stack>
+                    <FormControl>
+                        <FormControlLabel control={<Switch checked={systemInfo.settings.luminanceCorrection}/>} label="Gamma Correction" />
+                        <FormControlLabel control={<Switch checked={systemInfo.settings.autoThrottle}/>} label="Autothrottle" />
+                        <FormControlLabel control={<Switch checked={systemInfo.settings.mute}/>} label="Mute" />
+
+                        <Stack spacing={2} direction="row" sx={{ mb: 1, width: "90%" }} alignItems="center">
+                            <BrightnessLow />
+                            <Slider aria-label="Brightness"
+                                    value={systemInfo.settings.brightness * 100}
+                                    valueLabelDisplay="auto"
+                                    onChange={updateBrightness}
+                                    helperText="Brightness"/>
+                            <BrightnessHigh />
+                        </Stack>
+                    </FormControl>
                 </Stack>
+
+                <h3>Program Configuration</h3>
+                <ul className="programTypes">
+                    {systemInfo.programTypes.map(pt => (
+                        <li key={pt.name}><ProgramTypeIcon type={pt.name} fontSize="large"/> {pt.name}: {pt.description}</li>
+                    ))}
+                </ul>
                 <h3>Operations</h3>
                 <Box sx={{display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly', mt: 2}}>
                     {/*TODO if asleep, show "Wake Up"*/}
@@ -387,30 +406,15 @@ const SystemPage = (props) => {
                         Purge Cache
                     </Button>
                 </Box>
+                <h3><Cable/> Wiring</h3>
+                <p>TODO</p>
             </Container>
         );
     }
 };
 
-const ProgramsPage = (props) => {
-    const {systemInfo, error, loaded} = props;
-    if (error) {
-        return NetworkError(error);
-    } else if (!loaded) {
-        return <CircularProgress color="secondary"/>;
-    } else {
-        return <Container className="page">
-            <h3>Program Configuration</h3>
-            <ul className="programTypes">
-                {systemInfo.programTypes.map(pt => (
-                    <li key={pt.name}><ProgramTypeIcon type={pt.name} fontSize="large"/> {pt.name}: {pt.description}</li>
-                ))}
-            </ul>
-        </Container>;
-    }
-};
-
 function App() {
+    // TODO fix this - doesn't work on fresh load of non-home page
     const [systemInfo, setSystemInfo] = useState(null);
     const [loaded, setLoaded] = useState(false);
     const [error, setError] = useState(null);
@@ -428,15 +432,14 @@ function App() {
     }, []);
     return <ThemeProvider theme={bhimaTheme}>
             <CssBaseline enableColorScheme />
-            <Container sx={{ display: 'flex', justifyItems: "space-around", justifyContent: "center", padding: 0 }} className="App">
+            <Container sx={{ display: 'flex', justifyItems: "space-around",
+                justifyContent: "center", padding: 0, backgroundColor: "#434152", margin: 0, width: 1 }}>
                 <BrowserRouter>
                     <TopBar/>
                     <main>
                         <Routes>
                             <Route exact path="/" element={<HomePage systemInfo={systemInfo} error={error} loaded={loaded}/>}/>
-                            <Route exact path="/system" element={<SystemPage systemInfo={systemInfo} error={error} loaded={loaded}/>}/>
-                            <Route exact path="/wiring" element={<WiringPage systemInfo={systemInfo} error={error} loaded={loaded}/>}/>
-                            <Route exact path="/programs" element={<ProgramsPage systemInfo={systemInfo} error={error} loaded={loaded}/>}/>
+                            <Route exact path="/system" element={<SystemPage systemInfo={systemInfo} setSystemInfo={setSystemInfo} error={error} loaded={loaded}/>}/>
                         </Routes>
                     </main>
                 </BrowserRouter>
