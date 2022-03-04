@@ -2,7 +2,6 @@ import React, {useEffect, useState} from 'react';
 import './App.css';
 import {
     Alert,
-    AppBar,
     Box,
     Button,
     CircularProgress,
@@ -11,7 +10,8 @@ import {
     CssBaseline,
     Dialog,
     DialogActions,
-    DialogTitle, FormControl,
+    DialogTitle,
+    FormControl,
     FormControlLabel,
     IconButton,
     List,
@@ -20,20 +20,17 @@ import {
     ListItemText,
     Paper,
     Slider,
-    Stack, SwipeableDrawer,
+    Stack,
+    SwipeableDrawer,
     Switch,
-    ThemeProvider,
-    Toolbar, Typography
+    ThemeProvider
 } from "@mui/material";
 import {
     AccessTime,
-    AppRegistration,
     Apps,
     BrightnessHigh,
     BrightnessLow,
-    Cable,
     ConnectedTv,
-    DirectionsBus,
     Image,
     Info,
     Label,
@@ -43,7 +40,6 @@ import {
     TextFields,
     TextRotationNone
 } from "@mui/icons-material";
-import {BrowserRouter, NavLink, Route, Routes} from "react-router-dom";
 import {pink, purple} from "@mui/material/colors";
 import Logo from "./dragon-head-neg.png";
 
@@ -156,7 +152,7 @@ const CurrentProgram = (props) => {
                     setLoaded(true);
                 }
             );
-    }, []);
+    }, [program, setProgram]);
     if (error) {
         return NetworkError(error);
     } else if (!loaded) {
@@ -409,7 +405,8 @@ const SystemPage = (props) => {
 
                 </List>
 
-                <h3><Cable/> Wiring</h3>
+                <h3>Wiring</h3>
+
                 <p>TODO</p>
 
             </Container>
