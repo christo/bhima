@@ -50,7 +50,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
     private static final String VIDEO_DIR_NAME = "video";
     /** Time offset from beginning of video to use as thumbnail */
     private static final float THUMBNAIL_TIME_OFFSET = 24f;
-    private static final boolean CACHE_INFOS = false;
+    private static final boolean CACHE_INFOS = true;
 
     /** Default time to loop short videos for */
     private long movieCyclePeriodMs = 1000 * 60 * 5;
@@ -163,6 +163,7 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
 
     private void generateInfos(List<String> videoFiles) {
         videoFiles.forEach(s -> {
+            // TODO fallback to matching precalculated .info.json files in resources/precalc
             File thumb = new File(s + ".info.json");
             if (!thumb.exists() || !CACHE_INFOS) {
                 generateInfo(s, thumb);
@@ -183,13 +184,18 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
     @Override
     public PGraphics draw(DragonMind mind, int width, int height) {
         keepFreshMovie(mind);
-        if (movie != null) {
-            PImage pImage = movie.get();
-            PGraphics pg = mind.createGraphics(width, height);
-            pg.beginDraw();
-            pg.image(pImage, 0, 0);
-            pg.endDraw();
-            return pg;
+
+        try {
+            if (movie != null) {
+                PImage pImage = movie.get();
+                PGraphics pg = mind.createGraphics(width, height);
+                pg.beginDraw();
+                pg.image(pImage, 0, 0);
+                pg.endDraw();
+                return pg;
+            }
+        } catch (Exception e) {
+            logger.error("something blew up during drawing", e);
         }
         // can't use movie
         return super.draw(mind, width, height);
