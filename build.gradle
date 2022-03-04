@@ -14,7 +14,7 @@ subprojects {
 
     apply plugin: 'java'
 
-    // Processing seems wedged on Java 1.8 but maybe let's try upgrading later?
+    // Processing 3 is wedged on Java 1.8 - Processing 4 can upgrade apparently
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
 
