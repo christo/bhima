@@ -20,7 +20,7 @@ import {
     ListItemText,
     Paper,
     Slider,
-    Stack,
+    Stack, SwipeableDrawer,
     Switch,
     ThemeProvider,
     Toolbar, Typography
@@ -44,7 +44,7 @@ import {
     TextRotationNone
 } from "@mui/icons-material";
 import {BrowserRouter, NavLink, Route, Routes} from "react-router-dom";
-import {purple} from "@mui/material/colors";
+import {pink, purple} from "@mui/material/colors";
 import Logo from "./dragon-head-neg.png";
 
 // TODO read how to reduce bundle size from imports: https://mui.com/guides/minimizing-bundle-size/
@@ -73,11 +73,11 @@ const bhimaTheme = createTheme({
         mode: 'dark',
         primary: {
             // Purple and green play nicely together.
-            main: purple[500],
+            main: purple[400],
         },
         secondary: {
             // This is green.A700 as hex.
-            main: '#11cb5f',
+            main: pink[400],
         },
     },
 });
@@ -132,45 +132,6 @@ const ProgramTypeIcon = (props) => {
         case TYPE_TEXT: return <TextFields className="programType" fontSize={fontSize} />;
         default: return <QuestionMark className="programType" fontSize={fontSize} />;
     }
-};
-
-const TopBar = (props) => {
-    // TODO highlight current page
-    // TODO make topbar slide in/out on scroll
-    return <AppBar position="fixed" color="primary" title="Bhima" sx={{margin: 0, padding: 0}}>
-        <Toolbar sx={{display: "flex", flexDirection: "row", justifyContent: "space-evenly", justifyItems: "center"}}>
-            <Box
-                component="img"
-                sx={{maxHeight: 50, objectFit: "cover", top: -80, overflow: "hidden", height: "100%", width: "300px", margin: 0}}
-                alt="Bhima logo"
-                className="logo"
-                src={Logo}
-            />
-            <NavLink to="/" end className={(props) => `${props.isActive ? 'active ' : ''}`} >
-                <IconButton
-                    size="large"
-                    edge="start"
-                    color="inherit"
-                    aria-label="menu"
-                    sx={{mr: 3, color: "text-secondary"}}
-                >
-                    <DirectionsBus/>
-                </IconButton>
-            </NavLink>
-            <NavLink to="/system" end className={(props) => `${props.isActive ? 'active ' : ''}`} >
-                <IconButton
-                    size="large"
-                    edge="start"
-                    color="inherit"
-                    aria-label="menu"
-                    sx={{mr: 3}}
-                >
-                    <Settings/>
-                </IconButton>
-            </NavLink>
-
-        </Toolbar>
-    </AppBar>;
 };
 
 function NetworkError(error) {
@@ -285,13 +246,43 @@ const ProgramList = (props) => {
 
 const HomePage = (props) => {
     const [program, setProgram] = useState(null);
+    const [sysOpen, setSysOpen] = useState(false);
+    const toggleDrawer = (open) => (event) => {
+        if (
+            event &&
+            event.type === 'keydown' &&
+            (event.key === 'Tab' || event.key === 'Shift')
+        ) {
+            return;
+        }
 
+        setSysOpen(open);
+    };
     return (
         <Container className="page">
-            <h3>Live</h3>
+            <Box display="flex" justifyContent="space-between">
+                <h3>Live</h3>
+
+                <IconButton
+                    onClick={toggleDrawer(true)}
+                    size="large"
+                    edge="start"
+                    color="primary"
+                >
+                    <Settings/>
+                </IconButton>
+            </Box>
             <CurrentProgram program={program} setProgram={setProgram}/>
             <h3>All Programs</h3>
             <ProgramList setProgram={setProgram}/>
+            <SwipeableDrawer
+                anchor="right"
+                open={sysOpen}
+                onClose={toggleDrawer(false)}
+                onOpen={toggleDrawer(true)}
+            >
+                <SystemPage {...props}/>
+            </SwipeableDrawer>
         </Container>
     );
 };
@@ -334,7 +325,14 @@ const SystemPage = (props) => {
 
         }; // TODO update brightness
         return (
-            <Container className="page">
+            <Container className="page" sx={{width: "80vw"}}>
+                <Box
+                    component="img"
+                    sx={{ objectFit: "cover", top: -80, overflow: "hidden", height: "200px", width: "100%", margin: 0}}
+                    alt="Bhima logo"
+                    className="logo"
+                    src={Logo}
+                />
                 <h3>System</h3>
                 <List>
                     <ListItem>
@@ -372,7 +370,7 @@ const SystemPage = (props) => {
                 {/*    TODO: RAM, disk, load, temp, */}
                 </List>
                 <h3>Global Settings</h3>
-                <Stack>
+                <Stack className="settings">
                     <FormControl>
                         <FormControlLabel control={<Switch checked={systemInfo.settings.luminanceCorrection}/>} label="Gamma Correction" />
                         <FormControlLabel control={<Switch checked={systemInfo.settings.autoThrottle}/>} label="Autothrottle" />
@@ -387,27 +385,33 @@ const SystemPage = (props) => {
                                     helperText="Brightness"/>
                             <BrightnessHigh />
                         </Stack>
+                        <FormControlLabel control={<Switch checked={systemInfo.settings.sleep}/>} label="Sleep" />
+
                     </FormControl>
                 </Stack>
 
-                <h3>Program Configuration</h3>
-                <ul className="programTypes">
-                    {systemInfo.programTypes.map(pt => (
-                        <li key={pt.name}><ProgramTypeIcon type={pt.name} fontSize="large"/> {pt.name}: {pt.description}</li>
-                    ))}
-                </ul>
-                <h3>Operations</h3>
-                <Box sx={{display: 'flex', flexDirection: 'row', justifyContent: 'space-evenly', mt: 2}}>
-                    {/*TODO if asleep, show "Wake Up"*/}
-                    <Button variant="contained" href="#sleep">
-                        Sleep
-                    </Button>
+                <Box sx={{display: 'flex', justifyContent: 'end', mt: 2, mb: 4, mr: 2}}>
                     <Button variant="contained" href="#puge-cache">
                         Purge Cache
                     </Button>
                 </Box>
+
+                <h3>Program Types</h3>
+                <List sx={{paddingTop: 0}}>
+                    {systemInfo.programTypes.map(pt => (
+                        <ListItem key={pt.name}>
+                            <ListItemIcon>
+                                <ProgramTypeIcon type={pt.name} fontSize="large"/>
+                            </ListItemIcon>
+                            <ListItemText primary={pt.name} secondary={pt.description} />
+                        </ListItem>
+                    ))}
+
+                </List>
+
                 <h3><Cable/> Wiring</h3>
                 <p>TODO</p>
+
             </Container>
         );
     }
@@ -434,15 +438,7 @@ function App() {
             <CssBaseline enableColorScheme />
             <Container sx={{ display: 'flex', justifyItems: "space-around",
                 justifyContent: "center", padding: 0, backgroundColor: "#434152", margin: 0, width: 1 }}>
-                <BrowserRouter>
-                    <TopBar/>
-                    <main>
-                        <Routes>
-                            <Route exact path="/" element={<HomePage systemInfo={systemInfo} error={error} loaded={loaded}/>}/>
-                            <Route exact path="/system" element={<SystemPage systemInfo={systemInfo} setSystemInfo={setSystemInfo} error={error} loaded={loaded}/>}/>
-                        </Routes>
-                    </main>
-                </BrowserRouter>
+                <HomePage systemInfo={systemInfo} setSystemInfo={setSystemInfo} error={error} loaded={loaded}/>
             </Container>
         </ThemeProvider>;
 }

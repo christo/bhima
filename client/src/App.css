@@ -4,7 +4,11 @@ h3 {
 
 .logo {
     mix-blend-mode: lighten;
-    filter: saturate(150%) brightness(70%) hue-rotate(150deg);
+    filter: saturate(150%) brightness(70%) hue-rotate(120deg);
+}
+
+.settings {
+    margin-left: 1.5em;
 }
 
 .program {
