@@ -22,6 +22,7 @@ dependencies {
     implementation group: 'io.dropwizard', name: 'dropwizard-core', version: dropwizardVersion
     implementation group: 'io.dropwizard', name: 'dropwizard-assets', version: dropwizardVersion
     implementation project(':api')
+    runtimeOnly(project(path: ':client', configuration: 'npmResources'))
 
     // needed for jdk11+ https://stackoverflow.com/questions/46220810/add-modules-only-on-compilation/46221811
     runtimeOnly 'javax.activation:javax.activation-api:1.2.0'
@@ -31,3 +32,5 @@ dependencies {
     runtimeOnly 'com.sun.xml.bind:jaxb-impl:2.3.1'
 
 }
+
+assemble.dependsOn ":client:packageNpmApp"

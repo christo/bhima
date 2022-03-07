@@ -1,0 +1,48 @@
+plugins {
+    id "com.github.node-gradle.node" version "3.2.1"
+
+}
+node {
+    download = false
+    version = "17.6.0"
+}
+
+task packageNpmApp(type: Zip) {
+    dependsOn npm_run_build
+    baseName project.name
+    extension 'jar'
+    destinationDir file("${projectDir}/buildJar")
+    from('build') {
+        // optional path under which output will be visible in Java classpath, e.g. static resources path
+        into 'static'
+    }
+}
+
+npm_run_build {
+    inputs.files fileTree("public")
+    inputs.files fileTree("src")
+
+    inputs.file 'package.json'
+    inputs.file 'package-lock.json'
+
+    outputs.dir 'build'
+}
+
+configurations {
+    npmResources
+}
+
+configurations.default.extendsFrom(configurations.npmResources)
+
+artifacts {
+    npmResources(packageNpmApp.archivePath) {
+        builtBy packageNpmApp
+        type "jar"
+    }
+}
+
+clean {
+    delete packageNpmApp.archivePath
+    delete packageNpmApp.destinationDir
+}
+jar.dependsOn "packageNpmApp"

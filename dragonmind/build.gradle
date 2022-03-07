@@ -63,9 +63,9 @@ dependencies {
     integrationTestRuntimeOnly fileTree("${videoLib}/macosx/") { include '*.dylib' }
     testRuntimeOnly fileTree("${videoLib}/macosx/") { include '*.dylib' }
 
-    implementation group: 'org.freedesktop.gstreamer', name: 'gst1-java-core', version: '1.4.0'
+    //implementation group: 'org.freedesktop.gstreamer', name: 'gst1-java-core', version: '1.4.0'
 
-    //runtimeOnly files("${videoLib}/gst1-java-core-1.2.0.jar")
+    runtimeOnly files("${videoLib}/gst1-java-core-1.2.0.jar")
     implementation files("${videoLib}/jna.jar")
 
     // TODO might need dev mode with linked source and source project for Processing Video
