@@ -94,6 +94,7 @@ function secondsToHuman(totalSecs) {
 
 
 function getEndpoint(name) {
+    // TODO drive from config with devmode / production
     return '//' + window.location.hostname + ":9000/api/bhima/" + name;
 }
 
@@ -105,7 +106,6 @@ function getHeaders() {
 }
 
 function bhimaFetch(name) {
-    // TODO drive from config with devmode / production
     return fetch(getEndpoint(name), {
         headers: getHeaders()
     }).then(res => res.json());
