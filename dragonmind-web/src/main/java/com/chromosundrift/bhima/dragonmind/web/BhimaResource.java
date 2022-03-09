@@ -71,6 +71,7 @@ public class BhimaResource {
     @POST
     @Timed
     @Path("/runProgram2")
+    // TODO change to @Consume(MediaType.APPLICATION_JSON) with non-@QueryParam argument
     public ProgramInfo runProgram2(@QueryParam("id") String id) {
         return dragon.runProgram(id);
     }
