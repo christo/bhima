@@ -10,9 +10,11 @@
 
 # config
 
-target_machine=${1:-silverbox.local}
+target_machine=${1:-tiger.local}
+#target_machine=${1:-silverbox.local}
 #target_machine=192.168.1.112
-target_username=${2:-bhima}
+#target_username=${2:-bhima}
+target_username=${2:-christo}
 deploy_dir=dragonmind
 archive_dir=archive
 
