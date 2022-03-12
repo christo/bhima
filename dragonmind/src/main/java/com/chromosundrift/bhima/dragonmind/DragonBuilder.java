@@ -23,7 +23,6 @@ import static com.chromosundrift.bhima.geometry.Knapp.ZIG_ZAG;
  */
 public class DragonBuilder extends AbstractSegmentBuilder {
 
-    // TODO LHS
     // TODO finish tapering tail
     // TODO tail wiring
     // TODO neck (RHS only)
