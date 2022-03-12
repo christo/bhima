@@ -31,8 +31,6 @@ public class BhimaResource {
         this.dragon = dragon;
     }
 
-    // TODO create getComposite (?) to return everything except program list to reduce requests
-
     @GET
     @Timed
     @Path("/status")
