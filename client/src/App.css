@@ -8,7 +8,8 @@ h3 {
 }
 
 .settings {
-    margin-left: 1.5em;
+    margin: 1.5em;
+    padding: 0;
 }
 
 .program {
@@ -26,6 +27,15 @@ h3 {
     padding: 5px;
     background-color: rgba(0, 0, 0, 0.6);
     top: 5px;
+    left: 5px;
+    position: absolute;
+}
+
+.program .duration {
+    border-radius: 5px;
+    padding: 5px;
+    background-color: rgba(0, 0, 0, 0.6);
+    bottom: 5px;
     left: 5px;
     position: absolute;
 }

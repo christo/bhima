@@ -18,7 +18,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import com.chromosundrift.bhima.api.Settings;
 
 /**
- * Class for encapsulating common configuration and operations for Bhima's PusherMan
+ * Manager for PixelPushers encapsulating common configuration and operations.
  */
 @SuppressWarnings("WeakerAccess")
 public class PusherMan implements Observer {
@@ -241,7 +241,9 @@ public class PusherMan implements Observer {
     public Settings setSettings(Settings settings) {
         this.registry.setAntiLog(settings.isLuminanceCorrection());
         this.registry.setAutoThrottle(settings.isAutoThrottle());
+        logger.info("setting brightness to {}", settings.getBrightness());
         DeviceRegistry.setOverallBrightnessScale(settings.getBrightness());
-        return settings;
+        this.settings = settings;
+        return this.settings;
     }
 }

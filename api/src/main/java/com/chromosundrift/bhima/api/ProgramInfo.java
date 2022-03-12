@@ -31,7 +31,7 @@ public final class ProgramInfo {
     private String name;
     private String id;
     private ProgramType type;
-    private Double durationSeconds;
+    private Float durationSeconds;
     // TODO enable settings edit, update settings to include validation type & read-only flag, rename to attributes
     private Map<String, String> settings;
 
@@ -95,11 +95,11 @@ public final class ProgramInfo {
         this.settings = new TreeMap<>(settings);
     }
 
-    public Double getDurationSeconds() {
+    public Float getDurationSeconds() {
         return durationSeconds;
     }
 
-    public void setDurationSeconds(Double durationSeconds) {
+    public void setDurationSeconds(Float durationSeconds) {
         this.durationSeconds = durationSeconds;
     }
 }

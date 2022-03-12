@@ -87,6 +87,8 @@ public final class BhimaSup extends DragonMind implements Dragon {
         si.setScrollText(mesg);
         si.setVersion(getVersion());
         si.setStatus(this.getStatus());
+        si.setConfigProject(this.config.getProject());
+        si.setConfigVersion(this.config.getVersion());
         return si;
     }
 

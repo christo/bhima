@@ -319,7 +319,9 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
             thisMovie.jump(secs); // take thumbnail from secs into the movie
             thisMovie.loadPixels();
             logger.info("getting movie image from filename '{}'", filename);
-            return getMovieProgramInfoPlease(filename, x, y, w, h, thisMovie);
+            final ProgramInfo movieProgramInfoPlease = getMovieProgramInfoPlease(filename, x, y, w, h, thisMovie);
+            movieProgramInfoPlease.setDurationSeconds(thisMovie.duration());
+            return movieProgramInfoPlease;
         } catch (RuntimeException re) {
             logger.error("cannot generate thumbnail for {} because {}", filename, re.getMessage());
             return new ProgramInfo(filename, makeNice(filename), ProgramType.NULL, getNullProgramInfo().getThumbnail());

@@ -95,8 +95,10 @@ public class BhimaResource {
     @Path("/settings")
     @Consumes(MediaType.APPLICATION_JSON)
     public Settings setSettings(Settings settings) {
-        // TODO validate settings
-        //settings.getBrightness()
-        return dragon.setSettings(settings);
+        if (settings.isValid()) {
+            return dragon.setSettings(settings);
+        } else {
+            return dragon.getSettings();
+        }
     }
 }

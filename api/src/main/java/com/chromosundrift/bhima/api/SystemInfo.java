@@ -23,6 +23,8 @@ public class SystemInfo {
     public String scrollText;
     public String version;
     public String status;
+    public String configProject;
+    public String configVersion;
 
     public SystemInfo() {
         this(0L, ProgramInfo.getNullProgramInfo());
@@ -104,5 +106,21 @@ public class SystemInfo {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getConfigProject() {
+        return configProject;
+    }
+
+    public void setConfigProject(String configProject) {
+        this.configProject = configProject;
+    }
+
+    public String getConfigVersion() {
+        return configVersion;
+    }
+
+    public void setConfigVersion(String configVersion) {
+        this.configVersion = configVersion;
     }
 }

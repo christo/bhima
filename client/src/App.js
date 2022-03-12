@@ -29,8 +29,8 @@ import {
     AccessTime,
     Apps,
     BrightnessHigh,
-    BrightnessLow,
-    ConnectedTv,
+    BrightnessLow, Category,
+    ConnectedTv, Details,
     Image,
     Info,
     Label,
@@ -44,6 +44,12 @@ import {pink, purple} from "@mui/material/colors";
 import Logo from "./dragon-head-neg.png";
 
 // TODO read how to reduce bundle size from imports: https://mui.com/guides/minimizing-bundle-size/
+
+/** Iff true, continuously fetch the current program info causing animated live thumbnail. */
+const LIVE_UPDATE = false;  // TODO change to an update delay in ms
+
+/** Iff true, limits the rate of updates as a result of continuous settings changes, i.e. brightness */
+const DO_SPAM_LIMIT = false;  // TODO convert to update delay in ms
 
 /** Movie program, playing video file at configured speed, loops for duration if shorter than duration. */
 const TYPE_MOVIE = "Movie";
@@ -68,11 +74,9 @@ const bhimaTheme = createTheme({
     palette: {
         mode: 'dark',
         primary: {
-            // Purple and green play nicely together.
             main: purple[400],
         },
         secondary: {
-            // This is green.A700 as hex.
             main: pink[400],
         },
     },
@@ -94,7 +98,7 @@ function secondsToHuman(totalSecs) {
 
 
 function getEndpoint(name) {
-    // TODO drive from config with devmode / production
+    // TODO derive from config with devmode / production
     return '//' + window.location.hostname + ":9000/api/bhima/" + name;
 }
 
@@ -140,6 +144,8 @@ const CurrentProgram = (props) => {
     const [loaded, setLoaded] = useState(false);
     const [error, setError] = useState(null);
 
+    const deps = LIVE_UPDATE ? [program, setProgram] : [];
+
     useEffect(() => {
         bhimaFetch("program")
             .then(
@@ -152,7 +158,7 @@ const CurrentProgram = (props) => {
                     setLoaded(true);
                 }
             );
-    }, [program, setProgram]);
+    }, deps);
     if (error) {
         return NetworkError(error);
     } else if (!loaded) {
@@ -204,6 +210,7 @@ const ProgramCard = (props) => {
                  src={"data:image/jpg;charset=utf-8;base64," + program.thumbnail}/>
             <ProgramTypeIcon type={program.type.name} fontSize="large"/>
             <span className="programName">{program.name}</span>
+            {/*<span className="duration">{program.durationSeconds}</span>*/}
         </Paper>
     </React.Fragment>;
 };
@@ -283,48 +290,91 @@ const HomePage = (props) => {
     );
 };
 
+/** Show global settings controls */
+function SettingsPanel(props) {
+    const [settings, setSettings] = useState(props.settings);
+
+    let lastUpdate = Date.now();
+
+    /** create a handler for the given switch */
+    const updateSettings = (switchName) => (event, newValue) => {
+        console.log(`switchName: ${switchName} event: ${event} newValue: ${newValue}`);
+        const thisUpdate = Date.now();
+        let spamLimited = thisUpdate - lastUpdate > 100;
+        if (!DO_SPAM_LIMIT || spamLimited) {
+            if (event && event.target !== undefined) {
+                let newSettings = {
+                    mute: settings.mute,
+                    sleep: settings.sleep,
+                    luminanceCorrection: settings.luminanceCorrection,
+                    brightness: settings.brightness,
+                    autoThrottle: settings.autoThrottle
+                };
+                newSettings[switchName] = newValue;
+                let body = JSON.stringify(newSettings);
+                console.log("sending payload: ", body);
+                fetch(getEndpoint("settings"), {
+                    method: 'POST',
+                    headers: getHeaders(),
+                    body: body
+                }).then(res => res.json()) // TODO handle errors separately
+                    .then((result, error) => {
+                        if (error) {
+                            console.error("got error response updating settings", error);
+                        } else {
+                            console.log("updating settings from post", result);
+                        }
+                        setSettings(result);
+                    });
+            }
+        }
+    }
+
+    return <React.Fragment>
+
+        <h3>Global Settings</h3>
+        <Stack className="settings">
+            <FormControl>
+                <FormControlLabel control={<Switch checked={settings.luminanceCorrection}/>}
+                                  label="Gamma Correction" onChange={updateSettings("luminanceCorrection")}/>
+                <FormControlLabel control={<Switch checked={settings.autoThrottle}
+                                   onChange={updateSettings("autoThrottle")}/>} label="Autothrottle"/>
+                <FormControlLabel control={<Switch checked={settings.mute}/>} label="Mute"
+                                  onChange={updateSettings("mute")}/>
+
+                <Stack spacing={2} direction="row" sx={{mb: 1, width: "90%"}} alignItems="center">
+                    <BrightnessLow/>
+                    <Slider aria-label="Brightness"
+                            value={settings.brightness * 100}
+                            valueLabelDisplay="auto"
+                            onChange={(e, v) => {
+                                updateSettings("brightness")(e, v);
+                            }}/>
+                    <BrightnessHigh/>
+                </Stack>
+                <FormControlLabel control={<Switch checked={settings.sleep} disabled
+                                   onChange={updateSettings("sleep")}/>} label="Sleep"/>
+            </FormControl>
+        </Stack>
+    </React.Fragment>;
+}
 
 const SystemPage = (props) => {
     const {systemInfo, setSystemInfo, error, loaded} = props;
     useEffect(() => {
         // TODO sync state
-    }, [systemInfo, error, loaded]);
+    }, [systemInfo, setSystemInfo, error, loaded]);
     if (error) {
         return NetworkError(error);
     } else if (!loaded) {
         return <CircularProgress color="secondary" />;
     } else {
-        let lastUpdate = Date.now();
-        const updateBrightness = (event) => {
-            if (event.target.value !== undefined) {
-                const v = event.target.value;
-                const thisUpdate = Date.now();
-                let spamLimited = thisUpdate - lastUpdate > 100;
-                if (spamLimited) {
-                    console.log("got new brightness value ", v);
-                    let currentSettings=systemInfo.settings;
-                    currentSettings.brightness = clamp(v/100.0, 0.0, 1.0);
-                    let currentSystemInfo = systemInfo;
-                    currentSystemInfo.settings = currentSettings;
-                    // optimistically assume this update worked
-                    setSystemInfo(currentSystemInfo);
-                    // call remote update
-                    fetch(getEndpoint("settings"), {
-                        method: 'POST',
-                        headers: getHeaders(),
-                        body: JSON.stringify(currentSettings)   // TODO change to settings html form
-                    }).then(res => res.json())
-                        .then(() => console.log("TODO: update settings from post"));
-                }
-                lastUpdate = thisUpdate;
-            }
 
-        }; // TODO update brightness
         return (
             <Container className="page" sx={{width: "80vw"}}>
                 <Box
                     component="img"
-                    sx={{ objectFit: "cover", top: -80, overflow: "hidden", height: "200px", width: "100%", margin: 0}}
+                    sx={{objectFit: "contain", top: -80, overflow: "hidden", height: "200px", width: "100%", margin: 0}}
                     alt="Bhima logo"
                     className="logo"
                     src={Logo}
@@ -335,56 +385,48 @@ const SystemPage = (props) => {
                         <ListItemIcon>
                             <Info fontSize="large"/>
                         </ListItemIcon>
-                        <ListItemText primary="Status" secondary={systemInfo.status} />
-                    </ListItem>                    <ListItem>
-                        <ListItemIcon>
-                            <Label fontSize="large"/>
-                        </ListItemIcon>
-                        <ListItemText primary="Version" secondary={systemInfo.version} />
-                    </ListItem>
+                        <ListItemText primary="Status" secondary={systemInfo.status}/>
+                    </ListItem> <ListItem>
+                    <ListItemIcon>
+                        <Label fontSize="large"/>
+                    </ListItemIcon>
+                    <ListItemText primary="Version" secondary={systemInfo.version}/>
+                </ListItem>
                     <ListItem>
                         <ListItemIcon>
                             <AccessTime fontSize="large"/>
                         </ListItemIcon>
                         {/* TODO update this client-side on a timer*/}
-                        <ListItemText primary="Uptime" secondary={secondsToHuman(systemInfo.uptimeSeconds)} />
+                        <ListItemText primary="Uptime" secondary={secondsToHuman(systemInfo.uptimeSeconds)}/>
                     </ListItem>
                     <ListItem>
                         <ListItemIcon>
                             <TextRotationNone fontSize="large"/>
                         </ListItemIcon>
-                        <ListItemText primary="Scroll Text" secondary={systemInfo.scrollText} />
+                        <ListItemText primary="Scroll Text" secondary={systemInfo.scrollText}/>
                     </ListItem>
                     <ListItem>
                         <ListItemIcon>
                             <ProgramTypeIcon type={systemInfo.currentProgram.type.name} fontSize="large"/>
                         </ListItemIcon>
-                        <ListItemText primary="Current Program" secondary={systemInfo.currentProgram.name} />
+                        <ListItemText primary="Current Program" secondary={systemInfo.currentProgram.name}/>
+                    </ListItem>
+                    <ListItem>
+                        <ListItemIcon>
+                            <Category fontSize="large"/>
+                        </ListItemIcon>
+                        <ListItemText primary="Project" secondary={systemInfo.configProject}/>
+                    </ListItem>
+                    <ListItem>
+                        <ListItemIcon>
+                            <Details fontSize="large"/>
+                        </ListItemIcon>
+                        <ListItemText primary="Project Version" secondary={systemInfo.configVersion}/>
                     </ListItem>
 
-
-                {/*    TODO: RAM, disk, load, temp, */}
+                    {/*    TODO: RAM, disk, load, temp, */}
                 </List>
-                <h3>Global Settings</h3>
-                <Stack className="settings">
-                    <FormControl>
-                        <FormControlLabel control={<Switch checked={systemInfo.settings.luminanceCorrection}/>} label="Gamma Correction" />
-                        <FormControlLabel control={<Switch checked={systemInfo.settings.autoThrottle}/>} label="Autothrottle" />
-                        <FormControlLabel control={<Switch checked={systemInfo.settings.mute}/>} label="Mute" />
-
-                        <Stack spacing={2} direction="row" sx={{ mb: 1, width: "90%" }} alignItems="center">
-                            <BrightnessLow />
-                            <Slider aria-label="Brightness"
-                                    value={systemInfo.settings.brightness * 100}
-                                    valueLabelDisplay="auto"
-                                    onChange={updateBrightness}
-                                    helperText="Brightness"/>
-                            <BrightnessHigh />
-                        </Stack>
-                        <FormControlLabel control={<Switch checked={systemInfo.settings.sleep}/>} label="Sleep" />
-
-                    </FormControl>
-                </Stack>
+                <SettingsPanel settings={systemInfo.settings}/>
 
                 <Box sx={{display: 'flex', justifyContent: 'end', mt: 2, mb: 4, mr: 2}}>
                     <Button variant="contained" href="#puge-cache">
@@ -399,7 +441,7 @@ const SystemPage = (props) => {
                             <ListItemIcon>
                                 <ProgramTypeIcon type={pt.name} fontSize="large"/>
                             </ListItemIcon>
-                            <ListItemText primary={pt.name} secondary={pt.description} />
+                            <ListItemText primary={pt.name} secondary={pt.description}/>
                         </ListItem>
                     ))}
 
