@@ -59,6 +59,6 @@ public final class Settings {
 
     @JsonIgnore
     public Boolean isValid() {
-        return brightness >= 0d && brightness <= 1d;
+        return brightness >= 0d && brightness <= 100d;
     }
 }

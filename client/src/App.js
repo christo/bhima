@@ -29,8 +29,10 @@ import {
     AccessTime,
     Apps,
     BrightnessHigh,
-    BrightnessLow, Category,
-    ConnectedTv, Details,
+    BrightnessLow,
+    Category,
+    ConnectedTv,
+    Details,
     Image,
     Info,
     Label,
@@ -87,13 +89,19 @@ function secondsToHuman(totalSecs) {
     let days    = Math.floor(totalSecs / 86400);
     let hours   = Math.floor((totalSecs - (days * 86400)) / 3600);
     let minutes = Math.floor((totalSecs - (days * 86400) - (hours * 3600)) / 60);
-    let seconds = totalSecs - (days * 86400) - (hours * 3600) - (minutes * 60);
+    let seconds = Math.floor(totalSecs - (days * 86400) - (hours * 3600) - (minutes * 60));
 
     let daysStr = (days > 0) ? (days + " days ") : ("");
-    if (hours   < 10) {hours   = "0"+hours;}
-    if (minutes < 10) {minutes = "0"+minutes;}
-    if (seconds < 10) {seconds = "0"+seconds;}
-    return daysStr + hours+'h '+minutes+'m '+seconds + "s";
+    if (hours < 10) {
+        hours = "0" + hours;
+    }
+    if (minutes < 10) {
+        minutes = "0" + minutes;
+    }
+    if (seconds < 10) {
+        seconds = "0" + seconds;
+    }
+    return daysStr + hours+':'+minutes+':'+seconds;
 }
 
 
@@ -134,8 +142,8 @@ const ProgramTypeIcon = (props) => {
     }
 };
 
-function NetworkError(error) {
-    return <Alert severity="error">Dragonmind link failure: {error.message}</Alert>;
+function NetworkError(props) {
+    return <Alert severity="error">Dragonmind link failure: {props.message}</Alert>;
 }
 
 const CurrentProgram = (props) => {
@@ -298,11 +306,11 @@ function SettingsPanel(props) {
 
     /** create a handler for the given switch */
     const updateSettings = (switchName) => (event, newValue) => {
-        console.log(`switchName: ${switchName} event: ${event} newValue: ${newValue}`);
         const thisUpdate = Date.now();
         let spamLimited = thisUpdate - lastUpdate > 100;
         if (!DO_SPAM_LIMIT || spamLimited) {
             if (event && event.target !== undefined) {
+                event.stopImmediatePropagation();
                 let newSettings = {
                     mute: settings.mute,
                     sleep: settings.sleep,
@@ -312,20 +320,17 @@ function SettingsPanel(props) {
                 };
                 newSettings[switchName] = newValue;
                 let body = JSON.stringify(newSettings);
-                console.log("sending payload: ", body);
                 fetch(getEndpoint("settings"), {
                     method: 'POST',
                     headers: getHeaders(),
                     body: body
-                }).then(res => res.json()) // TODO handle errors separately
-                    .then((result, error) => {
-                        if (error) {
-                            console.error("got error response updating settings", error);
-                        } else {
-                            console.log("updating settings from post", result);
-                        }
+                }).then(res => res.json()).then((result, error) => {
+                    if (error) {
+                        console.error(error.message);
+                    } else {
                         setSettings(result);
-                    });
+                    }
+                });
             }
         }
     }
@@ -345,11 +350,12 @@ function SettingsPanel(props) {
                 <Stack spacing={2} direction="row" sx={{mb: 1, width: "90%"}} alignItems="center">
                     <BrightnessLow/>
                     <Slider aria-label="Brightness"
-                            value={settings.brightness * 100}
+                            value={settings.brightness}
                             valueLabelDisplay="auto"
-                            onChange={(e, v) => {
-                                updateSettings("brightness")(e, v);
-                            }}/>
+                            min={0.0}
+                            max={1.0}
+                            step={0.02}
+                            onChange={updateSettings("brightness")}/>
                     <BrightnessHigh/>
                 </Stack>
                 <FormControlLabel control={<Switch checked={settings.sleep} disabled
@@ -359,10 +365,26 @@ function SettingsPanel(props) {
     </React.Fragment>;
 }
 
+function StopWatch(props) {
+    const [elapsed, setElapsed] = useState();
+
+    const elapsedInitial = props.seconds;
+    const timeInitial = new Date();
+    function refreshClock() {
+        setElapsed((new Date().getTime() - timeInitial) / 1000 + elapsedInitial);
+    }
+    useEffect(() => {
+        const timerId = setInterval(refreshClock, 1000);
+        return function cleanup() {
+            clearInterval(timerId);
+        };
+    }, []);
+    return <React.Fragment>{secondsToHuman(elapsed)}</React.Fragment>;
+}
+
 const SystemPage = (props) => {
     const {systemInfo, setSystemInfo, error, loaded} = props;
     useEffect(() => {
-        // TODO sync state
     }, [systemInfo, setSystemInfo, error, loaded]);
     if (error) {
         return NetworkError(error);
@@ -386,18 +408,18 @@ const SystemPage = (props) => {
                             <Info fontSize="large"/>
                         </ListItemIcon>
                         <ListItemText primary="Status" secondary={systemInfo.status}/>
-                    </ListItem> <ListItem>
-                    <ListItemIcon>
-                        <Label fontSize="large"/>
-                    </ListItemIcon>
-                    <ListItemText primary="Version" secondary={systemInfo.version}/>
-                </ListItem>
+                    </ListItem>
+                    <ListItem>
+                        <ListItemIcon>
+                            <Label fontSize="large"/>
+                        </ListItemIcon>
+                        <ListItemText primary="Version" secondary={systemInfo.version}/>
+                    </ListItem>
                     <ListItem>
                         <ListItemIcon>
                             <AccessTime fontSize="large"/>
                         </ListItemIcon>
-                        {/* TODO update this client-side on a timer*/}
-                        <ListItemText primary="Uptime" secondary={secondsToHuman(systemInfo.uptimeSeconds)}/>
+                        <ListItemText primary="Uptime" secondary=<StopWatch seconds={systemInfo.uptimeSeconds}/>/>
                     </ListItem>
                     <ListItem>
                         <ListItemIcon>
@@ -424,7 +446,7 @@ const SystemPage = (props) => {
                         <ListItemText primary="Project Version" secondary={systemInfo.configVersion}/>
                     </ListItem>
 
-                    {/*    TODO: RAM, disk, load, temp, */}
+                    {/* TODO: RAM, disk, load, temp, */}
                 </List>
                 <SettingsPanel settings={systemInfo.settings}/>
 
@@ -433,6 +455,9 @@ const SystemPage = (props) => {
                         Purge Cache
                     </Button>
                 </Box>
+
+                <h3>LED Controllers</h3>
+                <p>TODO</p>
 
                 <h3>Program Types</h3>
                 <List sx={{paddingTop: 0}}>
