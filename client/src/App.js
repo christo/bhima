@@ -451,7 +451,7 @@ const SystemPage = (props) => {
                 <SettingsPanel settings={systemInfo.settings}/>
 
                 <Box sx={{display: 'flex', justifyContent: 'end', mt: 2, mb: 4, mr: 2}}>
-                    <Button variant="contained" href="#puge-cache">
+                    <Button variant="contained" href="#puge-cache" disabled>
                         Purge Cache
                     </Button>
                 </Box>
