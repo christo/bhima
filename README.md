@@ -69,17 +69,13 @@ assumed to work the same way.
 
 ## TODO
 
-* renovate mobile web app
 * global brightness control
-* fix broken thumbnails (e.g. laser-mountain)
-* better thumbnails - find a better time offset
+* make PusherMan monitor pixelpushers in case new ones come online after app starts
 * make work with recent jdk (jee modules were removed, jaxb etc.)
     * ? can we upgrade dropwizard to fix this?
     * Will upgrading processing help this?
-* build: gradle build should make an executable that runs on linux for default config.
-    * decide where the default built-in video directory goes and remove the list of default videos, then prune the actual video directory to include only known good videos. Then make software load every video found at runtime in that dir as a built in video.
+* build: gradle build should make an executable that runs on linux or mac for default config.
     * confirm linux 64 bit native libs result in running video (paths etc)
-    * make VideoLurker work on linux filesystem config - use ubuntu usb stick auto mount point to watch
 * make system console log (show on mobile app / front panel)
 * add to SystemInfo:
     * performance metrics: e.g. render time
@@ -91,15 +87,12 @@ assumed to work the same way.
 
 ### Mobile web app
     
-* add front-end for GET /systemInfo - show stuff
 * add instructions and status for stick slurper to mobile web app so people can add content
 * add video file uploader
-* add more system status info 
 * security - authentication
 
 ### Main System
 
-* gamma curve configuration
 * move test pattern into its own Program
 * effect: rotozoomer (tesselation, kaliedoscope)
 * performance tuning for rpi target (try pi4, it's probably memory bound)
