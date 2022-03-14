@@ -3,6 +3,7 @@
 # takes the already built tar file in dragonmind/build/distributions/
 # and does a fresh (re)install of it on the given target machine
 # (or a default if no target) to which we must be able to ssh
+# so make sure the username for the target host is in the ssh config.
 
 # usage deploy-dragonmind.sh [<target machine> [<target user>]]
 
@@ -13,8 +14,6 @@
 target_machine=${1:-tiger.local}
 #target_machine=${1:-silverbox.local}
 #target_machine=192.168.1.112
-#target_username=${2:-bhima}
-target_username=${2:-christo}
 deploy_dir=dragonmind
 archive_dir=archive
 
@@ -26,7 +25,7 @@ source functions.sh
 
 # convenience variables
 
-ssh_target=${target_username}@${target_machine}
+ssh_target=${target_machine}
 unixtime=`date +%s`
 
 # changes foreground colour so unexpected stdout from following command can be visually distnct
