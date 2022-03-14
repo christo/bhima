@@ -13,7 +13,7 @@ export TIGER=${1:-tiger.local}
 export SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 # TODO rely on externally defined $PROCESSING_SKETCH_DIR
-export PROCESSING_SKETCH_DIR=$HOME/christo/processing
+export PROCESSING_SKETCH_DIR=$HOME/src/christo/processing
 
 # TODO move to scripts/ and update
 rsync -vazu --delete-after "$SCRIPT_DIR" $TIGER:src/christo
