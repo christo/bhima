@@ -25,7 +25,7 @@ public class ImageSerializer extends StdSerializer<BufferedImage> {
     /**
      * Base64 encodes image as jpeg.
      *
-     * @throws IOException
+     * @throws IOException in the event of an internal bug or configuration error.
      */
     @Override
     public void serialize(BufferedImage img, JsonGenerator gen, SerializerProvider provider) throws IOException {
