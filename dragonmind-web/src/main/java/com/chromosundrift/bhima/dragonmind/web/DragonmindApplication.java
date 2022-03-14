@@ -51,7 +51,6 @@ public class DragonmindApplication extends Application<DragonWebConfig> {
     public void run(DragonWebConfig configuration,
                     Environment environment) {
 
-        // TODO replace these with real ones:
         final TemplateHealthCheck healthCheck =
                 new TemplateHealthCheck(configuration.getTemplate());
         environment.healthChecks().register("template", healthCheck);

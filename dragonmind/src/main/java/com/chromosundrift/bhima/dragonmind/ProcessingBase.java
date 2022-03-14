@@ -223,7 +223,6 @@ public class ProcessingBase extends PApplet {
      * @return a bounding {@link Rect} in screen pixels.
      */
     protected final Rect screenspaceBoundingRect(List<Segment> pixelMap) {
-        // TODO flatmap this shit!
         int minx = Integer.MAX_VALUE;
         int miny = Integer.MAX_VALUE;
         int maxx = Integer.MIN_VALUE;

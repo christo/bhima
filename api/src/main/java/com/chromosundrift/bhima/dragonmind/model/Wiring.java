@@ -97,7 +97,6 @@ public class Wiring {
         }
 
         Wiring wiring = new Wiring(DEFAULT_NUM_PORTS);
-        // TODO flatmap this shit
         segments.stream().filter(s -> s.getEnabled() && !s.getIgnored()).forEach(segment -> {
 
             String name = segment.getName();

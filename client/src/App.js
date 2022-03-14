@@ -241,7 +241,7 @@ const ProgramList = (props) => {
         );
     }, []);
     if (error) {
-        return null;    // TODO hoist error state for page-wide singleton error reporting
+        return null;
     } else if (!loaded) {
         return <CircularProgress color="secondary" />;
     } else {
@@ -482,7 +482,6 @@ const SystemPage = (props) => {
 };
 
 function App() {
-    // TODO fix this - doesn't work on fresh load of non-home page
     const [systemInfo, setSystemInfo] = useState(null);
     const [loaded, setLoaded] = useState(false);
     const [error, setError] = useState(null);

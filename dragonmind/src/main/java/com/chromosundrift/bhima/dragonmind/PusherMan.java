@@ -32,7 +32,6 @@ public class PusherMan implements Observer {
     /**
      * Must be kept in sync with DeviceRegistry. We can't fully read its state so we
      * have to assume the calls to set values do stick.
-     * TODO confirm settings via live testing
      */
     private Settings settings;
 
