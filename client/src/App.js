@@ -11,6 +11,7 @@ import {
     Dialog,
     DialogActions,
     DialogTitle,
+    Drawer,
     FormControl,
     FormControlLabel,
     IconButton,
@@ -21,7 +22,6 @@ import {
     Paper,
     Slider,
     Stack,
-    SwipeableDrawer,
     Switch,
     ThemeProvider
 } from "@mui/material";
@@ -286,14 +286,14 @@ const HomePage = (props) => {
             <CurrentProgram program={program} setProgram={setProgram}/>
             <h3>All Programs</h3>
             <ProgramList setProgram={setProgram}/>
-            <SwipeableDrawer
+            <Drawer>
                 anchor="right"
                 open={sysOpen}
                 onClose={toggleDrawer(false)}
                 onOpen={toggleDrawer(true)}
             >
                 <SystemPage {...props}/>
-            </SwipeableDrawer>
+            </Drawer>
         </Container>
     );
 };
