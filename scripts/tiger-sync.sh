@@ -11,7 +11,7 @@
 export TIGER=${1:-tiger.local}
 
 export SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-export PROJECT_DIR="$SCRIPT_DIR/.."
+export PROJECT_DIR=$(dirname "$SCRIPT_DIR")
 
 # TODO rely on externally defined $PROCESSING_SKETCH_DIR
 export PROCESSING_SKETCH_DIR=$HOME/src/christo/processing
