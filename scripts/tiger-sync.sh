@@ -10,7 +10,6 @@
 
 export TIGER=${1:-tiger.local}
 
-# TODO move this file to scripts/ and update
 export SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 export PROJECT_DIR="$SCRIPT_DIR/.."
 
