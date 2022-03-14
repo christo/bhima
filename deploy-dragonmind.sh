@@ -55,7 +55,7 @@ fname=`basename $deployable`
 
 echo -n syncing video dir 
 yy
-rsync -qazu dragonmind/video/ $ssh_target:video && ok || die
+rsync -qazu --delete-after dragonmind/video/ $ssh_target:video && ok || die
 ddir=`basename -s .tar $deployable`
 
 echo -n removing existing distribution directory $ddir 
