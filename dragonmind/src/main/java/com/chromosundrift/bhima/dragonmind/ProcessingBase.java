@@ -1,25 +1,25 @@
 package com.chromosundrift.bhima.dragonmind;
 
-import com.chromosundrift.bhima.dragonmind.model.Config;
-import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
-import com.chromosundrift.bhima.dragonmind.model.Segment;
-import com.chromosundrift.bhima.dragonmind.model.Transform;
-import com.chromosundrift.bhima.geometry.Point;
-import com.chromosundrift.bhima.geometry.Rect;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.core.PImage;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Stream;
 
+import com.chromosundrift.bhima.dragonmind.model.Config;
+import com.chromosundrift.bhima.dragonmind.model.PixelPoint;
+import com.chromosundrift.bhima.dragonmind.model.Segment;
+import com.chromosundrift.bhima.dragonmind.model.Transform;
+import com.chromosundrift.bhima.geometry.Point;
+import com.chromosundrift.bhima.geometry.Rect;
 import static com.chromosundrift.bhima.dragonmind.model.Transform.Type.*;
 
 public class ProcessingBase extends PApplet {
@@ -29,11 +29,14 @@ public class ProcessingBase extends PApplet {
     private static final String GSTREAMER_PLUGIN_PATH = "gstreamer.plugin.path";
 
     private final ExecutorService offloader;
-    public static final String OSX = "mac os x";
 
     public ProcessingBase(int offloaderThreads) {
         offloader = Executors.newFixedThreadPool(offloaderThreads);
         Runtime.getRuntime().addShutdownHook(new Thread(offloader::shutdown));
+    }
+
+    public ProcessingBase() {
+        this(10);
     }
 
     /**
@@ -41,55 +44,39 @@ public class ProcessingBase extends PApplet {
      * Set these for the Java runtime with the -D option
      */
     protected static void setNativeLibraryPaths() {
-        final Properties sysProp = System.getProperties();
         logger.info("setting gstreamer native library paths based on system properties");
-        final String osname = getOs();
-        String os;
-        if (osname.equals(OSX)) {
+        logger.info("operating system name is {}", OsUtils.getOs());
+        if (OsUtils.isMac()) {
             logger.info("OSX => assuming we're running in dev mode");
             final String library = "/Users/christo/src/christo/bhima/dragonmind/processing-video-lib/video/library/macosx";
             final String plugins = library + "/gstreamer-1.0";
-            sysPropDefault(GSTREAMER_LIBRARY_PATH, library);
-            sysPropDefault(GSTREAMER_PLUGIN_PATH, plugins);
-        } else if (osname.matches(".+n[iu]x\\b]")) {
-            logger.info("operating system name is {} - don't know how to set native library paths", osname);
+            String gsLibPath = OsUtils.sysPropDefault(GSTREAMER_LIBRARY_PATH, library);
+            String gsPluginPath = OsUtils.sysPropDefault(GSTREAMER_PLUGIN_PATH, plugins);
+            // check these paths exist
+            checkIsDir(gsLibPath);
+            checkIsDir(gsPluginPath);
         } else {
-            logger.warn("osname is '{}'; no idea how to set native library paths", osname);
+            logger.warn("Not setting native library paths, relying on os");
         }
     }
 
-    /**
-     * Lowercase operating system name or "unknown".
-     */
-    public static String getOs() {
-        return System.getProperties().getProperty("os.name", "unknown").toLowerCase();
-    }
-
-    public static boolean isLinux() {
-        return getOs().equalsIgnoreCase("linux");
-    }
-
-    /**
-     * Sets system property key to value only if not already set.
-     *
-     * @param key   the key.
-     * @param value the value.
-     */
-    private static void sysPropDefault(String key, String value) {
-        if (!System.getProperties().containsKey(key)) {
-            logger.warn("Fallback sysprop {} = {}", key, value);
-            System.setProperty(key, value);
+    private static void checkIsDir(String dir) {
+        File f = new File(dir);
+        if (!f.exists()) {
+            logger.warn("{} does not exist", dir);
+        } else if (!f.isDirectory()) {
+            logger.warn("{} is not a dir", dir);
         }
+    }
+
+    protected static float dist(Point p1, Point p2) {
+        return dist(p1.getX(), p1.getY(), p2.getX(), p2.getY());
     }
 
     @Override
     public void setup() {
         super.setup();
         logger.info("surface implementation: {}", surface.getClass().getName());
-    }
-
-    public ProcessingBase() {
-        this(10);
     }
 
     /**
@@ -195,10 +182,6 @@ public class ProcessingBase extends PApplet {
 
     protected void offload(Runnable runnable) {
         offloader.submit(runnable);
-    }
-
-    protected static float dist(Point p1, Point p2) {
-        return dist(p1.getX(), p1.getY(), p2.getX(), p2.getY());
     }
 
     final boolean isArrow(int keyCode) {
