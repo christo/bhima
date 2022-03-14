@@ -264,7 +264,7 @@ public class ArrayScanner2 extends DragonMind {
         nPixelLabel.setText(Integer.toString(nPixel));
         modeLabel.setText(mode.toString());
         newScanButton.setEnabled(scanNameField.getText() != null);
-        testButton.setLocalColorScheme(mode == TEST ? 5 : 0); // TODO wtf are the colour schemes?
+        testButton.setLocalColorScheme(mode == TEST ? 5 : 0);
     }
 
 
@@ -802,14 +802,13 @@ public class ArrayScanner2 extends DragonMind {
         setMainImage(lightframe, "lightframe");
         displayMap.clear();
         // reset the cumulative image
-        cumulative = null; // TODO really?
+        cumulative = null;
         nPixel = startPixel;
         nStrip = startStrip;
     }
 
     public static void main(String[] args) {
         logger.warn("starting");
-        // TODO fix dependency on Processing native libs
         //System.setProperty("jogl.debug", "true");
         setNativeLibraryPaths();
 
