@@ -119,6 +119,7 @@ public class ProcessingBase extends PApplet {
                         throw new RuntimeException("md5 file format problem");
                     }
                 });
+                // should be something like 227
                 if (count.get() < 100) {
                     logger.error(count.get() + " md5 entries in " + MD5_FILE);
                 } else {
