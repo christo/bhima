@@ -25,6 +25,7 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -106,8 +107,11 @@ public class ProcessingBase extends PApplet {
         final InputStream buildTme = ProcessingBase.class.getClassLoader().getResourceAsStream(MD5_FILE);
         if (buildTme != null) {
             try (BufferedReader br = new BufferedReader(new InputStreamReader(buildTme))) {
+
+                AtomicInteger count = new AtomicInteger(0);
                 Stream<String> lines = br.lines();
                 lines.forEach(l -> {
+                    count.incrementAndGet();
                     final String[] s = l.split(" {2}");
                     if (s.length == 2) {
                         buildTimeMap.put(s[0], s[1]);
@@ -115,9 +119,15 @@ public class ProcessingBase extends PApplet {
                         throw new RuntimeException("md5 file format problem");
                     }
                 });
+                if (count.get() < 100) {
+                    logger.error(count.get() + " md5 entries in " + MD5_FILE);
+                } else {
+                    logger.info("{} md5 entries in {}", count.get(), MD5_FILE);
+                }
             } catch (Exception e) {
                 logger.error("could not load md5 resource", e);
             }
+
             buildTimeMap.entrySet().stream()
                     .filter(entry -> !nativeLibSums.get(entry.getKey()).equals(nativeLibSums.get(entry.getKey())))
                     .forEach(e -> logger.warn("bad native lib: {} {}", e.getKey(), e.getValue()));
