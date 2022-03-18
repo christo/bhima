@@ -7,6 +7,8 @@ import com.heroicrobot.dropbit.registry.DeviceRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
@@ -14,7 +16,9 @@ import java.util.Observer;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
+import com.chromosundrift.bhima.api.LedController;
 import com.chromosundrift.bhima.api.Settings;
 
 /**
@@ -244,5 +248,31 @@ public class PusherMan implements Observer {
         DeviceRegistry.setOverallBrightnessScale(settings.getBrightness());
         this.settings = settings;
         return this.settings;
+    }
+
+    public List<LedController> getLedControllers() {
+        // TODO maybe go through 4 pp's and show offline ones too?
+        return this.registry.getPushers().stream().map(pp -> {
+            final LedController lc = new LedController();
+            lc.setSpecies(pp.getDeviceType().name());
+            lc.setAddress(pp.getIp().toString());
+            lc.setName(pp.getFilename() + " " + pp.getControllerOrdinal());
+            lc.setOnline(pp.hasTouchedStrips());
+            lc.setCapacity(pp.getPixelsPerStrip());
+            HashMap<String, String> stats = new HashMap<>();
+            stats.put("Update Period", Long.toString(pp.getUpdatePeriod()));
+            stats.put("Number of Strips", Integer.toString(pp.getNumberOfStrips()));
+            stats.put("Port", Integer.toString(pp.getPort()));
+            stats.put("Hardware Revision", Integer.toString(pp.getHardwareRevision()));
+            stats.put("Product Id", Integer.toString(pp.getProductId()));
+            stats.put("Software Revision", Integer.toString(pp.getSoftwareRevision()));
+            stats.put("Power Domain", Long.toString(pp.getPowerDomain()));
+            stats.put("Power Total", Long.toString(pp.getPowerTotal()));
+            stats.put("Link Speed", Long.toString(pp.getLinkSpeed()));
+            stats.put("MAC Address", pp.getMacAddress());
+
+            lc.setStats(stats);
+            return lc;
+        }).collect(Collectors.toList());
     }
 }

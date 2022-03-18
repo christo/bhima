@@ -1,6 +1,7 @@
 package com.chromosundrift.bhima.dragonmind.program;
 
 import com.chromosundrift.bhima.api.Dragon;
+import com.chromosundrift.bhima.api.LedController;
 import com.chromosundrift.bhima.api.ProgramInfo;
 import com.chromosundrift.bhima.api.ProgramType;
 import com.chromosundrift.bhima.api.Settings;
@@ -89,6 +90,9 @@ public final class BhimaSup extends DragonMind implements Dragon {
         si.setStatus(this.getStatus());
         si.setConfigProject(this.config.getProject());
         si.setConfigVersion(this.config.getVersion());
+        final List<LedController> ledControllers = getPusherMan().getLedControllers();
+        logger.info("LED controllers #" + ledControllers.size());
+        si.setLedControllers(ledControllers);
         return si;
     }
 

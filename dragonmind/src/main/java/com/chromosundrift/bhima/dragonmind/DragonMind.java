@@ -45,7 +45,7 @@ public class DragonMind extends ProcessingBase {
     @Override
     public void setup() {
         super.setup();
-//        setVersionFromProperties();
+        setVersionFromProperties();
         balls.setup(this);
         pusherMan = new PusherMan(DEBUG_NOISY);
         pusherMan.init();

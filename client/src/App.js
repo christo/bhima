@@ -22,7 +22,7 @@ import {
     Paper,
     Slider,
     Stack,
-    Switch,
+    Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
     ThemeProvider
 } from "@mui/material";
 import {
@@ -286,6 +286,7 @@ const HomePage = (props) => {
             <CurrentProgram program={program} setProgram={setProgram}/>
             <h3>All Programs</h3>
             <ProgramList setProgram={setProgram}/>
+            <Box sx={{display: "flex", justifyContent: "center", margin: 4}}>💜</Box>
             <Drawer
                 anchor="right"
                 open={sysOpen}
@@ -381,6 +382,62 @@ function StopWatch(props) {
     return <React.Fragment>{secondsToHuman(elapsed)}</React.Fragment>;
 }
 
+function PortList(props) {
+    const {ports} = {...props};
+    return <React.Fragment>
+    {ports.map(i => (
+        <span key={i} className="portNum">{i}</span>
+    ))}
+    </React.Fragment>;
+}
+
+function LedControllers(props) {
+    const controllers = props.controllers;
+    if (controllers.length === 0) {
+        return <p><i>None</i></p>
+    } else {
+        return <React.Fragment>
+            {controllers.map(c => (
+                <Paper key={c.name}>
+                    <h4>{c.name}</h4>
+                    <ul>
+                        <li>{c.species}</li>
+                    </ul>
+                </Paper>
+
+            ))}
+        </React.Fragment>;
+    }
+}
+
+function Wiring(props) {
+    const wiring = props.wiring;
+    return <TableContainer component={Paper} sx={{marginBottom: 5}}>
+        <Table sx={{ minWidth: "100%" }} aria-label="simple table">
+            <TableHead>
+                <TableRow>
+                    <TableCell>Panel Group</TableCell>
+
+                    <TableCell align="right">Ports</TableCell>
+                </TableRow>
+            </TableHead>
+            <TableBody>
+                {Object.entries(wiring).map((kv, i) => (
+                    <TableRow key={i}
+                              sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    >
+                        <TableCell component="th" scope="row">
+                            {kv[0]}
+                        </TableCell>
+
+                        <TableCell align="right"><PortList ports={kv[1]}/></TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
+    </TableContainer>;
+}
+
 const SystemPage = (props) => {
     const {systemInfo, setSystemInfo, error, loaded} = props;
     useEffect(() => {
@@ -390,9 +447,8 @@ const SystemPage = (props) => {
     } else if (!loaded) {
         return <CircularProgress color="secondary" />;
     } else {
-
         return (
-            <Container className="page" sx={{width: "80vw"}}>
+            <Container className="page" sx={{width: "80vw", backgroundColor: "black"}}>
                 <Box
                     component="img"
                     sx={{objectFit: "contain", top: -80, overflow: "hidden", height: "200px", width: "100%", margin: 0}}
@@ -456,7 +512,8 @@ const SystemPage = (props) => {
                 </Box>
 
                 <h3>LED Controllers</h3>
-                <p>TODO</p>
+                <LedControllers controllers={systemInfo.ledControllers}/>
+
 
                 <h3>Program Types</h3>
                 <List sx={{paddingTop: 0}}>
@@ -472,8 +529,7 @@ const SystemPage = (props) => {
                 </List>
 
                 <h3>Wiring</h3>
-
-                <p>TODO</p>
+                <Wiring wiring={systemInfo.effectiveWiring}/>
 
             </Container>
         );
@@ -502,6 +558,7 @@ function App() {
                 justifyContent: "center", padding: 0, backgroundColor: "#434152", margin: 0, width: 1 }}>
                 <HomePage systemInfo={systemInfo} setSystemInfo={setSystemInfo} error={error} loaded={loaded}/>
             </Container>
+
         </ThemeProvider>;
 }
 

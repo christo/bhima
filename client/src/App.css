@@ -85,3 +85,7 @@ main {
 .page {
     width: 100vw;
 }
+
+.portNum {
+    margin-right: 1em;
+}

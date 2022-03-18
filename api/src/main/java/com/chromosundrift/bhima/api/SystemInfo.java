@@ -11,7 +11,6 @@ import java.util.Set;
 /**
  * Represents rich system status information.
  */
-@JsonInclude(NON_EMPTY)
 public class SystemInfo {
 
     public Long uptimeSeconds;

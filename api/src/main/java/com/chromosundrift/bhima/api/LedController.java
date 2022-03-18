@@ -9,7 +9,6 @@ import java.util.Map;
 /**
  * Model for representing LED Controllers like PixelPusher.
  */
-@JsonInclude(NON_EMPTY)
 public class LedController {
     public String species;
     public String address;
