@@ -48,10 +48,10 @@ import Logo from "./dragon-head-neg.png";
 // TODO read how to reduce bundle size from imports: https://mui.com/guides/minimizing-bundle-size/
 
 /** Iff true, continuously fetch the current program info causing animated live thumbnail. */
-const LIVE_UPDATE = false;  // TODO change to an update delay in ms
+const LIVE_UPDATE = true;
 
 /** Iff true, limits the rate of updates as a result of continuous settings changes, i.e. brightness */
-const DO_SPAM_LIMIT = false;  // TODO convert to update delay in ms
+const DO_SPAM_LIMIT = false;
 
 // see com.chromosundrift.bhima.api.ProgramType
 /** Movie program, playing video file at configured speed, loops for duration if shorter than duration. */
