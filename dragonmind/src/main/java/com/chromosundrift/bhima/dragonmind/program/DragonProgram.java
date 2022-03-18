@@ -42,4 +42,8 @@ public interface DragonProgram {
     ProgramInfo runProgram(String id);
 
     ProgramInfo getCurrentProgramInfo(int inx, int iny, int innerWidth, int innerHeight);
+
+    boolean isMute();
+
+    void setMute(boolean mute);
 }

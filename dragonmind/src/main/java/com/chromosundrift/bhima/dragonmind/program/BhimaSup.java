@@ -105,11 +105,14 @@ public final class BhimaSup extends DragonMind implements Dragon {
     @Override
     public Settings getSettings() {
         getPusherMan().ensureReady();
-        return getPusherMan().getSettings();
+        final Settings settings = getPusherMan().getSettings();
+        settings.setMute(moviePlayer.isMute());
+        return settings;
     }
 
     @Override
     public Settings setSettings(Settings settings) {
+        this.moviePlayer.setMute(settings.isMute());
         getPusherMan().ensureReady();
         return this.getPusherMan().setSettings(settings);
     }

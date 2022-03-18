@@ -46,4 +46,14 @@ public class NullProgram implements DragonProgram {
     public ProgramInfo runProgram(String id) {
         return ProgramInfo.getNullProgramInfo();
     }
+
+    @Override
+    public boolean isMute() {
+        return true;
+    }
+
+    @Override
+    public void setMute(boolean mute) {
+        // do nothing always muted
+    }
 }

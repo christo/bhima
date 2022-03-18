@@ -123,7 +123,6 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
         String niceName = makeNice(f);
         Map<String, String> settings = new HashMap<>();
         settings.put("FPS", Float.toString(fps));
-        settings.put("muted", Boolean.toString(mute));
         return new ProgramInfo(f, niceName, type, bi, settings);
     }
 
@@ -373,6 +372,15 @@ public class MoviePlayerImpl extends AbstractDragonProgram implements DragonProg
         }
         movie = newMovie;
         currentVideoStartMs = currentTimeMillis();
+    }
+
+    public boolean isMute() {
+        return mute;
+    }
+
+    public void setMute(boolean mute) {
+        this.movie.volume(mute ? 0f : 1f);
+        this.mute = mute;
     }
 }
 

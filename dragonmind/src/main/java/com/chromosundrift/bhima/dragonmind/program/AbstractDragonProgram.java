@@ -62,4 +62,14 @@ public abstract class AbstractDragonProgram implements DragonProgram {
     public void mouseClicked(DragonMind mind) {
 
     }
+
+    @Override
+    public boolean isMute() {
+        return true;
+    }
+
+    @Override
+    public void setMute(boolean mute) {
+        // does nothing by default
+    }
 }
