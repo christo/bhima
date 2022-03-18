@@ -53,9 +53,10 @@ const LIVE_UPDATE = true;  // TODO change to an update delay in ms
 /** Iff true, limits the rate of updates as a result of continuous settings changes, i.e. brightness */
 const DO_SPAM_LIMIT = false;  // TODO convert to update delay in ms
 
+// see com.chromosundrift.bhima.api.ProgramType
 /** Movie program, playing video file at configured speed, loops for duration if shorter than duration. */
 const TYPE_MOVIE = "Movie";
-/** (planned) Code that produces animation, possibly interactive, possibly sound-responsive. */
+/** Code that produces animation, possibly interactive, possibly sound-responsive. */
 const TYPE_ALGORITHM = "Algorithm";
 /** Image with configured animation, e.g. kaliedoscope, rotozoom, scroll etc. */
 const TYPE_IMAGE = "Image";
@@ -289,7 +290,6 @@ const HomePage = (props) => {
                 anchor="right"
                 open={sysOpen}
                 onClose={toggleDrawer(false)}
-                onOpen={toggleDrawer(true)}
             >
                 <SystemPage {...props}/>
             </Drawer>
@@ -309,7 +309,6 @@ function SettingsPanel(props) {
         let spamLimited = thisUpdate - lastUpdate > 100;
         if (!DO_SPAM_LIMIT || spamLimited) {
             if (event && event.target !== undefined) {
-                event.stopImmediatePropagation();
                 let newSettings = {
                     mute: settings.mute,
                     sleep: settings.sleep,
@@ -327,6 +326,7 @@ function SettingsPanel(props) {
                     if (error) {
                         console.error(error.message);
                     } else {
+                        console.log("changed settings; ", result);
                         setSettings(result);
                     }
                 });
