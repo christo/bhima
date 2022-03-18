@@ -45,8 +45,6 @@ import {
 import {pink, purple} from "@mui/material/colors";
 import Logo from "./dragon-head-neg.png";
 
-// TODO read how to reduce bundle size from imports: https://mui.com/guides/minimizing-bundle-size/
-
 /** Iff true, continuously fetch the current program info causing animated live thumbnail. */
 const LIVE_UPDATE = true;
 
