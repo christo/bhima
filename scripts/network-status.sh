@@ -2,17 +2,13 @@
 
 # prints out the current network situation of production
 # usage network-status.sh [<target machine> [<target user>]]
-# default machine: silverbox.local default user: bhima
+# default machine: silverbox.local
 
-# TODO move to scripts/
+pushd "$( dirname "${BASH_SOURCE[0]}" )"
 
-cd "$( dirname "${BASH_SOURCE[0]}" )"
+source ../functions.sh
 
-source functions.sh
-
-target_machine=${1:-silverbox.local}
-target_username=${2:-bhima}
-ssh_target=${target_username}@${target_machine}
+target_machine=${1:-tiger.local}
 
 # internet connectivity
 echo -n internet connection:
@@ -22,7 +18,8 @@ echo -n connection to $target_machine:
 pingtest "$target_machine"
 
 echo -n ssh authentication to $target_machine:
-ssh -o "PubkeyAuthentication=yes" "$ssh_target" ls >/dev/null 2>&1 && ok || fail
+ssh -o "PubkeyAuthentication=yes" "$target_machine" ls >/dev/null 2>&1 && ok || fail
 
 echo -n pixelpusher connectivity:
 ./pixelpushers-online.sh
+popd
