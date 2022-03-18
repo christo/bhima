@@ -266,7 +266,6 @@ const HomePage = (props) => {
         ) {
             return;
         }
-
         setSysOpen(open);
     };
     return (
@@ -286,7 +285,7 @@ const HomePage = (props) => {
             <CurrentProgram program={program} setProgram={setProgram}/>
             <h3>All Programs</h3>
             <ProgramList setProgram={setProgram}/>
-            <Drawer>
+            <Drawer
                 anchor="right"
                 open={sysOpen}
                 onClose={toggleDrawer(false)}
