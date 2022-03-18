@@ -6,12 +6,26 @@ import processing.core.PApplet;
 import processing.core.PGraphics;
 import processing.core.PImage;
 
+import javax.xml.bind.DatatypeConverter;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.chromosundrift.bhima.dragonmind.model.Config;
@@ -20,13 +34,23 @@ import com.chromosundrift.bhima.dragonmind.model.Segment;
 import com.chromosundrift.bhima.dragonmind.model.Transform;
 import com.chromosundrift.bhima.geometry.Point;
 import com.chromosundrift.bhima.geometry.Rect;
+import static com.chromosundrift.bhima.dragonmind.SystemUtils.checkIsDir;
+import static com.chromosundrift.bhima.dragonmind.SystemUtils.sysPropDefault;
 import static com.chromosundrift.bhima.dragonmind.model.Transform.Type.*;
 
+/**
+ * Somewhat dirty bag of generic drawing and system methods suitable for sharing between any applications, aiming to
+ * reduce repetitive cruft in subclasses.
+ */
 public class ProcessingBase extends PApplet {
 
     private static final Logger logger = LoggerFactory.getLogger(ProcessingBase.class);
     private static final String GSTREAMER_LIBRARY_PATH = "gstreamer.library.path";
     private static final String GSTREAMER_PLUGIN_PATH = "gstreamer.plugin.path";
+    private static final String MD5_FILE = "md5sum.txt";
+
+    /** MD5 to filename */
+    private static Map<String, String> nativeLibSums = new HashMap<>(); // default empty in case not recreated later
 
     private final ExecutorService offloader;
 
@@ -45,27 +69,106 @@ public class ProcessingBase extends PApplet {
      */
     protected static void setNativeLibraryPaths() {
         logger.info("setting gstreamer native library paths based on system properties");
-        logger.info("operating system name is {}", OsUtils.getOs());
-        if (OsUtils.isMac()) {
-            logger.info("OSX => assuming we're running in dev mode");
+        logger.info("operating system name is {}", SystemUtils.getOs());
+        if (SystemUtils.isMac()) {
+            // TODO fix this hard-coded nonsense
             final String library = "/Users/christo/src/christo/bhima/dragonmind/processing-video-lib/video/library/macosx";
             final String plugins = library + "/gstreamer-1.0";
-            String gsLibPath = OsUtils.sysPropDefault(GSTREAMER_LIBRARY_PATH, library);
-            String gsPluginPath = OsUtils.sysPropDefault(GSTREAMER_PLUGIN_PATH, plugins);
+            logger.info("running on OSX using fixed native library paths at " + library);
+
+            String gsLibPath = sysPropDefault(GSTREAMER_LIBRARY_PATH, library);
+            String gsPluginPath = sysPropDefault(GSTREAMER_PLUGIN_PATH, plugins);
             // check these paths exist
-            checkIsDir(gsLibPath);
-            checkIsDir(gsPluginPath);
+            if (checkIsDir(gsLibPath) && checkIsDir(gsPluginPath)) {
+                try {
+                    final PrintWriter pw = new PrintWriter(MD5_FILE);
+                    nativeLibSums = new HashMap<>();
+                    writeMd5Sums(pw, new File(library), nativeLibSums);
+                    pw.close();
+
+                    compareBuildTimeNativeLibSums();
+
+                } catch (FileNotFoundException e) {
+                    logger.error("can't write md5 file", e);
+                }
+            } else {
+                logger.warn("Native library paths are wrong. Video will probably not work correctly");
+            }
         } else {
             logger.warn("Not setting native library paths, relying on os");
         }
     }
 
-    private static void checkIsDir(String dir) {
-        File f = new File(dir);
-        if (!f.exists()) {
-            logger.warn("{} does not exist", dir);
-        } else if (!f.isDirectory()) {
-            logger.warn("{} is not a dir", dir);
+    private static void compareBuildTimeNativeLibSums() {
+        logger.info("starting detecting native library discrepancies");
+        // TODO load resource md5sum.txt into map and compare with given map, include missings
+        Map<String, String> buildTimeMap = new HashMap<>();
+        final InputStream buildTme = ProcessingBase.class.getClassLoader().getResourceAsStream(MD5_FILE);
+        try (BufferedReader br = new BufferedReader(new InputStreamReader(buildTme))) {
+            Stream<String> lines = br.lines();
+            lines.forEach(l -> {
+                final String[] s = l.split("  ");
+                if (s.length == 2) {
+                    buildTimeMap.put(s[0], s[1]);
+                } else {
+                    throw new RuntimeException("md5 file format problem");
+                }
+            });
+        } catch (Exception e) {
+            logger.error("could not load md5 resource", e);
+        }
+        buildTimeMap.entrySet().stream()
+                .filter(entry -> !nativeLibSums.get(entry.getKey()).equals(nativeLibSums.get(entry.getKey())))
+                        .forEach(e -> logger.warn("bad native lib: {} {}", e.getKey(), e.getValue()));
+
+        nativeLibSums.entrySet().stream()
+                .filter(entry -> !buildTimeMap.get(entry.getKey()).equals(buildTimeMap.get(entry.getKey())))
+                .forEach(e -> logger.warn("missing native lib: {} {}", e.getKey(), e.getValue()));
+        logger.info("finished detecting native library discrepancies");
+
+    }
+
+    /**
+     * Writes MD5 sums for all files under root to pw and also stores them in md5ToFilename. Writes the file
+     * in the precise format that gnu coreutils md5sum does it (capitalised-MD5sum two-spaces filename). Note
+     * that only the file name is stored and not the path. Do not use the md5 command on macos, instead
+     * brew install coreutils
+     */
+    private static void writeMd5Sums(PrintWriter pw, File root, Map<String, String> md5ToFilename) {
+        if (!root.isDirectory()) {
+            throw new IllegalArgumentException("must be called on a dir only");
+        } else {
+            //noinspection ConstantConditions
+            for (File dir : root.listFiles(File::isDirectory)) {
+                writeMd5Sums(pw, dir, md5ToFilename);
+            }
+            //noinspection ConstantConditions
+            for (File file : root.listFiles(f -> !f.isDirectory())) {
+                try {
+                    String md5 = fileToMd5(file);
+                    md5ToFilename.put(md5, file.getName());
+                    pw.println(md5 + "  " + file.getName());
+                } catch (NoSuchAlgorithmException | IOException e) {
+                    logger.error("can't generate md5 for file " + file.getName(), e);
+                }
+            }
+        }
+    }
+
+    private static String fileToMd5(File file) throws NoSuchAlgorithmException, IOException {
+        return pathToMd5(file.toPath());
+    }
+
+    private static String pathToMd5(Path path) {
+        try {
+            logger.info("generating md5 for " + path);
+            final MessageDigest md = MessageDigest.getInstance("MD5");
+            md.update(Files.readAllBytes(path));
+            return DatatypeConverter.printHexBinary(md.digest()).toUpperCase();
+        } catch (IOException | NoSuchAlgorithmException e) {
+            // can only happen if given a non-file or md5 algo is absent
+            // indicates a config error or critical bug
+            throw new RuntimeException(e);
         }
     }
 

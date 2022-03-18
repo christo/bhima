@@ -35,7 +35,7 @@ import com.chromosundrift.bhima.dragonmind.MediaSource;
 import com.chromosundrift.bhima.dragonmind.NearDeathExperience;
 import com.chromosundrift.bhima.dragonmind.VideoLurker;
 import static com.chromosundrift.bhima.api.ProgramInfo.getNullProgramInfo;
-import static com.chromosundrift.bhima.dragonmind.OsUtils.getMediaBaseDir;
+import static com.chromosundrift.bhima.dragonmind.SystemUtils.getMediaBaseDir;
 
 /**
  * Plays one or more movies.

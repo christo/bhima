@@ -3,12 +3,13 @@ package com.chromosundrift.bhima.dragonmind;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import static java.lang.String.format;
 import static java.lang.System.getProperties;
 import static java.lang.System.getProperty;
 
-public final class OsUtils {
-    private static final Logger logger = LoggerFactory.getLogger(OsUtils.class);
+public final class SystemUtils {
+    private static final Logger logger = LoggerFactory.getLogger(SystemUtils.class);
 
     private static final String OSX = "mac os x";
     private static final String OS_NAME = "os.name";
@@ -55,5 +56,17 @@ public final class OsUtils {
             System.setProperty(key, value);
         }
         return System.getProperty(key);
+    }
+
+    static boolean checkIsDir(String dir) {
+        File f = new File(dir);
+        if (!f.exists()) {
+            logger.warn("{} does not exist", dir);
+            return false;
+        } else if (!f.isDirectory()) {
+            logger.warn("{} is not a dir", dir);
+            return false;
+        }
+        return true;
     }
 }

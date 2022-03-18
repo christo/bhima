@@ -69,7 +69,7 @@ assumed to work the same way.
 
 ## TODO
 
-* global brightness control
+* configure production logging to file
 * make PusherMan monitor pixelpushers in case new ones come online after app starts
 * make work with recent jdk (jee modules were removed, jaxb etc.)
     * ? can we upgrade dropwizard to fix this?
