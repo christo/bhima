@@ -35,12 +35,12 @@ import {
     Details,
     Image,
     Info,
-    Label, Lightbulb,
-    LocalMovies, Margin, Microwave, NetworkCheck, PowerOff,
+    Label,
+    LocalMovies, Margin, NetworkCheck,
     QuestionMark,
     Settings, SettingsInputComponent,
     TextFields,
-    TextRotationNone, Timer, Wifi, WifiOff
+    TextRotationNone, Timer,
 } from "@mui/icons-material";
 import {pink, purple} from "@mui/material/colors";
 import Logo from "./dragon-head-neg.png";
