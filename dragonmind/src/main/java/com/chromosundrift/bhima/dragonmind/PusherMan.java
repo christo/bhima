@@ -7,7 +7,6 @@ import com.heroicrobot.dropbit.registry.DeviceRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -255,21 +254,14 @@ public class PusherMan implements Observer {
         return this.registry.getPushers().stream().map(pp -> {
             final LedController lc = new LedController();
             lc.setSpecies(pp.getDeviceType().name());
-            lc.setAddress(pp.getIp().toString());
-            lc.setName(pp.getFilename() + " " + pp.getControllerOrdinal());
-            lc.setOnline(pp.hasTouchedStrips());
-            lc.setCapacity(pp.getPixelsPerStrip());
+            lc.setAddress(pp.getIp().getHostAddress() + ":" + pp.getPort() + " " + pp.getMacAddress());
+            lc.setName(Integer.toString(pp.getControllerOrdinal()));
+            lc.setBandwidth(pp.getLinkSpeed()/1000000 + " Mbps");
+            lc.setLatency(pp.getUpdatePeriod() + " μs");
             HashMap<String, String> stats = new HashMap<>();
-            stats.put("Update Period", Long.toString(pp.getUpdatePeriod()));
-            stats.put("Number of Strips", Integer.toString(pp.getNumberOfStrips()));
-            stats.put("Port", Integer.toString(pp.getPort()));
-            stats.put("Hardware Revision", Integer.toString(pp.getHardwareRevision()));
-            stats.put("Product Id", Integer.toString(pp.getProductId()));
-            stats.put("Software Revision", Integer.toString(pp.getSoftwareRevision()));
-            stats.put("Power Domain", Long.toString(pp.getPowerDomain()));
-            stats.put("Power Total", Long.toString(pp.getPowerTotal()));
-            stats.put("Link Speed", Long.toString(pp.getLinkSpeed()));
-            stats.put("MAC Address", pp.getMacAddress());
+            stats.put("Hardware Rev", Integer.toString(pp.getHardwareRevision()));
+            stats.put("Software Rev", Integer.toString(pp.getSoftwareRevision()));
+            stats.put("Power", pp.getPowerTotal() + " PWM units");
 
             lc.setStats(stats);
             return lc;

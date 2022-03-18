@@ -1,9 +1,5 @@
 package com.chromosundrift.bhima.api;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
-
-import static com.fasterxml.jackson.annotation.JsonInclude.Include.NON_EMPTY;
-
 import java.util.Map;
 
 /**
@@ -13,8 +9,8 @@ public class LedController {
     public String species;
     public String address;
     public String name;
-    public Integer capacity;
-    public Boolean online;
+    public String bandwidth;
+    public String latency;
     public Map<String, String> stats;
 
     public String getSpecies() {
@@ -41,20 +37,12 @@ public class LedController {
         this.name = name;
     }
 
-    public Integer getCapacity() {
-        return capacity;
+    public String getBandwidth() {
+        return bandwidth;
     }
 
-    public void setCapacity(Integer capacity) {
-        this.capacity = capacity;
-    }
-
-    public Boolean getOnline() {
-        return online;
-    }
-
-    public void setOnline(Boolean online) {
-        this.online = online;
+    public void setBandwidth(String bandwidth) {
+        this.bandwidth = bandwidth;
     }
 
     public Map<String, String> getStats() {
@@ -63,5 +51,13 @@ public class LedController {
 
     public void setStats(Map<String, String> stats) {
         this.stats = stats;
+    }
+
+    public String getLatency() {
+        return latency;
+    }
+
+    public void setLatency(String latency) {
+        this.latency = latency;
     }
 }

@@ -35,12 +35,12 @@ import {
     Details,
     Image,
     Info,
-    Label,
-    LocalMovies,
+    Label, Lightbulb,
+    LocalMovies, Margin, Microwave, NetworkCheck, PowerOff,
     QuestionMark,
-    Settings,
+    Settings, SettingsInputComponent,
     TextFields,
-    TextRotationNone
+    TextRotationNone, Timer, Wifi, WifiOff
 } from "@mui/icons-material";
 import {pink, purple} from "@mui/material/colors";
 import Logo from "./dragon-head-neg.png";
@@ -48,7 +48,7 @@ import Logo from "./dragon-head-neg.png";
 // TODO read how to reduce bundle size from imports: https://mui.com/guides/minimizing-bundle-size/
 
 /** Iff true, continuously fetch the current program info causing animated live thumbnail. */
-const LIVE_UPDATE = true;  // TODO change to an update delay in ms
+const LIVE_UPDATE = false;  // TODO change to an update delay in ms
 
 /** Iff true, limits the rate of updates as a result of continuous settings changes, i.e. brightness */
 const DO_SPAM_LIMIT = false;  // TODO convert to update delay in ms
@@ -327,7 +327,6 @@ function SettingsPanel(props) {
                     if (error) {
                         console.error(error.message);
                     } else {
-                        console.log("changed settings; ", result);
                         setSettings(result);
                     }
                 });
@@ -386,7 +385,7 @@ function PortList(props) {
     const {ports} = {...props};
     return <React.Fragment>
     {ports.map(i => (
-        <span key={i} className="portNum">{i}</span>
+        <Box key={i} sx={{marginLeft: 1, color: "secondary"}}>{i}</Box>
     ))}
     </React.Fragment>;
 }
@@ -398,11 +397,32 @@ function LedControllers(props) {
     } else {
         return <React.Fragment>
             {controllers.map(c => (
-                <Paper key={c.name}>
-                    <h4>{c.name}</h4>
-                    <ul>
-                        <li>{c.species}</li>
-                    </ul>
+                <Paper key={c.name} sx={{padding: 1, marginBottom: 2}}>
+                    <Stack>
+                        <Box>
+                            <List>
+                                <ListItem>
+                                    <ListItemIcon><Margin fontSize="large"/></ListItemIcon>
+                                    <ListItemText primary={`${c.species} ${c.name}`} secondary={c.address}/>
+                                </ListItem>
+                                <ListItem>
+                                    <ListItemIcon><Timer fontSize="large"/></ListItemIcon>
+                                    <ListItemText primary="Latency" secondary={c.latency}/>
+                                </ListItem>
+                                <ListItem>
+                                    <ListItemIcon><NetworkCheck fontSize="large"/></ListItemIcon>
+                                    <ListItemText primary="Bandwidth" secondary={c.bandwidth}/>
+                                </ListItem>
+
+                            </List>
+                        </Box>
+                        {Object.entries(c.stats).map((kv, i) => (
+                            <Box key={i} sx={{marginLeft: 3}}>
+                                <ListItemText primary={kv[0]} secondary={kv[1]}/>
+                            </Box>
+                        ))}
+                    </Stack>
+
                 </Paper>
 
             ))}
@@ -417,8 +437,7 @@ function Wiring(props) {
             <TableHead>
                 <TableRow>
                     <TableCell>Panel Group</TableCell>
-
-                    <TableCell align="right">Ports</TableCell>
+                    <TableCell align="right"><SettingsInputComponent fontSize="small"/></TableCell>
                 </TableRow>
             </TableHead>
             <TableBody>
