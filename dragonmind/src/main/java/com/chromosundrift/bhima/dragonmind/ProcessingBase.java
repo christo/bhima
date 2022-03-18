@@ -100,31 +100,36 @@ public class ProcessingBase extends PApplet {
     }
 
     private static void compareBuildTimeNativeLibSums() {
-        logger.info("starting detecting native library discrepancies");
+        logger.info("started native library detection");
         // TODO load resource md5sum.txt into map and compare with given map, include missings
         Map<String, String> buildTimeMap = new HashMap<>();
         final InputStream buildTme = ProcessingBase.class.getClassLoader().getResourceAsStream(MD5_FILE);
-        try (BufferedReader br = new BufferedReader(new InputStreamReader(buildTme))) {
-            Stream<String> lines = br.lines();
-            lines.forEach(l -> {
-                final String[] s = l.split("  ");
-                if (s.length == 2) {
-                    buildTimeMap.put(s[0], s[1]);
-                } else {
-                    throw new RuntimeException("md5 file format problem");
-                }
-            });
-        } catch (Exception e) {
-            logger.error("could not load md5 resource", e);
-        }
-        buildTimeMap.entrySet().stream()
-                .filter(entry -> !nativeLibSums.get(entry.getKey()).equals(nativeLibSums.get(entry.getKey())))
-                        .forEach(e -> logger.warn("bad native lib: {} {}", e.getKey(), e.getValue()));
+        if (buildTme != null) {
+            try (BufferedReader br = new BufferedReader(new InputStreamReader(buildTme))) {
+                Stream<String> lines = br.lines();
+                lines.forEach(l -> {
+                    final String[] s = l.split(" {2}");
+                    if (s.length == 2) {
+                        buildTimeMap.put(s[0], s[1]);
+                    } else {
+                        throw new RuntimeException("md5 file format problem");
+                    }
+                });
+            } catch (Exception e) {
+                logger.error("could not load md5 resource", e);
+            }
+            buildTimeMap.entrySet().stream()
+                    .filter(entry -> !nativeLibSums.get(entry.getKey()).equals(nativeLibSums.get(entry.getKey())))
+                    .forEach(e -> logger.warn("bad native lib: {} {}", e.getKey(), e.getValue()));
 
-        nativeLibSums.entrySet().stream()
-                .filter(entry -> !buildTimeMap.get(entry.getKey()).equals(buildTimeMap.get(entry.getKey())))
-                .forEach(e -> logger.warn("missing native lib: {} {}", e.getKey(), e.getValue()));
-        logger.info("finished detecting native library discrepancies");
+            nativeLibSums.entrySet().stream()
+                    .filter(entry -> !buildTimeMap.get(entry.getKey()).equals(buildTimeMap.get(entry.getKey())))
+                    .forEach(e -> logger.warn("missing native lib: {} {}", e.getKey(), e.getValue()));
+            logger.info("finished native library detection");
+
+        } else {
+            logger.warn("aborted native library detection, could not load build-time md5 sums");
+        }
 
     }
 
