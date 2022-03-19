@@ -334,7 +334,6 @@ function SettingsPanel(props) {
 
     return <React.Fragment>
 
-        <h3>Global Settings</h3>
         <Stack className="settings">
             <FormControl>
                 <FormControlLabel control={<Switch checked={settings.luminanceCorrection}/>}
@@ -455,6 +454,72 @@ function Wiring(props) {
     </TableContainer>;
 }
 
+function SystemSummary(props) {
+    const systemInfo = props.systemInfo;
+    return <List>
+        <ListItem>
+            <ListItemIcon>
+                <Info fontSize="large"/>
+            </ListItemIcon>
+            <ListItemText primary="Status" secondary={systemInfo.status}/>
+        </ListItem>
+        <ListItem>
+            <ListItemIcon>
+                <Label fontSize="large"/>
+            </ListItemIcon>
+            <ListItemText primary="Version" secondary={systemInfo.version}/>
+        </ListItem>
+        <ListItem>
+            <ListItemIcon>
+                <AccessTime fontSize="large"/>
+            </ListItemIcon>
+            <ListItemText primary="Uptime" secondary=<StopWatch seconds={systemInfo.uptimeSeconds}/>/>
+        </ListItem>
+        <ListItem>
+            <ListItemIcon>
+                <TextRotationNone fontSize="large"/>
+            </ListItemIcon>
+            <ListItemText primary="Scroll Text" secondary={systemInfo.scrollText}/>
+        </ListItem>
+        <ListItem>
+            <ListItemIcon>
+                <ProgramTypeIcon type={systemInfo.currentProgram.type.name} fontSize="large"/>
+            </ListItemIcon>
+            <ListItemText primary="Current Program" secondary={systemInfo.currentProgram.name}/>
+        </ListItem>
+        <ListItem>
+            <ListItemIcon>
+                <Category fontSize="large"/>
+            </ListItemIcon>
+            <ListItemText primary="Project" secondary={systemInfo.configProject}/>
+        </ListItem>
+        <ListItem>
+            <ListItemIcon>
+                <Details fontSize="large"/>
+            </ListItemIcon>
+            <ListItemText primary="Project Version" secondary={systemInfo.configVersion}/>
+        </ListItem>
+    </List>;
+}
+
+SystemSummary.propTypes = {};
+
+function ProgramTypesList(props) {
+    const programTypes = props.programTypes;
+    return <List sx={{paddingTop: 0}}>
+        {programTypes.map(pt => (
+            <ListItem key={pt.name}>
+                <ListItemIcon>
+                    <ProgramTypeIcon type={pt.name} fontSize="large"/>
+                </ListItemIcon>
+                <ListItemText primary={pt.name} secondary={pt.description}/>
+            </ListItem>
+        ))}
+
+    </List>;
+}
+
+ProgramTypesList.propTypes = {programtypes: PropTypes.any};
 const SystemPage = (props) => {
     const {systemInfo, setSystemInfo, error, loaded} = props;
     useEffect(() => {
@@ -474,52 +539,9 @@ const SystemPage = (props) => {
                     src={Logo}
                 />
                 <h3>System</h3>
-                <List>
-                    <ListItem>
-                        <ListItemIcon>
-                            <Info fontSize="large"/>
-                        </ListItemIcon>
-                        <ListItemText primary="Status" secondary={systemInfo.status}/>
-                    </ListItem>
-                    <ListItem>
-                        <ListItemIcon>
-                            <Label fontSize="large"/>
-                        </ListItemIcon>
-                        <ListItemText primary="Version" secondary={systemInfo.version}/>
-                    </ListItem>
-                    <ListItem>
-                        <ListItemIcon>
-                            <AccessTime fontSize="large"/>
-                        </ListItemIcon>
-                        <ListItemText primary="Uptime" secondary=<StopWatch seconds={systemInfo.uptimeSeconds}/>/>
-                    </ListItem>
-                    <ListItem>
-                        <ListItemIcon>
-                            <TextRotationNone fontSize="large"/>
-                        </ListItemIcon>
-                        <ListItemText primary="Scroll Text" secondary={systemInfo.scrollText}/>
-                    </ListItem>
-                    <ListItem>
-                        <ListItemIcon>
-                            <ProgramTypeIcon type={systemInfo.currentProgram.type.name} fontSize="large"/>
-                        </ListItemIcon>
-                        <ListItemText primary="Current Program" secondary={systemInfo.currentProgram.name}/>
-                    </ListItem>
-                    <ListItem>
-                        <ListItemIcon>
-                            <Category fontSize="large"/>
-                        </ListItemIcon>
-                        <ListItemText primary="Project" secondary={systemInfo.configProject}/>
-                    </ListItem>
-                    <ListItem>
-                        <ListItemIcon>
-                            <Details fontSize="large"/>
-                        </ListItemIcon>
-                        <ListItemText primary="Project Version" secondary={systemInfo.configVersion}/>
-                    </ListItem>
+                <SystemSummary systemInfo={systemInfo}/>
 
-                    {/* TODO: RAM, disk, load, temp, */}
-                </List>
+                <h3>Global Settings</h3>
                 <SettingsPanel settings={systemInfo.settings}/>
 
                 <Box sx={{display: 'flex', justifyContent: 'end', mt: 2, mb: 4, mr: 2}}>
@@ -531,19 +553,8 @@ const SystemPage = (props) => {
                 <h3>LED Controllers</h3>
                 <LedControllers controllers={systemInfo.ledControllers}/>
 
-
                 <h3>Program Types</h3>
-                <List sx={{paddingTop: 0}}>
-                    {systemInfo.programTypes.map(pt => (
-                        <ListItem key={pt.name}>
-                            <ListItemIcon>
-                                <ProgramTypeIcon type={pt.name} fontSize="large"/>
-                            </ListItemIcon>
-                            <ListItemText primary={pt.name} secondary={pt.description}/>
-                        </ListItem>
-                    ))}
-
-                </List>
+                <ProgramTypesList programTypes={systemInfo.programTypes}/>
 
                 <h3>Wiring</h3>
                 <Wiring wiring={systemInfo.effectiveWiring}/>
