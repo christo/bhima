@@ -502,8 +502,6 @@ function SystemSummary(props) {
     </List>;
 }
 
-SystemSummary.propTypes = {};
-
 function ProgramTypesList(props) {
     const programTypes = props.programTypes;
     return <List sx={{paddingTop: 0}}>
@@ -519,7 +517,6 @@ function ProgramTypesList(props) {
     </List>;
 }
 
-ProgramTypesList.propTypes = {programtypes: PropTypes.any};
 const SystemPage = (props) => {
     const {systemInfo, setSystemInfo, error, loaded} = props;
     useEffect(() => {
