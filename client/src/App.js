@@ -90,7 +90,7 @@ function secondsToHuman(totalSecs) {
     let minutes = Math.floor((totalSecs - (days * 86400) - (hours * 3600)) / 60);
     let seconds = Math.floor(totalSecs - (days * 86400) - (hours * 3600) - (minutes * 60));
 
-    let daysStr = (days > 0) ? (days + " days ") : ("");
+    let daysStr = (days > 0) ? (days + (days === 1 ? " day " : " days ")) : ("");
     if (hours < 10) {
         hours = "0" + hours;
     }
@@ -415,7 +415,7 @@ function LedControllers(props) {
                             </List>
                         </Box>
                         {Object.entries(c.stats).map((kv, i) => (
-                            <Box key={i} sx={{marginLeft: 3}}>
+                            <Box key={i} sx={{marginLeft: 3, marginBottom: 2}}>
                                 <ListItemText primary={kv[0]} secondary={kv[1]}/>
                             </Box>
                         ))}
