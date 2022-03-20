@@ -18,6 +18,7 @@ public final class Transform {
         return baked;
     }
 
+    @JsonIgnore
     public boolean isUnbaked() {
         return !baked;
     }

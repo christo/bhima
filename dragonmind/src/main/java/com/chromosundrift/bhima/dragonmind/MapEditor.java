@@ -192,8 +192,8 @@ public class MapEditor extends DragonMind {
     private float gridOffsetY = 0;
 
     public void settings() {
-        fullScreen(JAVA2D); // P2D doesn't support setMatrix() which we need for point dragging
-        // size(1920, 1080, P2D);
+//        fullScreen(JAVA2D); // P2D doesn't support setMatrix() which we need for point dragging
+         size(1920, 1080, JAVA2D);
         pixelDensity(2);
         smooth();
         try {
