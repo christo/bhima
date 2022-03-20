@@ -8,11 +8,14 @@ Questions etc. to [bhima@chromosundrift.com](mailto:bhima@chromosundrift.com)
 
 * Software-controlled LED surface for the dragon bus
     * Video player
+    * Fledgling API for building Processing-like algorithmic sketches
 * Video import from USB
 * Mobile web app for primary control
 * semi-automatic pixel point detection within a camera field
 * Config file generator for pixelpushers.
 * deployment script for config files
+* Automated LED mapping from camera field
+* Map Editor for composing and fine-editing different mapping scans
 
 ## Installation
 
