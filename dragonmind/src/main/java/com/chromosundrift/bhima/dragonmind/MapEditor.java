@@ -177,6 +177,7 @@ public class MapEditor extends DragonMind {
      */
     private int lineAlpha = 255;
 
+    /** Just the editor view of the model */
     private float viewShiftX = 0;
     private float viewShiftY = 0;
     private float viewZoom = 1;
@@ -339,6 +340,14 @@ public class MapEditor extends DragonMind {
         image(segmentInfo, 0, 0);
         image(segmentSummary, 0, 0);
         image(viewInfo, 0, 0);
+        if (draggingPixelPoint != null) {
+            pushStyle();
+            stroke(0);
+            strokeWeight(0.5f);
+            line(mouseX, 0, mouseX, height);
+            line(0, mouseY, width, mouseY);
+            popStyle();
+        }
     }
 
     /**
