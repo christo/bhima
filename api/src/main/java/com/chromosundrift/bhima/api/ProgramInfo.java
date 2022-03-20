@@ -32,7 +32,6 @@ public final class ProgramInfo {
     private String id;
     private ProgramType type;
     private Float durationSeconds;
-    // TODO enable settings edit, update settings to include validation type & read-only flag, rename to attributes
     private Map<String, String> settings;
 
     @JsonSerialize(using = ImageSerializer.class)
