@@ -76,16 +76,13 @@ assumed to work the same way.
 ## TODO
 
 * configure production logging to file
-* make PusherMan monitor pixelpushers in case new ones come online after app starts
 * make work with recent jdk (jee modules were removed, jaxb etc.)
     * ? can we upgrade dropwizard to fix this?
     * Will upgrading processing help this?
-* build: gradle build should make an executable that runs on linux or mac for default config.
-    * confirm linux 64 bit native libs result in running video (paths etc)
+* fix linux 64 bit native libs result in running video (video scaling is currently wrong)
 * make system console log (show on mobile app / front panel)
 * add to SystemInfo:
     * performance metrics: e.g. render time
-    * led drivers connected, latency?
     * temperatures?
     * database size and disk usage
     * network info
@@ -101,19 +98,51 @@ assumed to work the same way.
 
 * move test pattern into its own Program
 * effect: rotozoomer (tesselation, kaliedoscope)
-* performance tuning for rpi target (try pi4, it's probably memory bound)
 * parametised geometric algorithms (e.g. sacred geometry shiz) using pixelpusher processing library
 * effect: mirrorball sparkle scales
-* test shape-aware algorithms, non-rectangular edges e.g. shaded dragon body
-* Multiple map model - bundle background and pixelMap into its own node
+* test shape-aware algorithms, non-rectangular edges e.g. shaded dragon body, shadows, specular highlight
 * enable proper GUI by creating outer swing frame with PApplet component
 * Dynamic runtime config of segment wiring
 * editing of modular maps include rotation, translation, arbitrary quad-skew with retained local coordinates
-* render logical pixelpusher wiring in map
 * all GUI image scaling with overlay rendering properly registered
-* test full logical layout with 7.5k LEDs
 * test ideas: audio-input, accelerometer input, theremin-style control field?
-* VJ proposal: implement NDI stream sink for display
+* better and more flexible server-side video transcoding, shaping, trimming etc. using service wrapping ffmpeg or 
+gstreamer
+
+## References
+
+Bookmarks from initial research into using pixelpushers for this project:
+
+* [PixelPusher BetterPixel Singles (10 pack) - PixelPusher &amp; LED Strips](https://www.illumn.com/pixelpusher-and-led-strips/pixelpusher-betterpixel-singles-10-pack.html)
+* [PixelPusher LPD8806 RGB LED Strip, IP65 adhesive backing - PixelPusher &amp; LED Strips](https://www.illumn.com/pixelpusher-and-led-strips/pixelpusher-lpd8806-rgb-led-strip-ip65-adhesive-backing.html)
+* [PixelPusher 60x32 pixel Video Wall Kit - PixelPusher &amp; LED Strips](https://www.illumn.com/pixelpusher-and-led-strips/60x32-pixel-video-wall-kit.html)
+* [PixelPusher WS2801 RGB 2&quot; Pixel Modules 12V - PixelPusher &amp; LED Strips](https://www.illumn.com/pixelpusher-and-led-strips/pixelpusher-ws2801-rgb-2-pixel-modules-12v.html)
+* [Heroic Robotics PixelPusher - PixelPusher &amp; LED Strips](https://www.illumn.com/pixelpusher-and-led-strips/heroic-robotics-pixelpusher.html)
+* [PixelPusher: a large scale LED controller for Processing - Processing Forum](https://forum.processing.org/one/topic/pixelpusher-a-large-scale-led-controller-for-processing.html)
+* [PixelPusher-processing-sketches/pixelpusher_starfield at master · robot-head/PixelPusher-processing-sketches · GitHub](https://github.com/robot-head/PixelPusher-processing-sketches/tree/master/pixelpusher_starfield)
+* [GitHub - robot-head/PixelPusher-artnet: ArtNet bridge for PixelPusher](https://github.com/robot-head/PixelPusher-artnet)
+* [PixelController « PIXELinvaders](http://pixelinvaders.ch/?page_id=160)
+* [poly-gone/PixelPusher.java at master · wurzle/poly-gone · GitHub](https://github.com/wurzle/poly-gone/blob/master/libraries/PixelPusher/src/com/heroicrobot/dropbit/devices/pixelpusher/PixelPusher.java)
+* [Light Painting Wand - Hackster.io](https://www.hackster.io/heroic/light-painting-wand-6dd160)
+* [Simple Ping Pong (led mapping) +PixelPusher – ArmyRdz](https://armyrdz.wordpress.com/2018/03/16/simple-ping-pong-led-mapping-pixelpusher/)
+* [PixelPusher-java/DeviceImpl.java at master · robot-head/PixelPusher-java · GitHub](https://github.com/robot-head/PixelPusher-java/blob/master/src/com/heroicrobot/dropbit/devices/DeviceImpl.java)
+* [full hd resolution - Google Search](https://www.google.com.au/search?q=full+hd+resolution&oq=full+hd+&aqs=chrome.1.69i57j0l5.2406j1j7&sourceid=chrome&ie=UTF-8)
+* [How to build a flexible LED Curtain display by LED strips T1000S SD card controler Soft Display DIY - YouTube](https://www.youtube.com/watch?v=sbdvrfwr6Sg)
+* [Manipulating large number of LED fixtures in MadLight - garageCube](http://forum.garagecube.com/viewtopic.php?t=9497)
+* [How to Build a LED Display flexible Soften CHEAP and Easy](http://buildleddisplay.blogspot.com/)
+* [elektric-junkys.com | Flexible LED Video Screens | WS2813 | 3D Stretch Ceilings | LED Panels | 3D LED Infinity Mirrors | LED DIY Instructions |](https://elektric-junkys.com/)
+* [how to build your own flexible LED Display XXL WS2811 real time Video Transmission 2mX1.5m cortina - YouTube](https://www.youtube.com/watch?v=e-rdgB_19Fg)
+* [Giant PixelPusher array - YouTube](https://www.youtube.com/watch?v=8ROekOZQC6g)
+* [Pixelpusher video wall visuals to music - YouTube](https://www.youtube.com/watch?v=NIKhsCvsI6M)
+* [PixelPusher Hardware Configuration Guide - PixelPusher](https://sites.google.com/a/heroicrobot.com/pixelpusher/home/getting-started)
+* [PixelPusher: Intelligent Networked LED Controller by Heroic Robotics, Inc. — Kickstarter](https://www.kickstarter.com/projects/1319139499/pixelpusher)
+* [Kreative Software · GitHub](https://github.com/kreativekorp)
+* [rainbowdash/Makefile at master · kreativekorp/rainbowdash · GitHub](https://github.com/kreativekorp/rainbowdash/blob/master/RainbowStudio/Makefile)
+* [Search · topic:classic-mac-os org:kreativekorp fork:true · GitHub](https://github.com/search?q=topic%3Aclassic-mac-os+org%3Akreativekorp+fork%3Atrue)
+* [PixelPusher&#39;s community hub](https://www.hackster.io/pixelpusher)
+* [Blinkdom - Hackster.io](https://www.hackster.io/r26d/blinkdom-b690e4)
+
+
 
 
 ## Random Notes
