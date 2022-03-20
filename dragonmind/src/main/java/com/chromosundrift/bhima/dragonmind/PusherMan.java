@@ -250,7 +250,6 @@ public class PusherMan implements Observer {
     }
 
     public List<LedController> getLedControllers() {
-        // TODO maybe go through 4 pp's and show offline ones too?
         return this.registry.getPushers().stream().map(pp -> {
             final LedController lc = new LedController();
             lc.setSpecies(pp.getDeviceType().name());
