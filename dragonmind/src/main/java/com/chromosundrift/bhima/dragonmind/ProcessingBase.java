@@ -102,7 +102,6 @@ public class ProcessingBase extends PApplet {
 
     private static void compareBuildTimeNativeLibSums() {
         logger.info("started native library detection");
-        // TODO load resource md5sum.txt into map and compare with given map, include missings
         Map<String, String> buildTimeMap = new HashMap<>();
         final InputStream buildTme = ProcessingBase.class.getClassLoader().getResourceAsStream(MD5_FILE);
         if (buildTme != null) {
