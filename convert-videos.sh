@@ -2,7 +2,7 @@
 
 # TODO move to scripts/
 
-# for each file
+# for each file of supported container format, reformat to target resolution and known-playable encoding/container.
 
 pushd dragonmind/video || exit
 mkdir -p 400x100

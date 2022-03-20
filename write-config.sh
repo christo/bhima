@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# writes pixelpusher config files to mounted USB sticks
+# writes pixelpusher config files to mounted USB sticks and unmounts them
 
 # TODO move to scripts/
 

@@ -40,6 +40,12 @@ To build with gradle at the command line from the root:
 gradle build
 ```
 
+Or to build a production distribution that can be deployed with the deployment shell script, run: 
+
+```
+gradle dragonmind:distTar
+```
+
 To run tests:
 
 ```

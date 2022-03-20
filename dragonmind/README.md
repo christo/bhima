@@ -2,7 +2,7 @@
 
 > M.I.N.D: Modular Illuminated Networked Dragon
 
-Is that the acronym? Let's go with yes. In 2018, the primary purpose of this software component is to control
+Is that the acronym? Let's go with yes. In 2018, the primary purpose of this software component was to control
 the art car LEDs on the dragon body, head, tail and wings. There are two halves of the body, one on each side of the bus
 which should play a mirror image of each other. Both wings are expected to be wholly visible from either side of the bus.
 
