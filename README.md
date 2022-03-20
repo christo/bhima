@@ -21,7 +21,7 @@ Questions etc. to [bhima@chromosundrift.com](mailto:bhima@chromosundrift.com)
 
 * Installation on Linux relies on java and libgstreamer being installed (normal on ubuntu) as well as a gstreamer plugin (seemingly not all installed by default) which can be installed with:
     
-    sudo apt install default-jdk gstreamer1.0-libav ubuntu-restricted-extras
+>    sudo apt install default-jdk gstreamer1.0-libav ubuntu-restricted-extras
 
 ## Architecture
 
