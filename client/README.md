@@ -12,10 +12,3 @@ Pretty standard mobile-first, React Single Page App, using
 Material UI with a dark-mode theme.
 
 Code is ES6, transpiled with Babel and unit-tested with jest.
-
-## TODO
-
-* view / modify settings, especially global brightness slider
-* view effective wiring
-* web vitals & health check 
-* admin authentication (stretch)
