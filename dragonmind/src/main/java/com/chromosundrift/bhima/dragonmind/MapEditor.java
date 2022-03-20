@@ -20,6 +20,8 @@ import processing.event.MouseEvent;
 
 import java.awt.image.BufferedImage;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +44,7 @@ import static org.apache.commons.lang3.StringUtils.defaultString;
  */
 public class MapEditor extends DragonMind {
 
+    private static final float REGISTRATION_CIRCLE_THRESHHOLD = 200f;
     private static Logger logger = LoggerFactory.getLogger(MapEditor.class);
 
     // TODO UI that doesn't suck by putting this into a JPanel (?): processing.opengl.PSurfaceJOGL
@@ -194,7 +197,7 @@ public class MapEditor extends DragonMind {
 
     public void settings() {
 //        fullScreen(JAVA2D); // P2D doesn't support setMatrix() which we need for point dragging
-         size(1920, 1080, JAVA2D);
+        size(1920, 1080, JAVA2D);
         pixelDensity(2);
         smooth();
         try {
@@ -346,8 +349,41 @@ public class MapEditor extends DragonMind {
             strokeWeight(0.5f);
             line(mouseX, 0, mouseX, height);
             line(0, mouseY, width, mouseY);
+            drawRegistrationCircles();
             popStyle();
         }
+    }
+
+    /** Draws screen circles at the radius of the neighbouring points, if their distance is reasonably close. */
+    private void drawRegistrationCircles() {
+        noFill();
+
+        for (PixelPoint neighbour : getActiveNeighbours(draggingPixelPoint)) {
+
+            final Point nScreen = modelToScreen(neighbour.getPoint());
+            final Point pScreen = modelToScreen(draggingPixelPoint.getPoint());
+            final float diameter = dist(nScreen, pScreen) * 2;
+            if (diameter < REGISTRATION_CIRCLE_THRESHHOLD) {
+                ellipse(mouseX, mouseY, diameter, diameter);
+            }
+        }
+    }
+
+    private List<PixelPoint> getActiveNeighbours(PixelPoint pp) {
+        final List<PixelPoint> pixels = getSelectedSegment().getPixels();
+        final List<PixelPoint> neighbours = new ArrayList<>();
+        for (int i = 0; i < pixels.size(); i++) {
+            if (pixels.get(i).equals(pp)) {
+                if (i > 0) {
+                    neighbours.add(pixels.get(i-1));
+                }
+                if (i < pixels.size() - 1) {
+                    neighbours.add(pixels.get(i + 1));
+                }
+                break;
+            }
+        }
+        return neighbours;
     }
 
     /**
@@ -676,29 +712,52 @@ public class MapEditor extends DragonMind {
             if (draggingPixelPoint != null) {
                 logger.debug("continuing to drag pixelPoint " + draggingPixelPoint);
                 // note we assume the draggingPixelPoint is in the selected segment (upheld elsewhere)
-                withAllTransforms(getSelectedSegment(), s -> {
-
-                    // invert the matrix so we can apply it to the mouse position and get target in-model points
-                    PMatrix m = getMatrix().get();
-                    if (!m.invert()) {
-                        // allegedly matrix transforms can fail to invert due to being "non-injective"
-                        // see https://en.wikipedia.org/wiki/Bijection,_injection_and_surjection
-                        logger.warn("couldn't invert the matrix");
-                    }
-                    setMatrix(m);
-                    int modelX = (int) screenX(mouseX, mouseY);
-                    int modelY = (int) screenY(mouseX, mouseY);
-                    draggingPixelPoint.getPoint().moveTo(modelX, modelY);
-                    resetMatrix();
-                });
-
+                inScreenSpace(p -> draggingPixelPoint.getPoint().moveTo(p), getMousePoint());
             } else {
-                handlePointAt(mouseX, mouseY, pp -> {
-                    logger.debug("started dragging a point {} {} {}", mouseX, mouseY, pp);
+                handlePointClosestTo(mouseX, mouseY, pp -> {
+                    logger.debug("started dragging a point {} {}", getMousePoint(), pp);
                     draggingPixelPoint = pp;
                 });
             }
         }
+    }
+
+    private Point getMousePoint() {
+        return new Point(mouseX, mouseY);
+    }
+
+    /**
+     * Perform an operation on a screenspace point derived from transforming the given segmentPoint using
+     * the currently selected segment's transforms.
+     * @param screenPointConsumer the operation to perform.
+     * @param segmentPoint the point in the segment to transform.
+     */
+    private void inScreenSpace(Consumer<Point> screenPointConsumer, Point segmentPoint) {
+        Runnable r = () -> screenPointConsumer.accept(screenPoint(segmentPoint));
+        withCurrentSegmentTransforms(r);
+    }
+
+    private void withCurrentSegmentTransforms(Runnable r) {
+        withAllTransforms(s -> {
+
+            // invert the matrix so we can apply it to the screen position and get target in-model points
+            PMatrix m = getMatrix().get();
+            if (!m.invert()) {
+                // allegedly matrix transforms can fail to invert due to being "non-injective"
+                // see https://en.wikipedia.org/wiki/Bijection,_injection_and_surjection
+                logger.warn("couldn't invert the matrix");
+            }
+            setMatrix(m);
+
+            r.run();
+            resetMatrix();
+        });
+    }
+
+    private List<Point> segmentToScreenSpace(List<Point> points) {
+        final List<Point> screenPoints = new ArrayList<>();
+        withCurrentSegmentTransforms(() -> points.stream().map(this::screenPoint).forEach(screenPoints::add));
+        return screenPoints;
     }
 
     /**
@@ -713,6 +772,14 @@ public class MapEditor extends DragonMind {
         go.accept(segment);
     }
 
+    /**
+     * Using the currently selected segment, as per {@link #withAllTransforms(Segment, Consumer)}
+     * @param go do something with segment transforms applied to the current matrix.
+     */
+    private void withAllTransforms(Consumer<Segment> go) {
+        withAllTransforms(getSelectedSegment(), go);
+    }
+
     @Override
     public final void mouseReleased(MouseEvent event) {
         logger.info("not dragging a pixelPoint");
@@ -723,22 +790,22 @@ public class MapEditor extends DragonMind {
     public final void mouseMoved(MouseEvent event) {
         // don't change the selected point if the control key is down, we might be moving a point
         if (!event.isControlDown()) {
-            handlePointAt(event.getX(), event.getY(), pp -> pixelIndex = getIndexFor(getSelectedSegment(), pp));
+            handlePointClosestTo(event.getX(), event.getY(), pp -> pixelIndex = getIndexFor(getSelectedSegment(), pp));
         }
     }
 
-    private void handlePointAt(final int sx, final int sy, final Consumer<PixelPoint> pointConsumer) {
-        withAllTransforms(getSelectedSegment(), s -> {
+    private void handlePointClosestTo(final int sx, final int sy, final Consumer<PixelPoint> pointConsumer) {
+        withAllTransforms(s -> {
             // now only calculate pointer distances for current segment points if the pointer is in the bounding box
             if (calculateScreenBox(s).contains(sx, sy)) {
                 final Point sPoint = new Point(sx, sy);
-                final Comparator<PixelPoint> distanceToMouse = (o1, o2) ->
+                final Comparator<PixelPoint> distanceToPoint = (o1, o2) ->
                         Float.compare(
                                 dist(modelToScreen(o1.getPoint()), sPoint),
                                 dist(modelToScreen(o2.getPoint()), sPoint));
 
                 s.getPixels().stream()
-                        .min(distanceToMouse)
+                        .min(distanceToPoint)
                         .filter(pp -> dist(modelToScreen(pp.getPoint()), sPoint) < SELECT_DIST)
                         .ifPresent(pointConsumer);
             }

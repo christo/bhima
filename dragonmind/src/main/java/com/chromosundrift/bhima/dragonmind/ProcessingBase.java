@@ -389,4 +389,8 @@ public class ProcessingBase extends PApplet {
     protected void applyGlobalTransforms(Config c) {
         c.getBackground().getTransforms().forEach(this::applyTransform);
     }
+
+    protected Point screenPoint(Point point) {
+        return new Point((int) screenX(point.getX(), point.getY()), (int) screenY(point.getX(), point.getY()));
+    }
 }

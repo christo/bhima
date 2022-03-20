@@ -77,4 +77,9 @@ public final class Point {
         this.x = x;
         this.y = y;
     }
+
+    public void moveTo(Point point) {
+        this.x = point.getX();
+        this.y = point.getY();
+    }
 }
