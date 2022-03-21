@@ -45,9 +45,6 @@ import {
 import {pink, purple} from "@mui/material/colors";
 import Logo from "./dragon-head-neg.png";
 
-/** Iff true, continuously fetch the current program info causing animated live thumbnail. */
-const LIVE_UPDATE = true;
-
 /** Iff true, limits the rate of updates as a result of continuous settings changes, i.e. brightness */
 const DO_SPAM_LIMIT = false;
 
@@ -63,14 +60,6 @@ const TYPE_STREAM = "Stream";
 /** Text scroller */
 const TYPE_TEXT = "Text";
 
-/**
- * Returns value clamped between lowest and highest.
- */
-function clamp(value, lowest, highest) {
-    return Math.min(Math.max(lowest, value), highest);
-}
-
-// TODO complete colour scheme: purple/aqua/pink/lightgrey/black  (?)
 const bhimaTheme = createTheme({
     palette: {
         mode: 'dark',
@@ -102,7 +91,6 @@ function secondsToHuman(totalSecs) {
     }
     return daysStr + hours+':'+minutes+':'+seconds;
 }
-
 
 function getEndpoint(name) {
     // TODO derive from config with devmode / production
@@ -151,7 +139,12 @@ const CurrentProgram = (props) => {
     const [loaded, setLoaded] = useState(false);
     const [error, setError] = useState(null);
 
-    const deps = LIVE_UPDATE ? [program, setProgram] : [];
+    // TODO get latest liveUpdate setting by properly depending on systemInfo.settings.liveVideo
+    let liveUpdate = false;
+    if (props.systemInfo && props.systemInfo.settings) {
+        liveUpdate = props.systemInfo.settings.liveVideo;
+    }
+    const deps = liveUpdate ? [program, setProgram, props.systemInfo] : [props.systemInfo];
 
     useEffect(() => {
         bhimaFetch("program")
@@ -271,7 +264,7 @@ const HomePage = (props) => {
         <Container className="page">
             <Box display="flex" justifyContent="space-between">
                 <h3>Live</h3>
-
+                {/*TODO fix highlight circle is oblate */}
                 <IconButton
                     onClick={toggleDrawer(true)}
                     size="large"
@@ -281,7 +274,7 @@ const HomePage = (props) => {
                     <Settings/>
                 </IconButton>
             </Box>
-            <CurrentProgram program={program} setProgram={setProgram}/>
+            <CurrentProgram program={program} setProgram={setProgram} systemInfo={props.systemInfo}/>
             <h3>All Programs</h3>
             <ProgramList setProgram={setProgram}/>
             <Box sx={{display: "flex", justifyContent: "center", margin: 4}}>💜</Box>
@@ -298,8 +291,9 @@ const HomePage = (props) => {
 
 /** Show global settings controls */
 function SettingsPanel(props) {
-    const [settings, setSettings] = useState(props.settings);
-
+    const [settings, setSettings] = useState(props.systemInfo.settings);
+    const setSystemInfo = props.setSystemInfo;
+    // TODO trigger update on systemInfo
     let lastUpdate = Date.now();
 
     /** create a handler for the given switch */
@@ -313,7 +307,8 @@ function SettingsPanel(props) {
                     sleep: settings.sleep,
                     luminanceCorrection: settings.luminanceCorrection,
                     brightness: settings.brightness,
-                    autoThrottle: settings.autoThrottle
+                    autoThrottle: settings.autoThrottle,
+                    liveVideo: settings.liveVideo
                 };
                 newSettings[switchName] = newValue;
                 let body = JSON.stringify(newSettings);
@@ -326,6 +321,10 @@ function SettingsPanel(props) {
                         console.error(error.message);
                     } else {
                         setSettings(result);
+                        setSystemInfo(prevSi => {
+                            prevSi.settings = settings
+                            return prevSi;
+                        })
                     }
                 });
             }
@@ -342,6 +341,8 @@ function SettingsPanel(props) {
                                    onChange={updateSettings("autoThrottle")}/>} label="Autothrottle"/>
                 <FormControlLabel control={<Switch checked={settings.mute}/>} label="Mute"
                                   onChange={updateSettings("mute")}/>
+                <FormControlLabel control={<Switch checked={settings.liveVideo}/>} label="Live Video"
+                                  onChange={updateSettings("liveVideo")}/>
 
                 <Stack spacing={2} direction="row" sx={{mb: 1, width: "90%"}} alignItems="center">
                     <BrightnessLow/>
@@ -539,7 +540,7 @@ const SystemPage = (props) => {
                 <SystemSummary systemInfo={systemInfo}/>
 
                 <h3>Global Settings</h3>
-                <SettingsPanel settings={systemInfo.settings}/>
+                <SettingsPanel systemInfo={systemInfo} setSystemInfo={setSystemInfo}/>
 
                 <Box sx={{display: 'flex', justifyContent: 'end', mt: 2, mb: 4, mr: 2}}>
                     <Button variant="contained" href="#puge-cache" disabled>
@@ -583,7 +584,6 @@ function App() {
                 justifyContent: "center", padding: 0, backgroundColor: "#434152", margin: 0, width: 1 }}>
                 <HomePage systemInfo={systemInfo} setSystemInfo={setSystemInfo} error={error} loaded={loaded}/>
             </Container>
-
         </ThemeProvider>;
 }
 

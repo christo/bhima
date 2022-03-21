@@ -14,6 +14,7 @@ public final class Settings {
     private Boolean luminanceCorrection;
     private Boolean autoThrottle;
     private Boolean mute;
+    private Boolean liveVideo = true;
 
     public Settings() {
     }
@@ -55,6 +56,14 @@ public final class Settings {
 
     public void setMute(Boolean mute) {
         this.mute = mute;
+    }
+
+    public Boolean isLiveVideo() {
+        return liveVideo;
+    }
+
+    public void setLiveVideo(Boolean liveVideo) {
+        this.liveVideo = liveVideo;
     }
 
     @JsonIgnore
