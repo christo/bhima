@@ -2,9 +2,16 @@ package com.chromosundrift.bhima.geometry;
 
 import java.util.Collection;
 import java.util.Objects;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Supplier;
 
+/**
+ * Threadsafe mutable 2D cartesian coordinate.
+ */
 @SuppressWarnings("WeakerAccess")
 public final class Point {
+
+    private final ReentrantLock mutate = new ReentrantLock();
 
     public static Point centroid(Iterable<Point> points) {
         int avgX = 0;
@@ -74,12 +81,43 @@ public final class Point {
     }
 
     public void moveTo(int x, int y) {
-        this.x = x;
-        this.y = y;
+        try {
+            mutate.lock();
+            this.x = x;
+            this.y = y;
+        } finally {
+            mutate.unlock();
+        }
+    }
+
+    public void moveTo(Supplier<Point> point) {
+        try {
+            mutate.lock();
+            Point to = point.get();
+            this.x = to.getX();
+            this.y = to.getY();
+        } finally {
+            mutate.unlock();
+        }
     }
 
     public void moveTo(Point point) {
-        this.x = point.getX();
-        this.y = point.getY();
+        try {
+            mutate.lock();
+            Point to = point.copy();
+            this.x = to.getX();
+            this.y = to.getY();
+        } finally {
+            mutate.unlock();
+        }
+    }
+
+    public Point copy() {
+        try {
+            mutate.lock();
+            return new Point(x, y);
+        } finally {
+            mutate.unlock();
+        }
     }
 }

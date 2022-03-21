@@ -21,7 +21,6 @@ import processing.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +29,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static com.chromosundrift.bhima.dragonmind.model.Transform.Type;
@@ -45,9 +45,24 @@ import static org.apache.commons.lang3.StringUtils.defaultString;
 public class MapEditor extends DragonMind {
 
     private static final float REGISTRATION_CIRCLE_THRESHHOLD = 200f;
+
+
     private static Logger logger = LoggerFactory.getLogger(MapEditor.class);
+    private Colours colours;
 
     // TODO UI that doesn't suck by putting this into a JPanel (?): processing.opengl.PSurfaceJOGL
+
+    private class Colours {
+        public final int dragCrosshair = 0;
+        public final int appBackground = 200;
+        public final int locatorStick = MapEditor.this.color(0, 90);
+        public int globalBoundingBoxBorder = MapEditor.this.color(200, 255, 0);
+        public int globalBoundingBoxFill = MapEditor.this.color(255, 255, 0, 20);
+        public int segmentInfoBoxBorder = MapEditor.this.color(255, 0, 0);
+        public int segmentInfoBoxFill = 0;
+        public int selectedSegmentPoint = 0;
+        public int unselectedSegmentPoint = 127;
+    }
 
     // KEYBOARD SHORTCUTS:
 
@@ -185,7 +200,7 @@ public class MapEditor extends DragonMind {
     private float viewShiftY = 0;
     private float viewZoom = 1;
 
-    private PixelPoint draggingPixelPoint = null;
+    private volatile PixelPoint draggingPixelPoint = null;
     private Config generatedDragon;
     private PGraphics segmentInfo;
     private PGraphics segmentSummary;
@@ -245,6 +260,7 @@ public class MapEditor extends DragonMind {
         super.setup();
         background(220);
         rainbowPalette = new RainbowPalette();
+        this.colours = new Colours();
     }
 
     @Override
@@ -321,7 +337,7 @@ public class MapEditor extends DragonMind {
     private void drawLineFromViewToModel() {
         pushStyle();
         strokeWeight(50);
-        stroke(0, 90);
+        stroke(colours.locatorStick);
         float cx = width / 2.0f;
         float cy = height / 2.0f;
         float screenX = screenX(cx, cy);
@@ -345,7 +361,7 @@ public class MapEditor extends DragonMind {
         image(viewInfo, 0, 0);
         if (draggingPixelPoint != null) {
             pushStyle();
-            stroke(0);
+            stroke(colours.dragCrosshair);
             strokeWeight(0.5f);
             line(mouseX, 0, mouseX, height);
             line(0, mouseY, width, mouseY);
@@ -447,8 +463,8 @@ public class MapEditor extends DragonMind {
      */
     private Rect drawGlobalBoundingBox() {
         pushStyle();
-        fill(255, 255, 0, 20);
-        stroke(200, 255, 0);
+        fill(colours.globalBoundingBoxFill);
+        stroke(colours.globalBoundingBoxBorder);
         strokeWeight(4);
         List<Segment> enabledSegments = config.enabledSegments().collect(Collectors.toList());
         Rect rect = screenspaceBoundingRect(enabledSegments);
@@ -485,8 +501,8 @@ public class MapEditor extends DragonMind {
             }
             // background for text
             g.rect(screenX, screenY, w, h);
-            g.fill(0);
-            g.stroke(255, 0, 0);
+            g.fill(colours.segmentInfoBoxFill);
+            g.stroke(colours.segmentInfoBoxBorder);
             // label for segment
             StringBuilder text = new StringBuilder();
             List<PixelPoint> pixels = segment.getPixels();
@@ -541,14 +557,17 @@ public class MapEditor extends DragonMind {
                 int metaColour;
                 if (segment.getIgnored()) {
                     // ignored stuff is feinter
-                    metaColour = color(127, 127, 0);
+                    final int ignoredSegment = color(127, 127, 0);
+                    metaColour = ignoredSegment;
                     strokeWeight(0.25f);
                 } else if (i == selectedSegment) {
                     if (r.contains(mouseX, mouseY)) {
-                        fill(255, 255, 255, 200);
+                        final int selectedMouseoverFill = color(255, 255, 255, 200);
+                        fill(selectedMouseoverFill);
                     }
 
-                    metaColour = color(255, 0, 0);
+                    final int selectedSegmentStroke = color(255, 0, 0);
+                    metaColour = selectedSegmentStroke;
                     strokeWeight(2);
                     if (showImage) {
                         drawSegmentImage(segment);
@@ -568,14 +587,15 @@ public class MapEditor extends DragonMind {
                 popMatrix();
                 if (segment.getIgnored()) {
                     // ignored stuff is feinter
-                    stroke(127, 127, 0);
+                    final int ignoredUnselectedSegmentPoint = color(127, 127, 0);
+                    stroke(ignoredUnselectedSegmentPoint);
                     strokeWeight(0.25f);
                 } else if (i == selectedSegment) {
                     // style for points of selected segement
-                    stroke(0);
+                    stroke(colours.selectedSegmentPoint);
                     strokeWeight(2);
                 } else {
-                    stroke(127);
+                    stroke(colours.unselectedSegmentPoint);
                     strokeWeight(1);
                 }
 
@@ -712,7 +732,13 @@ public class MapEditor extends DragonMind {
             if (draggingPixelPoint != null) {
                 logger.debug("continuing to drag pixelPoint " + draggingPixelPoint);
                 // note we assume the draggingPixelPoint is in the selected segment (upheld elsewhere)
-                inScreenSpace(p -> draggingPixelPoint.getPoint().moveTo(p), getMousePoint());
+                withCurrentSegmentTransforms(() -> {
+                    final Point screenMouse = screenPoint(getMousePoint());
+                    final Consumer<Point> mouseDragger = p -> {
+                        draggingPixelPoint.getPoint().moveTo(p);
+                    };
+                    mouseDragger.accept(screenMouse);
+                });
             } else {
                 handlePointClosestTo(mouseX, mouseY, pp -> {
                     logger.debug("started dragging a point {} {}", getMousePoint(), pp);
@@ -722,19 +748,9 @@ public class MapEditor extends DragonMind {
         }
     }
 
+
     private Point getMousePoint() {
         return new Point(mouseX, mouseY);
-    }
-
-    /**
-     * Perform an operation on a screenspace point derived from transforming the given segmentPoint using
-     * the currently selected segment's transforms.
-     * @param screenPointConsumer the operation to perform.
-     * @param segmentPoint the point in the segment to transform.
-     */
-    private void inScreenSpace(Consumer<Point> screenPointConsumer, Point segmentPoint) {
-        Runnable r = () -> screenPointConsumer.accept(screenPoint(segmentPoint));
-        withCurrentSegmentTransforms(r);
     }
 
     private void withCurrentSegmentTransforms(Runnable r) {
@@ -752,12 +768,6 @@ public class MapEditor extends DragonMind {
             r.run();
             resetMatrix();
         });
-    }
-
-    private List<Point> segmentToScreenSpace(List<Point> points) {
-        final List<Point> screenPoints = new ArrayList<>();
-        withCurrentSegmentTransforms(() -> points.stream().map(this::screenPoint).forEach(screenPoints::add));
-        return screenPoints;
     }
 
     /**
