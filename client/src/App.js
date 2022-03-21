@@ -19,8 +19,8 @@ import {
     ListItem,
     ListItemIcon,
     ListItemText,
-    Paper,
-    Slider,
+    Paper, Slide,
+    Slider, Snackbar,
     Stack,
     Switch, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
     ThemeProvider
@@ -32,7 +32,7 @@ import {
     BrightnessLow,
     Category,
     ConnectedTv,
-    Details,
+    Details, Favorite,
     Image,
     Info,
     Label,
@@ -269,6 +269,7 @@ const ProgramList = (props) => {
 const HomePage = (props) => {
     const [program, setProgram] = useState(null);
     const [sysOpen, setSysOpen] = useState(false);
+    const [lofOpen, setLofOpen] = useState(false);
     const toggleDrawer = (open) => (event) => {
         if (
             event &&
@@ -279,10 +280,19 @@ const HomePage = (props) => {
         }
         setSysOpen(open);
     };
+    const lofSnack = () => {
+        setLofOpen(true);
+    };
+    const handleLofClose = () => {
+        setLofOpen(false);
+    };
+    function SlideTransition(props) {
+        return <Slide {...props} direction="up" />;
+    }
     return (
         <Container className="page">
             <Box display="flex" justifyContent="space-between">
-                <h3>Live</h3>
+                <h3>Bhima</h3>
                 {/*TODO fix highlight circle is oblate */}
                 <IconButton
                     onClick={toggleDrawer(true)}
@@ -296,7 +306,16 @@ const HomePage = (props) => {
             <CurrentProgram program={program} setProgram={setProgram} systemInfo={props.systemInfo}/>
             <h3>All Programs</h3>
             <ProgramList setProgram={setProgram}/>
-            <Box sx={{display: "flex", justifyContent: "center", margin: 4}}>💜</Box>
+            <Box sx={{display: "flex", justifyContent: "center", margin: 4}} onClick={lofSnack}>
+                <Button onClick={lofSnack} size="large"><Favorite fontSize="large"/></Button></Box>
+
+            <Snackbar open={lofOpen} autoHideDuration={1600} onClose={handleLofClose}
+                TransitionComponent={SlideTransition}>
+                <Alert severity="success" sx={{ width: '100%' }} onClose={handleLofClose}>
+                    Love Over Fear
+                </Alert>
+            </Snackbar>
+
             <Drawer
                 anchor="right"
                 open={sysOpen}
@@ -410,7 +429,7 @@ function PortList(props) {
 function LedControllers(props) {
     const controllers = props.controllers;
     if (controllers.length === 0) {
-        return <p><i>None</i></p>
+        return <p><i>None Detected</i></p>
     } else {
         return <React.Fragment>
             {controllers.map(c => (
