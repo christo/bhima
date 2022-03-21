@@ -12,8 +12,6 @@ import java.awt.image.BufferedImage;
 
 public abstract class AbstractDragonProgram implements DragonProgram {
 
-    private static final Logger logger = LoggerFactory.getLogger(AbstractDragonProgram.class);
-
     /**
      * Does nothing, override me.
      */
