@@ -28,14 +28,15 @@ Questions etc. to [bhima@chromosundrift.com](mailto:bhima@chromosundrift.com)
 * Java application
     * Processing used as application API
     * Pixelpusher LED controllers drive lights
-* "API" module contains common code and interfaces 
+* `API` module contains common code and interfaces 
 
 ## Building
 
 The main build tool is `gradle` with a root module and the following submodules:
 * api : common module that contains interfaces and commonly used components between `dragonmind` and `dragonmind-web`.
 * dragonmind : main implementation module for driving the dragon LEDs 
-* dragonmind-web : web app including mobile web app for control
+* dragonmind-web : web app REST API and web server for client
+* client : react mobile web app that calls REST API
 
 To build with gradle at the command line from the root:
 
@@ -60,9 +61,6 @@ To see other build targets (mostly standard gradle things):
 gradle tasks
 ```
 
-Building in IntelliJ should be a matter of maintaining synchronisation with gradle. Building with other IDEs is 
-assumed to work the same way.
-
 ## Dependencies
 
 * java 1.8 : (back off! this is imposed solely by processing which has been a total pain in the neck)
@@ -70,8 +68,8 @@ assumed to work the same way.
 * processing-video : library that extends processing with the ability to process video files
 * junit : unit testing
 * slf4j : logging API
-* dropwizard : web api for dragonmind-web
-* onsen : js ui framework for dragonmind-web
+* dropwizard : currently only used for REST api and web server for dragonmind-web
+* react, mui : js ui framework for dragonmind-web
 * jquery : boomer js library
 
 ---
@@ -144,8 +142,6 @@ Bookmarks from initial research into using pixelpushers for this project:
 * [Search · topic:classic-mac-os org:kreativekorp fork:true · GitHub](https://github.com/search?q=topic%3Aclassic-mac-os+org%3Akreativekorp+fork%3Atrue)
 * [PixelPusher&#39;s community hub](https://www.hackster.io/pixelpusher)
 * [Blinkdom - Hackster.io](https://www.hackster.io/r26d/blinkdom-b690e4)
-
-
 
 
 ## Random Notes
