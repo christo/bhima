@@ -140,6 +140,25 @@ const CurrentProgram = (props) => {
     const [error, setError] = useState(null);
 
     // TODO get latest liveUpdate setting by properly depending on systemInfo.settings.liveVideo
+    // doesn't currently work because of the following message. Maybe fix with useEffect()
+    //
+    // react_devtools_backend.js:3973 Warning: The final argument passed to useEffect changed size between renders.
+    // The order and size of this array must remain constant.
+    //
+    // Previous: []
+    // Incoming: [[object Object], function () { [native code] }, [object Object]]
+    // at CurrentProgram (http://localhost:3000/static/js/bundle.js:257:5)
+    // at div
+    // at http://localhost:3000/static/js/bundle.js:2169:66
+    //     at Container (http://localhost:3000/static/js/bundle.js:9565:82)
+    // at HomePage (http://localhost:3000/static/js/bundle.js:475:80)
+    // at div
+    // at http://localhost:3000/static/js/bundle.js:2169:66
+    //     at Container (http://localhost:3000/static/js/bundle.js:9565:82)
+    // at InnerThemeProvider (http://localhost:3000/static/js/bundle.js:19937:70)
+    // at ThemeProvider (http://localhost:3000/static/js/bundle.js:19644:5)
+    // at ThemeProvider (http://localhost:3000/static/js/bundle.js:19957:5)
+    // at App (http://localhost:3000/static/js/bundle.js:1432:86)
     let liveUpdate = false;
     if (props.systemInfo && props.systemInfo.settings) {
         liveUpdate = props.systemInfo.settings.liveVideo;
