@@ -91,7 +91,6 @@ public final class BhimaSup extends DragonMind implements Dragon {
         si.setConfigProject(this.config.getProject());
         si.setConfigVersion(this.config.getVersion());
         final List<LedController> ledControllers = getPusherMan().getLedControllers();
-        logger.info("LED controllers #" + ledControllers.size());
         si.setLedControllers(ledControllers);
         return si;
     }
