@@ -3,8 +3,10 @@ build
 video.log
 jasper-usb
 /tmp/
+md5sum.txt
 gst-haze.txt
 gst-s-haze.txt
 gst-s-silverbox.txt
 gst-silverbox.txt
 network-config.md
+dragonmind/src/main/resources/md5sum.sorted.txt
