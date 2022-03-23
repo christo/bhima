@@ -25,6 +25,8 @@ import processing.event.MouseEvent;
 import processing.video.Movie;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.OperatingSystemMXBean;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -82,6 +84,9 @@ public final class BhimaSup extends DragonMind implements Dragon {
     public SystemInfo getSystemInfo() {
         final long uptimeSecs = getRuntimeMXBean().getUptime() / 1000;
         SystemInfo si = new SystemInfo(uptimeSecs, this.getCurrentProgram());
+        OperatingSystemMXBean os = ManagementFactory.getOperatingSystemMXBean();
+        si.setLoadAverage(os.getSystemLoadAverage());
+        si.setName(os.getName());
         si.setProgramTypes(ProgramType.all());
         si.setSettings(this.getSettings());
         si.setEffectiveWiring(this.getEffectiveWiring());

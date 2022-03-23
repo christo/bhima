@@ -510,9 +510,21 @@ function SystemSummary(props) {
         </ListItem>
         <ListItem>
             <ListItemIcon>
+                <Label fontSize="large"/>
+            </ListItemIcon>
+            <ListItemText primary="System Name" secondary={systemInfo.name}/>
+        </ListItem>
+        <ListItem>
+            <ListItemIcon>
                 <AccessTime fontSize="large"/>
             </ListItemIcon>
             <ListItemText primary="Uptime" secondary=<StopWatch seconds={systemInfo.uptimeSeconds}/>/>
+        </ListItem>
+        <ListItem>
+            <ListItemIcon>
+                <AccessTime fontSize="large"/>
+            </ListItemIcon>
+            <ListItemText primary="Load Average" secondary={systemInfo.loadAverage}/>
         </ListItem>
         <ListItem>
             <ListItemIcon>

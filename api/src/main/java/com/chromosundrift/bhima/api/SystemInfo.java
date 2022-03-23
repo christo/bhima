@@ -14,11 +14,13 @@ import java.util.Set;
 public class SystemInfo {
 
     public Long uptimeSeconds;
+    public Double loadAverage;
     public List<LedController> ledControllers;
     public ProgramInfo currentProgram;
     public Settings settings;
     public List<ProgramType> programTypes;
     public Map<String, Set<Integer>> effectiveWiring;
+    public String name;
     public String scrollText;
     public String version;
     public String status;
@@ -121,5 +123,21 @@ public class SystemInfo {
 
     public void setConfigVersion(String configVersion) {
         this.configVersion = configVersion;
+    }
+
+    public Double getLoadAverage() {
+        return loadAverage;
+    }
+
+    public void setLoadAverage(Double loadAverage) {
+        this.loadAverage = loadAverage;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
