@@ -283,6 +283,8 @@ public final class BhimaSup extends DragonMind implements Dragon {
     private PImage scrollText(PImage pImage) {
         // text overlay
         xpos -= 0.1;
+        // this huge negative number makes the text scroll for a while
+        // off screen, making the repeat time long.
         if (xpos < -2000) {
             xpos = width + 10;
         }
@@ -295,7 +297,7 @@ public final class BhimaSup extends DragonMind implements Dragon {
 
         float fontSize = (float) (15 - ((width - xpos) * 0.006));
         pg.textFont(mesgFont, fontSize);
-        pg.text(mesg, xpos, 63);
+        pg.text(mesg, xpos, 64);
         pg.endDraw();
 
         pImage.blend(pg, 0, 0, width, height, 0, 0, width, height, PConstants.DARKEST);
