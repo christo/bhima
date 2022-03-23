@@ -15,6 +15,7 @@ export PROJECT_DIR=$(dirname "$SCRIPT_DIR")
 
 export PROCESSING_SKETCH_DIR=$HOME/src/christo/processing
 
+rsync -vazu --delete-after "$PROJECT_DIR/dragonmind/video" $TIGER:
 rsync -vazu --delete-after "$PROJECT_DIR" $TIGER:src/christo
 rsync -vazu --delete-after "$PROCESSING_SKETCH_DIR" $TIGER:src/christo
 rsync -vazu $HOME/.ivy2 $TIGER:
