@@ -429,7 +429,7 @@ function PortList(props) {
 function LedControllers(props) {
     const controllers = props.controllers;
     if (controllers.length === 0) {
-        return <p><i>None Detected</i></p>
+        return <p><i>None detected</i></p>
     } else {
         return <React.Fragment>
             {controllers.map(c => (
