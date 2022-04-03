@@ -10,7 +10,7 @@ allprojects {
 subprojects {
 
     group 'com.chromosundrift'
-    version '2.3-SNAPSHOT'
+    version '2.3'
 
     apply plugin: 'java'
 
