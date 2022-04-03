@@ -1,4 +1,4 @@
-package com.chromosundrift.bhima.dragonmind;
+package com.chromosundrift.bhima.dragonmind.builder;
 
 import com.chromosundrift.bhima.geometry.Knapp;
 
