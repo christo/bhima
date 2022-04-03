@@ -70,7 +70,6 @@ gradle tasks
 * slf4j : logging API
 * dropwizard : currently only used for REST api and web server for dragonmind-web
 * react, mui : js ui framework for dragonmind-web
-* jquery : boomer js library
 
 ---
 
