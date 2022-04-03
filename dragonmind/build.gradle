@@ -112,18 +112,14 @@ task printDeps(description: "yo know") {
     }
 }
 
-task createProperties(dependsOn: processResources) {
+ext.genOutputDir = file("$buildDir/generated/main/resources")
+
+tasks.register('createProperties') {
     doLast {
-        new File("$buildDir/resources/main/build.properties").withWriter { w ->
-            Properties p = new Properties()
-            p['version'] = project.version.toString()
-            p['name'] = project.name.toString()
-            p.store w, null
-        }
-        println "** created build.properties"
+        genOutputDir.mkdirs()
+        def pFile = file"$genOutputDir/build.properties"
+        pFile.text = "version=${project.version}\nname=${project.name}"
     }
 }
-
-build {
-    createProperties
-}
+tasks.named('processResources') { dependsOn('createProperties')}
+sourceSets.main.output.dir genOutputDir, builtBy: createProperties

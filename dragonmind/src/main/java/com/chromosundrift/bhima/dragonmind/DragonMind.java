@@ -88,7 +88,7 @@ public class DragonMind extends ProcessingBase {
                 version = p.getProperty("version", "unknown").trim();
                 logger.info("Version (from properties): {}", version);
             } else {
-                logger.warn(PROP_FILE + " missing");
+                logger.warn(PROP_FILE + " missing - version unknown");
                 version = "unknown";
             }
         } catch (IOException e) {
