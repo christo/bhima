@@ -23,15 +23,15 @@ abstract class AbstractSegmentBuilder {
 
     public abstract DragonBuilder.SegmentBuilding addSegment(int nPanels, Function<DragonBuilder.PanelPoint, Boolean> includePoint, int pw, int ph, int nLedX, int nLedY, Knapp k);
 
-    DragonBuilder.SegmentBuilding addSegment(int nPanels, int pw, int ph) {
+    public DragonBuilder.SegmentBuilding addSegment(int nPanels, int pw, int ph) {
         return addSegment(nPanels, pw, ph, Knapp.ZIG_ZAG);
     }
 
-    DragonBuilder.SegmentBuilding addSegment(int nPanels, int pw, int ph, Knapp k) {
+    public DragonBuilder.SegmentBuilding addSegment(int nPanels, int pw, int ph, Knapp k) {
         return addSegment(nPanels, p -> true, pw, ph, k);
     }
 
-    DragonBuilder.SegmentBuilding addSegment(int nPanels, Function<DragonBuilder.PanelPoint, Boolean> exceptions, int pw, int ph) {
+    public DragonBuilder.SegmentBuilding addSegment(int nPanels, Function<DragonBuilder.PanelPoint, Boolean> exceptions, int pw, int ph) {
         return addSegment(nPanels, exceptions, pw, ph, Knapp.ZIG_ZAG);
     }
 
