@@ -3,13 +3,12 @@
 # builds distribution then unpacks and runs it locally
 # assumes we are connected to the dragon
 
-# TODO move to scripts/
-
 set -vx 
 shopt -s failglob
 
 echo  $JAVA_HOME
-
+thisDir=`dirname $0`
+pushd "$thisDir/.." 2&>1 >/dev/null
 if [[ -f "sourceme.sh" ]]; then
   source "sourceme.sh"
 fi
@@ -23,3 +22,4 @@ dd=tmp/dragonmind-*
 ln -s $PWD/dragonmind/video ${dd#}/
 cd ${dd#}
 ./bin/dragonmind
+popd 2&>1 >/dev/null
