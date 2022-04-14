@@ -104,6 +104,7 @@ gradle tasks
   * some indication of most recent sync
 * create simulator client view
   * add to bhima web site?
+* upgrade from gradle 6.8.1 to 7.x
 
 ### Mobile web app
     
