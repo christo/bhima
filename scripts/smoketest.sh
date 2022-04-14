@@ -8,7 +8,7 @@ shopt -s failglob
 
 echo  $JAVA_HOME
 thisDir=`dirname $0`
-pushd "$thisDir/.." 2&>1 >/dev/null
+pushd "$thisDir/.." 2>&1 >/dev/null
 if [[ -f "sourceme.sh" ]]; then
   source "sourceme.sh"
 fi
@@ -22,4 +22,4 @@ dd=tmp/dragonmind-*
 ln -s $PWD/dragonmind/video ${dd#}/
 cd ${dd#}
 ./bin/dragonmind
-popd 2&>1 >/dev/null
+popd 2>&1 >/dev/null
