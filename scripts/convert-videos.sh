@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-# TODO move to scripts/
-
 # for each file of supported container format, reformat to target resolution and known-playable encoding/container.
+# needs rethinking
 
-pushd dragonmind/video || exit 1
+thisDir=`dirname $0`
+pushd "$thisDir/../dragonmind/video" || exit 1
 mkdir -p 400x100
 for i in *.mp4 *.mov *.avi *.m4v *.mkv *.webm; do 
 
