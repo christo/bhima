@@ -80,13 +80,24 @@ gradle tasks
     * ? can we upgrade dropwizard to fix this?
     * Will upgrading processing help this?
 * fix linux 64 bit native libs result in running video (video scaling is currently wrong)
-* make system console log (show on mobile app / front panel)
-* add to SystemInfo:
+* make tail of system console log (show on mobile app / front panel)
+* rewrite live video output as a websocket stream
+* build front-panel on raspberry pi 4
+  * low-res landscape touchscreen
+  * call REST endpoints
+  * decide what UI app to use, must be lightweight: 
+    * pygame? might be snappiest
+    * browser? benefit to be able to run same on mobile phone
+* add to SystemInfo (try to be portable):
     * performance metrics: e.g. render time
-    * temperatures?
+    * temperatures
     * database size and disk usage
     * network info
     * runtime info e.g. os, ram usage etc.
+* automatic rsync when internet connection is working
+  * authenticate computer with a few known wifi APs
+  * video directory
+  * some indication of most recent sync
 
 ### Mobile web app
     
