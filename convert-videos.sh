@@ -4,7 +4,7 @@
 
 # for each file of supported container format, reformat to target resolution and known-playable encoding/container.
 
-pushd dragonmind/video || exit
+pushd dragonmind/video || exit 1
 mkdir -p 400x100
 for i in *.mp4 *.mov *.avi *.m4v *.mkv *.webm; do 
 
