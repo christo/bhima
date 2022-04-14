@@ -82,12 +82,16 @@ gradle tasks
 * fix linux 64 bit native libs result in running video (video scaling is currently wrong)
 * make tail of system console log (show on mobile app / front panel)
 * rewrite live video output as a websocket stream
+* add daemon mode
 * build front-panel on raspberry pi 4
   * low-res landscape touchscreen
   * call REST endpoints
   * decide what UI app to use, must be lightweight: 
     * pygame? might be snappiest
     * browser? benefit to be able to run same on mobile phone
+  * add server start, stop and restart function 
+    * decide RPC method here, SSH?
+  * start on pi boot, 
 * add to SystemInfo (try to be portable):
     * performance metrics: e.g. render time
     * temperatures
@@ -96,8 +100,10 @@ gradle tasks
     * runtime info e.g. os, ram usage etc.
 * automatic rsync when internet connection is working
   * authenticate computer with a few known wifi APs
-  * video directory
+  * video directory, logs
   * some indication of most recent sync
+* create simulator client view
+  * add to bhima web site?
 
 ### Mobile web app
     
