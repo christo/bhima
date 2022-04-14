@@ -75,23 +75,33 @@ gradle tasks
 
 ## TODO
 
+### Mobile web app
+    
+* add instructions and status for stick slurper to mobile web app so people can add content
+* add video file uploader
+* security - authentication
+* create simulator client view
+  * add to bhima web site?
+* build front-panel on raspberry pi 4
+  * low-res landscape touchscreen
+  * call REST endpoints
+  * decide what UI app to use, must be lightweight:
+      * pygame? might be snappiest
+      * browser? benefit to be able to run same on mobile phone
+  * add server start, stop and restart function
+      * decide RPC method here, SSH?
+  * start on pi boot,
+* rewrite live video output as a websocket stream
+* make tail of system console log (show on mobile app / front panel)
+ 
+### Main System
+
 * configure production logging to file
 * make work with recent jdk (jee modules were removed, jaxb etc.)
     * ? can we upgrade dropwizard to fix this?
     * Will upgrading processing help this?
 * fix linux 64 bit native libs result in running video (video scaling is currently wrong)
-* make tail of system console log (show on mobile app / front panel)
-* rewrite live video output as a websocket stream
 * add daemon mode
-* build front-panel on raspberry pi 4
-  * low-res landscape touchscreen
-  * call REST endpoints
-  * decide what UI app to use, must be lightweight: 
-    * pygame? might be snappiest
-    * browser? benefit to be able to run same on mobile phone
-  * add server start, stop and restart function 
-    * decide RPC method here, SSH?
-  * start on pi boot, 
 * add to SystemInfo (try to be portable):
     * performance metrics: e.g. render time
     * temperatures
@@ -99,21 +109,10 @@ gradle tasks
     * network info
     * runtime info e.g. os, ram usage etc.
 * automatic rsync when internet connection is working
-  * authenticate computer with a few known wifi APs
-  * video directory, logs
-  * some indication of most recent sync
-* create simulator client view
-  * add to bhima web site?
+    * authenticate computer with a few known wifi APs
+    * video directory, logs
+    * some indication of most recent sync
 * upgrade from gradle 6.8.1 to 7.x
-
-### Mobile web app
-    
-* add instructions and status for stick slurper to mobile web app so people can add content
-* add video file uploader
-* security - authentication
-
-### Main System
-
 * move test pattern into its own Program
 * effect: rotozoomer (tesselation, kaliedoscope)
 * parametised geometric algorithms (e.g. sacred geometry shiz) using pixelpusher processing library
