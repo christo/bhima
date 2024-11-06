@@ -6,7 +6,7 @@ Questions etc. to [bhima@chromosundrift.com](mailto:bhima@chromosundrift.com)
 
 ## Summary
 
-* Software-controlled LED surface for the dragon bus
+* Software-controlled LED surface with warped diamond mesh for the dragon bus
     * Video player
     * Fledgling API for building Processing-like algorithmic sketches
 * Video import from USB
